@@ -16,11 +16,11 @@
 
 無需多言，直接試試吧！🥳
 
-1. ✨ **美觀界麵**：採用現代簡約設計的 [Shadcn UI](https://ui.shadcn.com) 風格。
-2. 📱 **響應式設計**：適配手機端✅ / Pad✅ / 桌麵端✅，並支持 PWA 應用。
-3. 🌈 **多主題支持**：支持亮/暗色切換，自動檢測繫統主題。
+1. ✨ **美觀介面**：採用現代簡約設計的 [Shadcn UI](https://ui.shadcn.com) 風格。
+2. 📱 **響應式設計**：適配手機端✅ / Pad✅ / 桌面端✅，並支持 PWA 應用。
+3. 🌈 **多主題支持**：支持亮/暗色切換，自動檢測系統主題。
 4. 🚀 **靈活查詢**：基於 Next.js，支持無服務器部署，更快查詢速度。
-5. 📚 **曆史記錄**：曆史記錄存儲在本地存儲中，方便查看和查詢曆史。
+5. 📚 **歷史記錄**：歷史記錄存儲在本地存儲中，方便查看和查詢歷史。
 6. 📡 **開放接口**：提供簡單的 whois 查詢 API，易於與其他服務集成。
 7. 🌍 **強大支持**：支持 IPv4、IPv6、域名、ASN、CIDR 的 Whois 查詢。
 8. 📦 **結果分享**：支持獲取 Whois 查詢結果，方便分享和保存。
@@ -32,7 +32,7 @@
 
 ## 部署
 
-#### `1` 🚀 雲平颱部署（推薦）
+#### `1` 🚀 雲平台部署（推薦）
 
 [Vercel](https://vercel.com/import/project?template=https://github.com/zmh-program/next-whois-ui) / [Netlify](https://app.netlify.com/start/deploy?repository=https://github.com/zmh-program/next-whois-ui) / [Zeabur](https://zeabur.com/templates/UHCCCT)
 
