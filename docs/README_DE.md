@@ -181,6 +181,6 @@ pnpm dev
 
 ## 💪 TLDs-Unterstützung
 
-👉 [TLDs Whois Parser Lib Quellcode](./src/lib/whois/lib.ts)
+👉 [TLDs Whois Parser Lib Quellcode](../src/lib/whois/lib.ts)
 
 ❤ TIPP: Der Whois-Parser für einige TLDs ist möglicherweise derzeit nicht kompatibel. Vielen Dank für Ihren Beitrag [Pull Request](https://github.com/zmh-program/next-whois-ui/pulls), um dieses Projekt zu unterstützen, mehr TLDs zu unterstützen!

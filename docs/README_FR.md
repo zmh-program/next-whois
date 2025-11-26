@@ -76,6 +76,6 @@ pnpm dev
 - Support RDAP (@[node-rdap](https://www.npmjs.com/package/node-rdap))
 
 ## 💪 Support TLD
-👉 [Code source de la bibliothèque d'analyse Whois TLD](./src/lib/whois/lib.ts)
+👉 [Code source de la bibliothèque d'analyse Whois TLD](../src/lib/whois/lib.ts)
 
 ❤ CONSEIL: L'analyseur Whois pour certains TLD peut ne pas être actuellement compatible, merci de contribuer via une [Pull Request](https://github.com/zmh-program/next-whois-ui/pulls) pour faire en sorte que ce projet supporte plus de TLD ! 
