@@ -793,10 +793,10 @@ export default function Lookup({ data, target }: Props) {
   }, []);
 
   return (
-    <ScrollArea className={`w-full h-full`}>
+    <ScrollArea className="w-full h-[calc(100vh-4rem)]">
       <main
         className={
-          "relative w-full min-h-full grid place-items-center px-4 pb-6"
+          "relative w-full min-h-[calc(100vh-4rem)] grid place-items-center px-4 pb-6"
         }
       >
         <motion.div
