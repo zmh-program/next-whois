@@ -182,6 +182,6 @@ pnpm dev
 
 ## 💪 TLDs 支持
 
-👉 [TLDs Whois 解析器库源码](./src/lib/whois/lib.ts)
+👉 [TLDs Whois 解析器库源码](../src/lib/whois/lib.ts)
 
 ❤ 提示: 部分 TLDs 的 Whois 解析器可能暂不兼容，感谢您提交 [贡献](https://github.com/zmh-program/next-whois-ui/pulls) 以便支持更多 TLDs！

@@ -182,6 +182,6 @@ pnpm dev
 
 ## 💪 TLDsサポート
 
-👉 [TLDs Whoisパーサーライブラリのソースコード](./src/lib/whois/lib.ts)
+👉 [TLDs Whoisパーサーライブラリのソースコード](../src/lib/whois/lib.ts)
 
 ❤ ヒント: 一部のTLDsのWhoisパーサーは現在互換性がない場合があります。より多くのTLDsをサポートするために、あなたの[プルリクエスト](https://github.com/zmh-program/next-whois-ui/pulls)をお待ちしています！

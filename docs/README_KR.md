@@ -76,6 +76,6 @@ pnpm dev
 - RDAP 지원 (@[node-rdap](https://www.npmjs.com/package/node-rdap))
 
 ## 💪 TLD 지원
-👉 [TLD Whois 파서 라이브러리 소스 코드](./src/lib/whois/lib.ts)
+👉 [TLD Whois 파서 라이브러리 소스 코드](../src/lib/whois/lib.ts)
 
 ❤ 팁: 일부 TLD의 Whois 파서가 현재 호환되지 않을 수 있습니다. [Pull Request](https://github.com/zmh-program/next-whois-ui/pulls)를 통해 더 많은 TLD를 지원할 수 있도록 기여해 주셔서 감사합니다! 
