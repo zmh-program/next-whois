@@ -351,7 +351,8 @@ export function SearchBox({
       <div className="relative flex flex-row items-center w-full">
         <Input
           ref={inputRef}
-          className="w-full text-center pr-12 transition-all duration-300 hover:shadow focus-visible:ring-primary/20 focus-visible:ring-offset-0"
+          id="main-search-input"
+          className="w-full text-left pl-12 pr-12 transition-all duration-300 hover:shadow focus-visible:ring-primary/20 focus-visible:ring-offset-0"
           placeholder={t("search_placeholder")}
           value={inputValue}
           onChange={handleInputChange}
