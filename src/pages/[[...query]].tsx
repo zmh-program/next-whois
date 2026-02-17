@@ -53,7 +53,7 @@ import {
 } from "@/lib/history";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { WhoisAnalyzeResult, WhoisResult } from "@/lib/whois/types";
 import { getEppStatusInfo, getEppStatusColor, getEppStatusDisplayName, getEppStatusLink } from "@/lib/whois/epp-status";
 import Icon from "@/components/icon";
@@ -1400,7 +1400,7 @@ function LookupPage({ data, target }: { data: WhoisResult; target: string }) {
                         return (
                           <div key={i} className="flex items-start gap-2.5">
                             <span
-                              className="w-1.5 h-1.5 rounded-full shrink-0 mt-1.5"
+                              className="w-1.5 h-1.5 rounded-full shrink-0 mt-[7px]"
                               style={{ backgroundColor: color }}
                             />
                             <div className="min-w-0">
@@ -1979,14 +1979,17 @@ function ResponsePanel({
           </button>
         </div>
       </div>
-      <div className="p-4 overflow-y-auto custom-scrollbar font-mono text-[11px] leading-relaxed max-h-[500px]">
-        {activeTab === "whois" && whoisContent && (
-          <WhoisHighlight content={whoisContent} />
-        )}
-        {activeTab === "rdap" && rdapContent && (
-          <RdapJsonHighlight content={rdapContent} />
-        )}
-      </div>
+      <ScrollArea className="max-h-[500px]">
+        <div className="p-4 font-mono text-[11px] leading-relaxed">
+          {activeTab === "whois" && whoisContent && (
+            <WhoisHighlight content={whoisContent} />
+          )}
+          {activeTab === "rdap" && rdapContent && (
+            <RdapJsonHighlight content={rdapContent} />
+          )}
+        </div>
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
     </div>
   );
 }
