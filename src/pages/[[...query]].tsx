@@ -1499,54 +1499,36 @@ function LookupPage({ data, target }: { data: WhoisResult; target: string }) {
                     )}
                   </div>
                 )}
-              </div>
 
-              {hasIpFields && (
-                <div className="glass-panel border border-border rounded-xl p-5">
-                  <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
-                    <RiGlobalLine className="w-4 h-4 text-muted-foreground" />
-                    Network Info
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {[
-                      { label: t("whois_fields.cidr"), value: result.cidr },
-                      {
-                        label: t("whois_fields.net_range"),
-                        value: result.netRange,
-                      },
-                      {
-                        label: t("whois_fields.net_name"),
-                        value: result.netName,
-                      },
-                      {
-                        label: t("whois_fields.net_type"),
-                        value: result.netType,
-                      },
-                      {
-                        label: t("whois_fields.origin_as"),
-                        value: result.originAS,
-                      },
-                      {
-                        label: t("whois_fields.inet_num"),
-                        value: result.inetNum,
-                      },
-                      {
-                        label: t("whois_fields.inet6_num"),
-                        value: result.inet6Num,
-                      },
-                    ]
-                      .filter((f) => f.value && f.value !== "Unknown")
-                      .map((f, i) => (
-                        <div key={i}>
-                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1">
-                            {f.label}
-                          </p>
-                          <p className="font-mono text-xs">{f.value}</p>
-                        </div>
-                      ))}
+                {hasIpFields && (
+                  <div className="glass-panel border border-border rounded-xl p-5">
+                    <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+                      <RiGlobalLine className="w-4 h-4 text-muted-foreground" />
+                      Network Info
+                    </h3>
+                    <div className="space-y-3">
+                      {[
+                        { label: t("whois_fields.cidr"), value: result.cidr },
+                        { label: t("whois_fields.net_range"), value: result.netRange },
+                        { label: t("whois_fields.net_name"), value: result.netName },
+                        { label: t("whois_fields.net_type"), value: result.netType },
+                        { label: t("whois_fields.origin_as"), value: result.originAS },
+                        { label: t("whois_fields.inet_num"), value: result.inetNum },
+                        { label: t("whois_fields.inet6_num"), value: result.inet6Num },
+                      ]
+                        .filter((f) => f.value && f.value !== "Unknown")
+                        .map((f, i) => (
+                          <div key={i}>
+                            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1">
+                              {f.label}
+                            </p>
+                            <p className="font-mono text-xs">{f.value}</p>
+                          </div>
+                        ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
 
 
               {result.mozDomainAuthority !== -1 && (
