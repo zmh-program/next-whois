@@ -79,29 +79,48 @@ export async function lookupWhois(domain: string): Promise<WhoisResult> {
   } catch (rdapError: unknown) {
     console.log("RDAP lookup failed, fallback to WHOIS:", rdapError);
 
+    let whoisRawData: string | undefined;
     try {
-      const whoisData = await getLookupRawWhois(
+      whoisRawData = await getLookupRawWhois(
         domain,
         getLookupOptions(domain),
       );
-      const result = await analyzeWhois(whoisData);
+    } catch {}
 
+    if (whoisRawData) {
       try {
-        const rdapData = await lookupRdap(domain);
-        result.rawRdapContent = JSON.stringify(rdapData, null, 2);
-      } catch {}
+        const result = await analyzeWhois(whoisRawData);
 
-      return {
-        time: (performance.now() - startTime) / 1000,
-        status: true,
-        cached: false,
-        source: "whois",
-        result,
-      };
-    } catch (whoisError: unknown) {
+        try {
+          const rdapData = await lookupRdap(domain);
+          result.rawRdapContent = JSON.stringify(rdapData, null, 2);
+        } catch {}
+
+        return {
+          time: (performance.now() - startTime) / 1000,
+          status: true,
+          cached: false,
+          source: "whois",
+          result,
+        };
+      } catch (parseError: unknown) {
+        const errorMessage =
+          parseError instanceof Error
+            ? parseError.message
+            : "Failed to parse WHOIS response";
+        return {
+          time: (performance.now() - startTime) / 1000,
+          status: false,
+          cached: false,
+          source: "whois",
+          error: errorMessage,
+          rawWhoisContent: whoisRawData,
+        };
+      }
+    } else {
       const errorMessage =
-        whoisError instanceof Error
-          ? whoisError.message
+        rdapError instanceof Error
+          ? rdapError.message
           : "Unknown error occurred";
       return {
         time: (performance.now() - startTime) / 1000,

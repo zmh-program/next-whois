@@ -7,6 +7,8 @@ export type WhoisResult = {
   source?: "rdap" | "whois";
   result?: WhoisAnalyzeResult;
   error?: string;
+  rawWhoisContent?: string;
+  rawRdapContent?: string;
 };
 
 export type WhoisAnalyzeResult = {

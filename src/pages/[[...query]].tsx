@@ -1315,10 +1315,10 @@ function LookupPage({ data, target }: { data: WhoisResult; target: string }) {
             </div>
 
             <div className="lg:col-span-4">
-              {result && (result.rawWhoisContent || result.rawRdapContent) ? (
+              {(data.rawWhoisContent || data.rawRdapContent || (result && (result.rawWhoisContent || result.rawRdapContent))) ? (
                 <ResponsePanel
-                  whoisContent={result.rawWhoisContent}
-                  rdapContent={result.rawRdapContent}
+                  whoisContent={data.rawWhoisContent || result?.rawWhoisContent || ""}
+                  rdapContent={data.rawRdapContent || result?.rawRdapContent}
                   target={target}
                   copy={copy}
                   save={save}
@@ -1370,17 +1370,17 @@ function LookupPage({ data, target }: { data: WhoisResult; target: string }) {
                   <div className="flex flex-col items-start sm:items-end gap-2">
                     {result.remainingDays !== null ? (
                       result.remainingDays <= 0 ? (
-                        <Badge className="bg-red-500 text-white border-0">
+                        <Badge className="bg-red-500 hover:bg-red-600 text-white border-0">
                           <div className="w-2 h-2 rounded-full bg-white/80 animate-pulse mr-1.5" />
                           Expired
                         </Badge>
                       ) : result.remainingDays <= 60 ? (
-                        <Badge className="bg-amber-500 text-white border-0">
+                        <Badge className="bg-amber-500 hover:bg-amber-600 text-white border-0">
                           <div className="w-2 h-2 rounded-full bg-white/80 animate-pulse mr-1.5" />
                           {t("expiring_soon")}
                         </Badge>
                       ) : (
-                        <Badge className="bg-primary text-primary-foreground border-0">
+                        <Badge className="bg-primary hover:bg-primary/90 text-primary-foreground border-0">
                           <div className="w-2 h-2 rounded-full bg-emerald-400 mr-1.5" />
                           Active
                         </Badge>
