@@ -92,7 +92,7 @@ import { format } from "date-fns";
 
 const LOCALES = ["en", "zh", "zh-tw", "de", "ru", "ja", "fr", "ko"];
 
-const REGISTRAR_ICONS: Record<string, { slug: string; color: string }> = {
+const REGISTRAR_ICONS: Record<string, { slug: string | null; color: string }> = {
   godaddy: { slug: "godaddy", color: "#1BDBDB" },
   namecheap: { slug: "namecheap", color: "#DE3723" },
   cloudflare: { slug: "cloudflare", color: "#F38020" },
@@ -113,8 +113,8 @@ const REGISTRAR_ICONS: Record<string, { slug: string; color: string }> = {
   aliyun: { slug: "alibabacloud", color: "#FF6A00" },
   hichina: { slug: "alibabacloud", color: "#FF6A00" },
   wanwang: { slug: "alibabacloud", color: "#FF6A00" },
-  tencent: { slug: "tencentqq", color: "#EB1923" },
-  dnspod: { slug: "tencentqq", color: "#EB1923" },
+  tencent: { slug: null, color: "#EB1923" },
+  dnspod: { slug: null, color: "#EB1923" },
   digitalocean: { slug: "digitalocean", color: "#0080FF" },
   squarespace: { slug: "squarespace", color: "#000000" },
   wix: { slug: "wix", color: "#0C6EFC" },
@@ -122,24 +122,24 @@ const REGISTRAR_ICONS: Record<string, { slug: string; color: string }> = {
   automattic: { slug: "wordpress", color: "#21759B" },
   netlify: { slug: "netlify", color: "#00C7B7" },
   vercel: { slug: "vercel", color: "#000000" },
-  namedotcom: { slug: "namedotcom", color: "#236BFF" },
-  "name.com": { slug: "namedotcom", color: "#236BFF" },
+  namedotcom: { slug: null, color: "#236BFF" },
+  "name.com": { slug: null, color: "#236BFF" },
   namesilo: { slug: "namesilo", color: "#031B4E" },
-  dynadot: { slug: "dynadot", color: "#4E2998" },
-  enom: { slug: "enom", color: "#F09B1B" },
-  tucows: { slug: "tucows", color: "#F09B1B" },
-  networksolutions: { slug: "networksolutions", color: "#2E8B57" },
-  markmonitor: { slug: "markmonitor", color: "#2B5797" },
-  amazon: { slug: "amazon", color: "#FF9900" },
-  aws: { slug: "amazon", color: "#FF9900" },
-  hover: { slug: "hover", color: "#3B7DDD" },
-  rebel: { slug: "rebel", color: "#3B7DDD" },
-  epik: { slug: "epik", color: "#4A90D9" },
-  dreamhost: { slug: "dreamhost", color: "#0073EC" },
-  bluehost: { slug: "bluehost", color: "#003580" },
-  hostgator: { slug: "hostgator", color: "#F8A41B" },
-  siteground: { slug: "siteground", color: "#7B3FA0" },
-  fastdomain: { slug: "fastdomain", color: "#003580" },
+  dynadot: { slug: null, color: "#4E2998" },
+  enom: { slug: null, color: "#F09B1B" },
+  tucows: { slug: null, color: "#F09B1B" },
+  networksolutions: { slug: null, color: "#2E8B57" },
+  markmonitor: { slug: null, color: "#2B5797" },
+  amazon: { slug: null, color: "#FF9900" },
+  aws: { slug: null, color: "#FF9900" },
+  hover: { slug: null, color: "#3B7DDD" },
+  rebel: { slug: null, color: "#3B7DDD" },
+  epik: { slug: null, color: "#4A90D9" },
+  dreamhost: { slug: null, color: "#0073EC" },
+  bluehost: { slug: null, color: "#003580" },
+  hostgator: { slug: null, color: "#F8A41B" },
+  siteground: { slug: null, color: "#7B3FA0" },
+  fastdomain: { slug: null, color: "#003580" },
   huawei: { slug: "huawei", color: "#FF0000" },
   baidu: { slug: "baidu", color: "#2932E1" },
 };
@@ -217,7 +217,7 @@ function getNsBrand(ns: string): { brand: string; slug: string | null; color: st
   return null;
 }
 
-function getRegistrarIcon(registrar: string): { slug: string; color: string } | null {
+function getRegistrarIcon(registrar: string): { slug: string | null; color: string } | null {
   if (!registrar || registrar === "Unknown") return null;
   const normalized = registrar.toLowerCase().replace(/[\s.,\-_()]+/g, "");
   for (const [key, info] of Object.entries(REGISTRAR_ICONS)) {
@@ -1662,7 +1662,7 @@ function LookupPage({ data, target }: { data: WhoisResult; target: string }) {
                     )}
                   </div>
                   <div className="flex items-center gap-3 mb-6">
-                    {registrarIcon ? (
+                    {registrarIcon && registrarIcon.slug ? (
                       <div className="w-10 h-10 bg-white dark:bg-zinc-800 rounded-lg flex items-center justify-center p-1.5 border shrink-0">
                         <img
                           src={`https://cdn.simpleicons.org/${registrarIcon.slug}/${registrarIcon.color.replace("#", "")}`}
@@ -1678,7 +1678,7 @@ function LookupPage({ data, target }: { data: WhoisResult; target: string }) {
                     ) : (
                       <div
                         className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-lg shrink-0"
-                        style={{ backgroundColor: getRegistrarFallbackColor(result.registrar) }}
+                        style={{ backgroundColor: registrarIcon ? registrarIcon.color : getRegistrarFallbackColor(result.registrar) }}
                       >
                         {registrarInitial}
                       </div>
