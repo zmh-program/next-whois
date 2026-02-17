@@ -1614,9 +1614,10 @@ function LookupPage({ data, target }: { data: WhoisResult; target: string }) {
               )}
             </div>
 
-            <div className="lg:col-span-4 flex flex-col gap-6">
+            <div className="lg:col-span-4 relative">
+              <div className="flex flex-col gap-6 lg:absolute lg:inset-0">
               {result.registrar && result.registrar !== "Unknown" && (
-                <div className="glass-panel border border-border rounded-xl p-5">
+                <div className="glass-panel border border-border rounded-xl p-5 shrink-0">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-sm font-semibold">
                       {t("whois_fields.registrar")}
@@ -1721,6 +1722,7 @@ function LookupPage({ data, target }: { data: WhoisResult; target: string }) {
                   />
                 </div>
               )}
+              </div>
             </div>
           </motion.div>
           </>
@@ -1916,9 +1918,9 @@ function ResponsePanel({
     <div className="bg-zinc-900 dark:bg-zinc-950 text-zinc-300 rounded-xl overflow-hidden border border-zinc-800 flex flex-col shadow-lg h-full">
       <div className="bg-zinc-950 dark:bg-black border-b border-zinc-800 px-4 py-2.5 flex items-center justify-between">
         <div className="flex items-center gap-1">
-          <span className="text-xs font-mono text-zinc-500 mr-2 hidden sm:inline">
+          {/* <span className="text-xs font-mono text-zinc-500 mr-2 hidden sm:inline">
             RESPONSE
-          </span>
+          </span> */}
           {hasWhois && (
             <button
               onClick={() => setActiveTab("whois")}
