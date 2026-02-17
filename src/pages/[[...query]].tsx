@@ -1429,7 +1429,7 @@ function LookupPage({ data, target }: { data: WhoisResult; target: string }) {
                         return (
                           <div key={i} className="flex items-start gap-2.5">
                             <span
-                              className="w-1.5 h-1.5 rounded-full shrink-0 mt-[7px]"
+                              className="w-1.5 h-1.5 rounded-full shrink-0 mt-[0.65rem]"
                               style={{ backgroundColor: color }}
                             />
                             <div className="min-w-0">
