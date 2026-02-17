@@ -97,22 +97,51 @@ const REGISTRAR_ICONS: Record<string, { slug: string; color: string }> = {
   namecheap: { slug: "namecheap", color: "#DE3723" },
   cloudflare: { slug: "cloudflare", color: "#F38020" },
   google: { slug: "google", color: "#4285F4" },
+  googledomains: { slug: "google", color: "#4285F4" },
   ovh: { slug: "ovh", color: "#123F6D" },
+  ovhcloud: { slug: "ovh", color: "#123F6D" },
   ionos: { slug: "ionos", color: "#003D8F" },
-  "1&1": { slug: "1and1", color: "#003D8F" },
+  "1and1": { slug: "ionos", color: "#003D8F" },
+  "1&1": { slug: "ionos", color: "#003D8F" },
+  uniteddomains: { slug: "ionos", color: "#003D8F" },
   gandi: { slug: "gandi", color: "#6640FE" },
   porkbun: { slug: "porkbun", color: "#EF7878" },
   hetzner: { slug: "hetzner", color: "#D50C2D" },
   hostinger: { slug: "hostinger", color: "#673DE6" },
   alibaba: { slug: "alibabacloud", color: "#FF6A00" },
+  alibabacloud: { slug: "alibabacloud", color: "#FF6A00" },
+  aliyun: { slug: "alibabacloud", color: "#FF6A00" },
+  hichina: { slug: "alibabacloud", color: "#FF6A00" },
+  wanwang: { slug: "alibabacloud", color: "#FF6A00" },
   tencent: { slug: "tencentqq", color: "#EB1923" },
+  dnspod: { slug: "tencentqq", color: "#EB1923" },
   digitalocean: { slug: "digitalocean", color: "#0080FF" },
   squarespace: { slug: "squarespace", color: "#000000" },
   wix: { slug: "wix", color: "#0C6EFC" },
   wordpress: { slug: "wordpress", color: "#21759B" },
+  automattic: { slug: "wordpress", color: "#21759B" },
   netlify: { slug: "netlify", color: "#00C7B7" },
   vercel: { slug: "vercel", color: "#000000" },
+  namedotcom: { slug: "namedotcom", color: "#236BFF" },
   "name.com": { slug: "namedotcom", color: "#236BFF" },
+  namesilo: { slug: "namesilo", color: "#031B4E" },
+  dynadot: { slug: "dynadot", color: "#4E2998" },
+  enom: { slug: "enom", color: "#F09B1B" },
+  tucows: { slug: "tucows", color: "#F09B1B" },
+  networksolutions: { slug: "networksolutions", color: "#2E8B57" },
+  markmonitor: { slug: "markmonitor", color: "#2B5797" },
+  amazon: { slug: "amazon", color: "#FF9900" },
+  aws: { slug: "amazon", color: "#FF9900" },
+  hover: { slug: "hover", color: "#3B7DDD" },
+  rebel: { slug: "rebel", color: "#3B7DDD" },
+  epik: { slug: "epik", color: "#4A90D9" },
+  dreamhost: { slug: "dreamhost", color: "#0073EC" },
+  bluehost: { slug: "bluehost", color: "#003580" },
+  hostgator: { slug: "hostgator", color: "#F8A41B" },
+  siteground: { slug: "siteground", color: "#7B3FA0" },
+  fastdomain: { slug: "fastdomain", color: "#003580" },
+  huawei: { slug: "huawei", color: "#FF0000" },
+  baidu: { slug: "baidu", color: "#2932E1" },
 };
 
 const NS_BRAND_MAP: Record<string, { brand: string; slug: string | null; color: string }> = {
@@ -190,9 +219,9 @@ function getNsBrand(ns: string): { brand: string; slug: string | null; color: st
 
 function getRegistrarIcon(registrar: string): { slug: string; color: string } | null {
   if (!registrar || registrar === "Unknown") return null;
-  const lower = registrar.toLowerCase();
+  const normalized = registrar.toLowerCase().replace(/[\s.,\-_()]+/g, "");
   for (const [key, info] of Object.entries(REGISTRAR_ICONS)) {
-    if (lower.includes(key)) return info;
+    if (normalized.includes(key)) return info;
   }
   return null;
 }
