@@ -1436,7 +1436,7 @@ function LookupPage({ data, target }: { data: WhoisResult; target: string }) {
                 )}
 
                 {result.nameServers.length > 0 && (
-                  <div className="glass-panel border border-border rounded-xl p-5">
+                  <div className="glass-panel border border-border rounded-xl p-5 flex flex-col">
                     <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
                       <RiServerLine className="w-4 h-4 text-muted-foreground" />
                       {t("whois_fields.name_servers")}
@@ -1488,7 +1488,7 @@ function LookupPage({ data, target }: { data: WhoisResult; target: string }) {
                       })}
                     </div>
                     {result.dnssec && (
-                      <div className="mt-4 pt-4 border-t border-border/50 flex justify-between items-center">
+                      <div className="mt-auto pt-4 border-t border-border/50 flex justify-between items-center">
                         <span className="text-[10px] text-muted-foreground font-medium uppercase">
                           DNSSEC
                         </span>
