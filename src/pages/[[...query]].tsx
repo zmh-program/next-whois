@@ -1078,12 +1078,15 @@ function LookupPage({ data, target }: { data: WhoisResult; target: string }) {
               <RiArrowLeftSLine className="w-4 h-4" />
             </Button>
           </Link>
-          <div className="flex-1">
+          <div className="flex-1 relative group">
             <SearchBox
               initialValue={target}
               onSearch={handleSearch}
               loading={loading}
             />
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-none opacity-50 group-hover:opacity-100 transition-opacity">
+              <KeyboardShortcut k="/" />
+            </div>
           </div>
         </div>
 
@@ -1238,8 +1241,95 @@ function LookupPage({ data, target }: { data: WhoisResult; target: string }) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
+            className="grid grid-cols-1 lg:grid-cols-12 gap-6"
           >
-            <ErrorArea error={error} />
+            <div className="lg:col-span-8 space-y-6">
+              <div className="glass-panel border border-border rounded-xl p-8 sm:p-12 text-center">
+                <div className="w-16 h-16 bg-red-50 dark:bg-red-950/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-500">
+                    <path d="m21 21-4.3-4.3" /><circle cx="11" cy="11" r="8" /><path d="m8 8 6 6" /><path d="m14 8-6 6" />
+                  </svg>
+                </div>
+                <h2 className="text-2xl font-bold mb-2">Lookup Failed</h2>
+                <p className="text-muted-foreground max-w-md mx-auto text-sm leading-relaxed mb-8">
+                  {"We couldn't find any registry data for "}
+                  <span className="font-mono font-medium text-foreground">{target}</span>
+                  {". "}
+                  {error || "This could be due to a typo or the domain might not be registered yet."}
+                </p>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                  <Button onClick={() => handleSearch(target)}>
+                    Try Again
+                  </Button>
+                  <Link href="/">
+                    <Button variant="outline">
+                      New Search
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="glass-panel border border-border rounded-xl p-6">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4 flex items-center gap-2">
+                    <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+                    Common Issues
+                  </h3>
+                  <ul className="space-y-3">
+                    {[
+                      { title: "Invalid TLD", desc: "Ensure the domain extension (e.g., .com, .io) is typed correctly." },
+                      { title: "Not Registered", desc: "The domain might be available for purchase." },
+                      { title: "Rate Limited", desc: "The WHOIS server may have temporarily blocked requests." },
+                    ].map((item) => (
+                      <li key={item.title} className="flex items-start gap-2">
+                        <div className="mt-1.5 w-1 h-1 rounded-full bg-muted-foreground/30 shrink-0" />
+                        <p className="text-[11px] text-muted-foreground leading-normal">
+                          <strong className="text-foreground">{item.title}:</strong> {item.desc}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="glass-panel border border-border rounded-xl p-6">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4 flex items-center gap-2">
+                    <RiTimeLine className="w-4 h-4" />
+                    Query Details
+                  </h3>
+                  <div className="space-y-3 text-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground font-mono uppercase">Target</span>
+                      <span className="font-mono font-medium">{target}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground font-mono uppercase">Type</span>
+                      <Badge variant="outline" className="text-[10px] font-mono">{queryType}</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground font-mono uppercase">Time</span>
+                      <span className="font-mono">{time.toFixed(2)}s</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="lg:col-span-4">
+              {result && (result.rawWhoisContent || result.rawRdapContent) ? (
+                <ResponsePanel
+                  whoisContent={result.rawWhoisContent}
+                  rdapContent={result.rawRdapContent}
+                  target={target}
+                  copy={copy}
+                  save={save}
+                />
+              ) : (
+                <div className="glass-panel border border-border rounded-xl p-6 text-center">
+                  <RiServerLine className="w-8 h-8 text-muted-foreground/30 mx-auto mb-3" />
+                  <p className="text-xs text-muted-foreground">No raw response data available</p>
+                </div>
+              )}
+            </div>
           </motion.div>
         )}
 
