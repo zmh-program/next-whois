@@ -11,6 +11,7 @@ import {
 import { GetServerSidePropsContext } from "next";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
+import Head from "next/head";
 import { Button } from "@/components/ui/button";
 import {
   RiArrowRightSLine,
@@ -1070,6 +1071,14 @@ function LookupPage({ data, target }: { data: WhoisResult; target: string }) {
         result.registrantPhone !== "Unknown"));
 
   return (
+    <>
+    <Head>
+      <title>{`${target} - WHOIS Lookup`}</title>
+      <meta property="og:title" content={`${target} - WHOIS Lookup`} />
+      <meta property="og:image" content={`/api/og?domain=${encodeURIComponent(target)}`} />
+      <meta name="twitter:title" content={`${target} - WHOIS Lookup`} />
+      <meta name="twitter:image" content={`/api/og?domain=${encodeURIComponent(target)}`} />
+    </Head>
     <ScrollArea className="w-full h-[calc(100vh-4rem)]">
       <main className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-6 min-h-[calc(100vh-4rem)]">
         <div className="flex items-center gap-3 mb-6">
@@ -1848,6 +1857,7 @@ function LookupPage({ data, target }: { data: WhoisResult; target: string }) {
         )}
       </main>
     </ScrollArea>
+    </>
   );
 }
 
