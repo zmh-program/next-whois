@@ -115,6 +115,79 @@ const REGISTRAR_ICONS: Record<string, { slug: string; color: string }> = {
   "name.com": { slug: "namedotcom", color: "#236BFF" },
 };
 
+const NS_BRAND_MAP: Record<string, { brand: string; slug: string | null; color: string }> = {
+  "domaincontrol.com": { brand: "GoDaddy", slug: "godaddy", color: "#1BDBDB" },
+  "cloudflare.com": { brand: "Cloudflare", slug: "cloudflare", color: "#F38020" },
+  "foundationdns.com": { brand: "Cloudflare", slug: "cloudflare", color: "#F38020" },
+  "foundationdns.net": { brand: "Cloudflare", slug: "cloudflare", color: "#F38020" },
+  "foundationdns.org": { brand: "Cloudflare", slug: "cloudflare", color: "#F38020" },
+  "registrar-servers.com": { brand: "Namecheap", slug: "namecheap", color: "#DE3723" },
+  "namecheaphosting.com": { brand: "Namecheap", slug: "namecheap", color: "#DE3723" },
+  "porkbun.com": { brand: "Porkbun", slug: "porkbun", color: "#EF7878" },
+  "hetzner.com": { brand: "Hetzner", slug: "hetzner", color: "#D50C2D" },
+  "hetzner.de": { brand: "Hetzner", slug: "hetzner", color: "#D50C2D" },
+  "first-ns.de": { brand: "Hetzner", slug: "hetzner", color: "#D50C2D" },
+  "second-ns.de": { brand: "Hetzner", slug: "hetzner", color: "#D50C2D" },
+  "second-ns.com": { brand: "Hetzner", slug: "hetzner", color: "#D50C2D" },
+  "your-server.de": { brand: "Hetzner", slug: "hetzner", color: "#D50C2D" },
+  "ovh.net": { brand: "OVHcloud", slug: "ovh", color: "#123F6D" },
+  "ovh.ca": { brand: "OVHcloud", slug: "ovh", color: "#123F6D" },
+  "anycast.me": { brand: "OVHcloud", slug: "ovh", color: "#123F6D" },
+  "ui-dns.com": { brand: "IONOS", slug: "ionos", color: "#003D8F" },
+  "ui-dns.org": { brand: "IONOS", slug: "ionos", color: "#003D8F" },
+  "ui-dns.de": { brand: "IONOS", slug: "ionos", color: "#003D8F" },
+  "ui-dns.biz": { brand: "IONOS", slug: "ionos", color: "#003D8F" },
+  "gandi.net": { brand: "Gandi", slug: "gandi", color: "#6640FE" },
+  "digitalocean.com": { brand: "DigitalOcean", slug: "digitalocean", color: "#0080FF" },
+  "dns-parking.com": { brand: "Hostinger", slug: "hostinger", color: "#673DE6" },
+  "main-hosting.eu": { brand: "Hostinger", slug: "hostinger", color: "#673DE6" },
+  "netlify.com": { brand: "Netlify", slug: "netlify", color: "#00C7B7" },
+  "nsone.net": { brand: "NS1", slug: null, color: "#760DDE" },
+  "vercel-dns.com": { brand: "Vercel", slug: "vercel", color: "#000000" },
+  "wixdns.net": { brand: "Wix", slug: "wix", color: "#0C6EFC" },
+  "squarespace-dns.com": { brand: "Squarespace", slug: "squarespace", color: "#000000" },
+  "squarespace.com": { brand: "Squarespace", slug: "squarespace", color: "#000000" },
+  "wordpress.com": { brand: "WordPress", slug: "wordpress", color: "#21759B" },
+  "awsdns": { brand: "AWS Route 53", slug: null, color: "#232F3E" },
+  "azure-dns.com": { brand: "Azure DNS", slug: null, color: "#0078D4" },
+  "azure-dns.net": { brand: "Azure DNS", slug: null, color: "#0078D4" },
+  "azure-dns.org": { brand: "Azure DNS", slug: null, color: "#0078D4" },
+  "azure-dns.info": { brand: "Azure DNS", slug: null, color: "#0078D4" },
+  "googledomains.com": { brand: "Google", slug: "google", color: "#4285F4" },
+  "google.com": { brand: "Google", slug: "google", color: "#4285F4" },
+  "linode.com": { brand: "Akamai", slug: "akamai", color: "#0096D6" },
+  "dns.he.net": { brand: "Hurricane Electric", slug: null, color: "#E40000" },
+  "dnspod.net": { brand: "DNSPod", slug: null, color: "#4478E6" },
+  "dnsimple.com": { brand: "DNSimple", slug: null, color: "#205EBB" },
+  "dnsimple-edge.net": { brand: "DNSimple", slug: null, color: "#205EBB" },
+  "cloudns.net": { brand: "ClouDNS", slug: null, color: "#4FA3D7" },
+  "afraid.org": { brand: "FreeDNS", slug: null, color: "#27AE60" },
+  "name.com": { brand: "Name.com", slug: null, color: "#236BFF" },
+  "hover.com": { brand: "Hover", slug: null, color: "#3B7DDD" },
+  "dynadot.com": { brand: "Dynadot", slug: null, color: "#4E2998" },
+  "name-services.com": { brand: "Enom", slug: null, color: "#F09B1B" },
+  "worldnic.com": { brand: "Network Solutions", slug: null, color: "#2E8B57" },
+  "dnsowl.com": { brand: "NameSilo", slug: "namesilo", color: "#031B4E" },
+  "namesilo.com": { brand: "NameSilo", slug: "namesilo", color: "#031B4E" },
+  "hichina.com": { brand: "Alibaba Cloud", slug: "alibabacloud", color: "#FF6A00" },
+  "alidns.com": { brand: "Alibaba Cloud", slug: "alibabacloud", color: "#FF6A00" },
+  "bdydns.cn": { brand: "Baidu Cloud", slug: "baidu", color: "#2932E1" },
+  "bdydns.com": { brand: "Baidu Cloud", slug: "baidu", color: "#2932E1" },
+  "huaweicloud-dns.com": { brand: "Huawei Cloud", slug: "huawei", color: "#FF0000" },
+  "huaweicloud-dns.cn": { brand: "Huawei Cloud", slug: "huawei", color: "#FF0000" },
+  "huaweicloud-dns.net": { brand: "Huawei Cloud", slug: "huawei", color: "#FF0000" },
+  "hwclouds-dns.com": { brand: "Huawei Cloud", slug: "huawei", color: "#FF0000" },
+  "hwclouds-dns.net": { brand: "Huawei Cloud", slug: "huawei", color: "#FF0000" },
+};
+
+function getNsBrand(ns: string): { brand: string; slug: string | null; color: string } | null {
+  const lower = ns.toLowerCase();
+  for (const [pattern, info] of Object.entries(NS_BRAND_MAP)) {
+    if (lower.includes(pattern)) return info;
+  }
+  return null;
+}
+
 function getRegistrarIcon(registrar: string): { slug: string; color: string } | null {
   if (!registrar || registrar === "Unknown") return null;
   const lower = registrar.toLowerCase();
@@ -1374,18 +1447,50 @@ function LookupPage({ data, target }: { data: WhoisResult; target: string }) {
                       {t("whois_fields.name_servers")}
                     </h3>
                     <div className="space-y-2">
-                      {result.nameServers.map((ns, i) => (
-                        <div
-                          key={i}
-                          className="flex items-center gap-3 p-2 bg-muted/30 border border-border/50 rounded-md cursor-pointer hover:bg-muted/50 transition-colors"
-                          onClick={() => copy(ns)}
-                        >
-                          <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-                          <span className="font-mono text-xs text-muted-foreground truncate">
-                            {ns}
-                          </span>
-                        </div>
-                      ))}
+                      {result.nameServers.map((ns, i) => {
+                        const nsBrand = getNsBrand(ns);
+                        return (
+                          <div
+                            key={i}
+                            className="flex items-center gap-3 p-2 bg-muted/30 border border-border/50 rounded-md cursor-pointer hover:bg-muted/50 transition-colors"
+                            onClick={() => copy(ns)}
+                          >
+                            {nsBrand ? (
+                              nsBrand.slug ? (
+                                <div className="w-4 h-4 shrink-0 flex items-center justify-center">
+                                  <img
+                                    src={`https://cdn.simpleicons.org/${nsBrand.slug}/${nsBrand.color.replace("#", "")}`}
+                                    alt=""
+                                    className="w-3.5 h-3.5 object-contain dark:hidden"
+                                  />
+                                  <img
+                                    src={`https://cdn.simpleicons.org/${nsBrand.slug}/white`}
+                                    alt=""
+                                    className="w-3.5 h-3.5 object-contain hidden dark:block"
+                                  />
+                                </div>
+                              ) : (
+                                <div
+                                  className="w-4 h-4 rounded-full shrink-0 flex items-center justify-center text-white text-[8px] font-bold"
+                                  style={{ backgroundColor: nsBrand.color }}
+                                >
+                                  {nsBrand.brand.charAt(0)}
+                                </div>
+                              )
+                            ) : (
+                              <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 ml-1" />
+                            )}
+                            <span className="font-mono text-xs text-muted-foreground truncate flex-1">
+                              {ns}
+                            </span>
+                            {nsBrand && (
+                              <span className="text-[9px] text-muted-foreground/60 shrink-0">
+                                {nsBrand.brand}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                     {result.dnssec && (
                       <div className="mt-4 pt-4 border-t border-border/50 flex justify-between items-center">
