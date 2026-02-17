@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import Head from "next/head";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
@@ -9,12 +9,82 @@ import { RiArrowLeftSLine, RiFileCopyLine } from "@remixicon/react";
 import { VERSION } from "@/lib/env";
 import { useClipboard } from "@/lib/utils";
 
+function JsonHighlight({ content }: { content: string }) {
+  const lines = content.split("\n");
+  return (
+    <>
+      {lines.map((line, i) => {
+        const parts: React.ReactNode[] = [];
+        let remaining = line;
+        let keyIdx = 0;
+
+        while (remaining.length > 0) {
+          const keyMatch = remaining.match(/^(\s*)"([^"]+)"(\s*:\s*)/);
+          if (keyMatch) {
+            parts.push(<span key={`ws-${keyIdx}`}>{keyMatch[1]}</span>);
+            parts.push(<span key={`k-${keyIdx}`} className="text-sky-400">&quot;{keyMatch[2]}&quot;</span>);
+            parts.push(<span key={`c-${keyIdx}`}>{keyMatch[3]}</span>);
+            remaining = remaining.slice(keyMatch[0].length);
+            keyIdx++;
+            continue;
+          }
+
+          const strMatch = remaining.match(/^"([^"]*)"(,?\s*)/);
+          if (strMatch) {
+            if (strMatch[1] === "..." || strMatch[1].length > 60) {
+              parts.push(<span key={`s-${keyIdx}`} className="text-zinc-500">&quot;{strMatch[1]}&quot;</span>);
+            } else {
+              parts.push(<span key={`s-${keyIdx}`} className="text-emerald-400">&quot;{strMatch[1]}&quot;</span>);
+            }
+            parts.push(<span key={`sc-${keyIdx}`}>{strMatch[2]}</span>);
+            remaining = remaining.slice(strMatch[0].length);
+            keyIdx++;
+            continue;
+          }
+
+          const numMatch = remaining.match(/^(-?\d+\.?\d*)(,?\s*)/);
+          if (numMatch) {
+            parts.push(<span key={`n-${keyIdx}`} className="text-amber-400">{numMatch[1]}</span>);
+            parts.push(<span key={`nc-${keyIdx}`}>{numMatch[2]}</span>);
+            remaining = remaining.slice(numMatch[0].length);
+            keyIdx++;
+            continue;
+          }
+
+          const boolMatch = remaining.match(/^(true|false|null)(,?\s*)/);
+          if (boolMatch) {
+            parts.push(<span key={`b-${keyIdx}`} className="text-purple-400">{boolMatch[1]}</span>);
+            parts.push(<span key={`bc-${keyIdx}`}>{boolMatch[2]}</span>);
+            remaining = remaining.slice(boolMatch[0].length);
+            keyIdx++;
+            continue;
+          }
+
+          const bracketMatch = remaining.match(/^([{}\[\],])(.*)/);
+          if (bracketMatch) {
+            parts.push(<span key={`br-${keyIdx}`} className="text-zinc-500">{bracketMatch[1]}</span>);
+            remaining = bracketMatch[2];
+            keyIdx++;
+            continue;
+          }
+
+          parts.push(<span key={`r-${keyIdx}`}>{remaining}</span>);
+          break;
+        }
+
+        return <div key={i} className="whitespace-pre">{parts.length > 0 ? parts : " "}</div>;
+      })}
+    </>
+  );
+}
+
 function CodeBlock({ children, language }: { children: string; language?: string }) {
   const copy = useClipboard();
+  const isJson = language === "json" || children.trimStart().startsWith("{");
   return (
     <div className="relative group">
       <pre className="bg-zinc-950 text-zinc-200 rounded-lg p-4 text-xs font-mono overflow-x-auto leading-relaxed">
-        <code>{children}</code>
+        <code>{isJson ? <JsonHighlight content={children} /> : children}</code>
       </pre>
       <button
         onClick={() => copy(children)}
@@ -46,7 +116,7 @@ function ParamsTable({ params }: { params: { name: string; type: string; require
               <td className="py-2 pr-4 text-muted-foreground">{p.type}</td>
               <td className="py-2 pr-4">
                 {p.required ? (
-                  <Badge className="text-[9px] bg-red-500/10 text-red-500 border-0">Required</Badge>
+                  <Badge className="text-[9px] bg-red-500/10 text-red-500 hover:bg-red-500/20 border-0">Required</Badge>
                 ) : (
                   <Badge variant="outline" className="text-[9px]">Optional</Badge>
                 )}
@@ -90,7 +160,7 @@ export default function DocsPage() {
             <Card>
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-0 text-xs font-bold">GET</Badge>
+                  <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 border-0 text-xs font-bold">GET</Badge>
                   <code className="font-mono text-sm">/api/lookup</code>
                 </CardTitle>
                 <p className="text-sm text-muted-foreground mt-1">
@@ -159,7 +229,7 @@ export default function DocsPage() {
             <Card>
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-0 text-xs font-bold">GET</Badge>
+                  <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 border-0 text-xs font-bold">GET</Badge>
                   <code className="font-mono text-sm">/api/og</code>
                 </CardTitle>
                 <p className="text-sm text-muted-foreground mt-1">
