@@ -1343,14 +1343,9 @@ function LookupPage({ data, target }: { data: WhoisResult; target: string }) {
                       )}
                   </div>
                 )}
-              </div>
 
-              {hasRegistrant && (
-                <div className="glass-panel border border-border rounded-xl p-5">
-                  <h3 className="text-sm font-semibold mb-4">
-                    Registrant Info
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {hasRegistrant && (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-6 pt-6 border-t border-border/50">
                     {[
                       {
                         label: t("whois_fields.registrant_organization"),
@@ -1383,8 +1378,8 @@ function LookupPage({ data, target }: { data: WhoisResult; target: string }) {
                         </div>
                       ))}
                   </div>
-                </div>
-              )}
+                )}
+              </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {result.status.length > 0 && (
@@ -1405,7 +1400,7 @@ function LookupPage({ data, target }: { data: WhoisResult; target: string }) {
                         return (
                           <div key={i} className="flex items-start gap-2.5">
                             <span
-                              className="w-1.5 h-1.5 rounded-full shrink-0 mt-[5px]"
+                              className="w-1.5 h-1.5 rounded-full shrink-0 mt-1.5"
                               style={{ backgroundColor: color }}
                             />
                             <div className="min-w-0">
@@ -1733,25 +1728,17 @@ function LookupPage({ data, target }: { data: WhoisResult; target: string }) {
                 </div>
               )}
 
+              {(result.rawWhoisContent || result.rawRdapContent) && (
+                <ResponsePanel
+                  whoisContent={result.rawWhoisContent}
+                  rdapContent={result.rawRdapContent}
+                  target={target}
+                  copy={copy}
+                  save={save}
+                />
+              )}
             </div>
           </motion.div>
-
-          {(result.rawWhoisContent || result.rawRdapContent) && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.4 }}
-              className="mt-6"
-            >
-              <ResponsePanel
-                whoisContent={result.rawWhoisContent}
-                rdapContent={result.rawRdapContent}
-                target={target}
-                copy={copy}
-                save={save}
-              />
-            </motion.div>
-          )}
           </>
         )}
       </main>
