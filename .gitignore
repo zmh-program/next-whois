@@ -2,6 +2,8 @@
 
 .vscode
 .idea
+.playwright*
+.tmp
 
 # dependencies
 /node_modules
@@ -14,6 +16,7 @@
 
 # next.js
 /.next/
+/.next-build/
 /out/
 
 # production

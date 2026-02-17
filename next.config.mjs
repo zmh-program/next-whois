@@ -4,6 +4,7 @@ import setupPWA from 'next-pwa';
 
 const nextConfig = {
   reactStrictMode: true,
+  ...(process.env.NEXT_BUILD_DIR ? { distDir: process.env.NEXT_BUILD_DIR } : {}),
 };
 
 const withPWA = setupPWA({

@@ -19,6 +19,14 @@ function JsonHighlight({ content }: { content: string }) {
         let keyIdx = 0;
 
         while (remaining.length > 0) {
+          const wsMatch = remaining.match(/^(\s+)/);
+          if (wsMatch && !remaining.match(/^\s*"/)) {
+            parts.push(<span key={`ws0-${keyIdx}`}>{wsMatch[1]}</span>);
+            remaining = remaining.slice(wsMatch[1].length);
+            keyIdx++;
+            continue;
+          }
+
           const keyMatch = remaining.match(/^(\s*)"([^"]+)"(\s*:\s*)/);
           if (keyMatch) {
             parts.push(<span key={`ws-${keyIdx}`}>{keyMatch[1]}</span>);
