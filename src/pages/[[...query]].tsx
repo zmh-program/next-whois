@@ -1711,13 +1711,15 @@ function LookupPage({ data, target }: { data: WhoisResult; target: string }) {
               )}
 
               {(result.rawWhoisContent || result.rawRdapContent) && (
-                <ResponsePanel
-                  whoisContent={result.rawWhoisContent}
-                  rdapContent={result.rawRdapContent}
-                  target={target}
-                  copy={copy}
-                  save={save}
-                />
+                <div className="flex-1 min-h-[250px]">
+                  <ResponsePanel
+                    whoisContent={result.rawWhoisContent}
+                    rdapContent={result.rawRdapContent}
+                    target={target}
+                    copy={copy}
+                    save={save}
+                  />
+                </div>
               )}
             </div>
           </motion.div>
@@ -1911,7 +1913,7 @@ function ResponsePanel({
       : `${target.replace(/\./g, "-")}-rdap.json`;
 
   return (
-    <div className="bg-zinc-900 dark:bg-zinc-950 text-zinc-300 rounded-xl overflow-hidden border border-zinc-800 flex flex-col shadow-lg">
+    <div className="bg-zinc-900 dark:bg-zinc-950 text-zinc-300 rounded-xl overflow-hidden border border-zinc-800 flex flex-col shadow-lg h-full">
       <div className="bg-zinc-950 dark:bg-black border-b border-zinc-800 px-4 py-2.5 flex items-center justify-between">
         <div className="flex items-center gap-1">
           <span className="text-xs font-mono text-zinc-500 mr-2 hidden sm:inline">
@@ -1961,7 +1963,7 @@ function ResponsePanel({
           </button>
         </div>
       </div>
-      <ScrollArea className="max-h-[500px]">
+      <ScrollArea className="flex-1">
         <div className="p-4 font-mono text-[11px] leading-relaxed">
           {activeTab === "whois" && whoisContent && (
             <WhoisHighlight content={whoisContent} />
