@@ -58,7 +58,6 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { WhoisAnalyzeResult, WhoisResult } from "@/lib/whois/types";
 import { getEppStatusInfo, getEppStatusColor, getEppStatusDisplayName, getEppStatusLink } from "@/lib/whois/epp-status";
 import Icon from "@/components/icon";
-import { useImageCapture } from "@/lib/image";
 import ErrorArea from "@/components/items/error-area";
 import Clickable from "@/components/motion/clickable";
 import { SearchBox } from "@/components/search_box";
@@ -266,6 +265,21 @@ function formatDate(dateStr: string): string {
   } catch {
     return dateStr;
   }
+}
+
+function buildOgUrl(target: string, result: WhoisAnalyzeResult | undefined): string {
+  const params = new URLSearchParams();
+  params.set("domain", target);
+  if (result) {
+    if (result.registrar && result.registrar !== "Unknown") params.set("registrar", result.registrar);
+    if (result.creationDate && result.creationDate !== "Unknown") params.set("created", result.creationDate.split("T")[0]);
+    if (result.expirationDate && result.expirationDate !== "Unknown") params.set("expires", result.expirationDate.split("T")[0]);
+    if (result.status.length > 0) params.set("status", result.status.map((s) => s.status).join(","));
+    if (result.nameServers.length > 0) params.set("ns", result.nameServers.join(","));
+  }
+  const isDark = typeof window !== "undefined" && document.documentElement.classList.contains("dark");
+  if (isDark) params.set("theme", "dark");
+  return `/api/og?${params.toString()}`;
 }
 
 type HomeProps = { mode: "home" };
@@ -1015,8 +1029,6 @@ function LookupPage({ data, target }: { data: WhoisResult; target: string }) {
   const [expandStatus, setExpandStatus] = React.useState(false);
   const copy = useClipboard();
   const save = useSaver();
-  const captureRef = useRef<HTMLDivElement>(null);
-  const capture = useImageCapture(captureRef);
 
   const current = getWindowHref();
   const queryType = detectQueryType(target);
@@ -1174,16 +1186,28 @@ function LookupPage({ data, target }: { data: WhoisResult; target: string }) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => capture(`whois-${target}`)}>
+                <DropdownMenuItem onClick={async () => {
+                  const ogUrl = buildOgUrl(target, result);
+                  try {
+                    const res = await fetch(ogUrl);
+                    const blob = await res.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `whois-${target}.png`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    toast.success("Downloaded");
+                  } catch { toast.error("Failed to download"); }
+                }}>
                   <RiDownloadLine className="w-4 h-4 mr-2" />
                   Download PNG
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={async () => {
-                  if (!captureRef.current) return;
+                  const ogUrl = buildOgUrl(target, result);
                   try {
-                    const { toPng } = await import("html-to-image");
-                    const dataUrl = await toPng(captureRef.current, { quality: 0.95 });
-                    const blob = await (await fetch(dataUrl)).blob();
+                    const res = await fetch(ogUrl);
+                    const blob = await res.blob();
                     await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
                     toast.success("Copied to clipboard");
                   } catch { toast.error("Failed to copy"); }
