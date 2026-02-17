@@ -249,6 +249,18 @@ export default function DocsPage() {
                   <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Parameters</h3>
                   <ParamsTable params={[
                     { name: "domain", type: "string", required: false, description: "Domain name to display on the image", default: "—" },
+                    { name: "registrar", type: "string", required: false, description: "Registrar name", default: "—" },
+                    { name: "created", type: "string", required: false, description: "Creation date (e.g. 2020-01-01)", default: "—" },
+                    { name: "expires", type: "string", required: false, description: "Expiration date", default: "—" },
+                    { name: "updated", type: "string", required: false, description: "Last updated date", default: "—" },
+                    { name: "status", type: "string", required: false, description: "Comma-separated EPP status codes", default: "—" },
+                    { name: "ns", type: "string", required: false, description: "Comma-separated nameservers", default: "—" },
+                    { name: "age", type: "number", required: false, description: "Domain age in years", default: "—" },
+                    { name: "remaining", type: "number", required: false, description: "Remaining days until expiration", default: "—" },
+                    { name: "dnssec", type: "string", required: false, description: "DNSSEC status", default: "—" },
+                    { name: "whoisServer", type: "string", required: false, description: "WHOIS server hostname", default: "—" },
+                    { name: "registrantOrg", type: "string", required: false, description: "Registrant organization", default: "—" },
+                    { name: "country", type: "string", required: false, description: "Registrant country", default: "—" },
                     { name: "w", type: "number", required: false, description: "Image width in pixels (200-4096)", default: "1200" },
                     { name: "h", type: "number", required: false, description: "Image height in pixels (200-4096)", default: "630" },
                     { name: "theme", type: "string", required: false, description: "Color theme: \"light\" or \"dark\"", default: "light" },

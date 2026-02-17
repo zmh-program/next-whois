@@ -30,7 +30,6 @@ import {
   RiLinkM,
   RiBarChartBoxAiFill,
   RiShareLine,
-  RiLinkUnlink,
   RiTwitterXLine,
   RiFacebookFill,
   RiRedditLine,
@@ -58,7 +57,6 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { WhoisAnalyzeResult, WhoisResult } from "@/lib/whois/types";
 import { getEppStatusInfo, getEppStatusColor, getEppStatusDisplayName, getEppStatusLink } from "@/lib/whois/epp-status";
 import Icon from "@/components/icon";
-import ErrorArea from "@/components/items/error-area";
 import Clickable from "@/components/motion/clickable";
 import { SearchBox } from "@/components/search_box";
 import { useTranslation } from "@/lib/i18n";
@@ -79,6 +77,20 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import {
   Pagination,
   PaginationContent,
@@ -267,18 +279,27 @@ function formatDate(dateStr: string): string {
   }
 }
 
-function buildOgUrl(target: string, result: WhoisAnalyzeResult | undefined): string {
+function buildOgUrl(target: string, result: WhoisAnalyzeResult | undefined, overrides?: { w?: number; h?: number; theme?: string }): string {
   const params = new URLSearchParams();
   params.set("domain", target);
   if (result) {
     if (result.registrar && result.registrar !== "Unknown") params.set("registrar", result.registrar);
     if (result.creationDate && result.creationDate !== "Unknown") params.set("created", result.creationDate.split("T")[0]);
     if (result.expirationDate && result.expirationDate !== "Unknown") params.set("expires", result.expirationDate.split("T")[0]);
+    if (result.updatedDate && result.updatedDate !== "Unknown") params.set("updated", result.updatedDate.split("T")[0]);
     if (result.status.length > 0) params.set("status", result.status.map((s) => s.status).join(","));
     if (result.nameServers.length > 0) params.set("ns", result.nameServers.join(","));
+    if (result.domainAge !== null && result.domainAge !== undefined) params.set("age", String(result.domainAge));
+    if (result.remainingDays !== null && result.remainingDays !== undefined) params.set("remaining", String(result.remainingDays));
+    if (result.dnssec && result.dnssec !== "Unknown") params.set("dnssec", result.dnssec);
+    if (result.whoisServer && result.whoisServer !== "Unknown") params.set("whoisServer", result.whoisServer);
+    if (result.registrantOrganization && result.registrantOrganization !== "Unknown") params.set("registrantOrg", result.registrantOrganization);
+    if (result.registrantCountry && result.registrantCountry !== "Unknown") params.set("country", result.registrantCountry);
   }
-  const isDark = typeof window !== "undefined" && document.documentElement.classList.contains("dark");
-  if (isDark) params.set("theme", "dark");
+  if (overrides?.w) params.set("w", String(overrides.w));
+  if (overrides?.h) params.set("h", String(overrides.h));
+  const themeVal = overrides?.theme || (typeof window !== "undefined" && document.documentElement.classList.contains("dark") ? "dark" : "light");
+  if (themeVal === "dark") params.set("theme", "dark");
   return `/api/og?${params.toString()}`;
 }
 
@@ -923,112 +944,21 @@ function HomePage() {
   );
 }
 
-const CaptureView = React.forwardRef<
-  HTMLDivElement,
-  { data: WhoisResult; target: string }
->(function CaptureViewInner({ data, target }, ref) {
-  const { result } = data;
-  const queryType = detectQueryType(target);
-  return (
-    <div ref={ref} className="flex flex-col items-center p-4 w-full bg-background">
-      <Card className="w-full max-w-[568px]">
-        <CardHeader>
-          <CardTitle className="flex items-center text-sm md:text-base">
-            <div
-              className={cn(
-                "w-2 h-2 rounded-full mr-2",
-                data.status ? "bg-green-500" : "bg-red-500",
-              )}
-            />
-            <span className="font-mono truncate">{target}</span>
-            <div className="flex-grow" />
-            <Badge className="mr-1">{queryType}</Badge>
-            <Badge variant="outline" className="border-dashed">
-              {data.time.toFixed(2)}s
-            </Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {!data.status ? (
-            <ErrorArea error={data.error} />
-          ) : (
-            result && (
-              <div className="space-y-3 text-sm">
-                {result.registrar && result.registrar !== "Unknown" && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Registrar</span>
-                    <span className="font-medium">{result.registrar}</span>
-                  </div>
-                )}
-                {result.creationDate && result.creationDate !== "Unknown" && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Created</span>
-                    <span className="font-mono text-xs">
-                      {formatDate(result.creationDate)}
-                    </span>
-                  </div>
-                )}
-                {result.expirationDate &&
-                  result.expirationDate !== "Unknown" && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Expires</span>
-                      <span className="font-mono text-xs">
-                        {formatDate(result.expirationDate)}
-                      </span>
-                    </div>
-                  )}
-                {result.nameServers.length > 0 && (
-                  <div>
-                    <span className="text-muted-foreground text-xs">
-                      Name Servers
-                    </span>
-                    <div className="font-mono text-xs mt-1 space-y-0.5">
-                      {result.nameServers.map((ns, i) => (
-                        <div key={i} className="text-muted-foreground">
-                          {ns}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {result.status.length > 0 && (
-                  <div>
-                    <span className="text-muted-foreground text-xs">
-                      Status
-                    </span>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {result.status.slice(0, 3).map((s, i) => (
-                        <Badge
-                          key={i}
-                          variant="outline"
-                          className="text-[10px]"
-                        >
-                          {s.status}
-                        </Badge>
-                      ))}
-                      {result.status.length > 3 && (
-                        <Badge variant="outline" className="text-[10px]">
-                          +{result.status.length - 3}
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )
-          )}
-        </CardContent>
-      </Card>
-    </div>
-  );
-});
 
 function LookupPage({ data, target }: { data: WhoisResult; target: string }) {
   const { t } = useTranslation();
   const [loading, setLoading] = React.useState(false);
   const [expandStatus, setExpandStatus] = React.useState(false);
+  const [showImagePreview, setShowImagePreview] = React.useState(false);
+  const [imgWidth, setImgWidth] = React.useState(1200);
+  const [imgHeight, setImgHeight] = React.useState(630);
+  const [imgTheme, setImgTheme] = React.useState<"light" | "dark">("light");
   const copy = useClipboard();
   const save = useSaver();
+
+  useEffect(() => {
+    setImgTheme(document.documentElement.classList.contains("dark") ? "dark" : "light");
+  }, []);
 
   const current = getWindowHref();
   const queryType = detectQueryType(target);
@@ -1182,53 +1112,11 @@ function LookupPage({ data, target }: { data: WhoisResult; target: string }) {
                   className="transition hover:border-muted-foreground shadow-sm"
                   tapEnabled
                 >
-                  <RiCameraLine className="w-4 h-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={async () => {
-                  const ogUrl = buildOgUrl(target, result);
-                  try {
-                    const res = await fetch(ogUrl);
-                    const blob = await res.blob();
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement("a");
-                    a.href = url;
-                    a.download = `whois-${target}.png`;
-                    a.click();
-                    URL.revokeObjectURL(url);
-                    toast.success("Downloaded");
-                  } catch { toast.error("Failed to download"); }
-                }}>
-                  <RiDownloadLine className="w-4 h-4 mr-2" />
-                  Download PNG
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={async () => {
-                  const ogUrl = buildOgUrl(target, result);
-                  try {
-                    const res = await fetch(ogUrl);
-                    const blob = await res.blob();
-                    await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
-                    toast.success("Copied to clipboard");
-                  } catch { toast.error("Failed to copy"); }
-                }}>
-                  <RiFileCopyLine className="w-4 h-4 mr-2" />
-                  Copy to Clipboard
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="icon-sm"
-                  className="transition hover:border-muted-foreground shadow-sm"
-                  tapEnabled
-                >
                   <RiShareLine className="w-4 h-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="min-w-[180px]">
+              <DropdownMenuContent align="end" className="min-w-[200px]">
+                <DropdownMenuLabel className="text-xs text-muted-foreground">Share</DropdownMenuLabel>
                 <DropdownMenuItem asChild>
                   <Link href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Whois Lookup: ${target}`)}&url=${encodeURIComponent(current)}`} target="_blank">
                     <RiTwitterXLine className="w-4 h-4 mr-2" />
@@ -1261,8 +1149,43 @@ function LookupPage({ data, target }: { data: WhoisResult; target: string }) {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => copy(current)}>
-                  <RiFileCopyLine className="w-4 h-4 mr-2" />
+                  <RiLinkM className="w-4 h-4 mr-2" />
                   Copy URL
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className="text-xs text-muted-foreground">Image</DropdownMenuLabel>
+                <DropdownMenuItem onClick={async () => {
+                  const ogUrl = buildOgUrl(target, result);
+                  try {
+                    const res = await fetch(ogUrl);
+                    const blob = await res.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `whois-${target}.png`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    toast.success("Downloaded");
+                  } catch { toast.error("Failed to download"); }
+                }}>
+                  <RiDownloadLine className="w-4 h-4 mr-2" />
+                  Download PNG
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={async () => {
+                  const ogUrl = buildOgUrl(target, result);
+                  try {
+                    const res = await fetch(ogUrl);
+                    const blob = await res.blob();
+                    await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+                    toast.success("Copied to clipboard");
+                  } catch { toast.error("Failed to copy"); }
+                }}>
+                  <RiFileCopyLine className="w-4 h-4 mr-2" />
+                  Copy Image
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setShowImagePreview(true)}>
+                  <RiCameraLine className="w-4 h-4 mr-2" />
+                  Preview & Customize
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -1881,6 +1804,103 @@ function LookupPage({ data, target }: { data: WhoisResult; target: string }) {
         )}
       </main>
     </ScrollArea>
+    <Dialog open={showImagePreview} onOpenChange={setShowImagePreview}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Image Preview</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="grid grid-cols-3 gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs">Width</Label>
+              <Input
+                type="number"
+                value={imgWidth}
+                onChange={(e) => setImgWidth(Math.min(4096, Math.max(200, parseInt(e.target.value) || 1200)))}
+                className="h-8 text-xs font-mono"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Height</Label>
+              <Input
+                type="number"
+                value={imgHeight}
+                onChange={(e) => setImgHeight(Math.min(4096, Math.max(200, parseInt(e.target.value) || 630)))}
+                className="h-8 text-xs font-mono"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Theme</Label>
+              <Select value={imgTheme} onValueChange={(v: "light" | "dark") => setImgTheme(v)}>
+                <SelectTrigger className="h-8 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="light">Light</SelectItem>
+                  <SelectItem value="dark">Dark</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="rounded-lg border overflow-hidden bg-muted/30">
+            <img
+              src={buildOgUrl(target, result, { w: imgWidth, h: imgHeight, theme: imgTheme })}
+              alt="OG Preview"
+              className="w-full h-auto"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              onClick={async () => {
+                const ogUrl = buildOgUrl(target, result, { w: imgWidth, h: imgHeight, theme: imgTheme });
+                try {
+                  const res = await fetch(ogUrl);
+                  const blob = await res.blob();
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `whois-${target}-${imgWidth}x${imgHeight}.png`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                  toast.success("Downloaded");
+                } catch { toast.error("Failed to download"); }
+              }}
+            >
+              <RiDownloadLine className="w-3.5 h-3.5 mr-1.5" />
+              Download
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                const ogUrl = buildOgUrl(target, result, { w: imgWidth, h: imgHeight, theme: imgTheme });
+                try {
+                  const res = await fetch(ogUrl);
+                  const blob = await res.blob();
+                  await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+                  toast.success("Copied to clipboard");
+                } catch { toast.error("Failed to copy"); }
+              }}
+            >
+              <RiFileCopyLine className="w-3.5 h-3.5 mr-1.5" />
+              Copy
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const ogUrl = buildOgUrl(target, result, { w: imgWidth, h: imgHeight, theme: imgTheme });
+                copy(window.location.origin + ogUrl);
+              }}
+            >
+              <RiLinkM className="w-3.5 h-3.5 mr-1.5" />
+              Copy Link
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
     </>
   );
 }
