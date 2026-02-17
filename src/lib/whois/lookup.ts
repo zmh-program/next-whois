@@ -6,6 +6,48 @@ import { extractDomain } from "@/lib/utils";
 import { lookupRdap, convertRdapToWhoisResult } from "@/lib/whois/rdap_client";
 import whois from "whois-raw";
 
+const WHOIS_ERROR_PATTERNS = [
+  /no match/i,
+  /not found/i,
+  /no data found/i,
+  /no entries found/i,
+  /no object found/i,
+  /nothing found/i,
+  /invalid query/i,
+  /error:/i,
+  /malformed/i,
+  /object does not exist/i,
+  /domain not found/i,
+  /status:\s*free/i,
+  /status:\s*available/i,
+  /is available for/i,
+  /no whois information/i,
+];
+
+function detectWhoisError(raw: string): string | null {
+  const lines = raw.split("\n").map((l) => l.trim()).filter((l) => l.length > 0 && !l.startsWith("%") && !l.startsWith("#") && !l.startsWith(">>>") && !l.startsWith("NOTICE") && !l.startsWith("TERMS OF USE"));
+  if (lines.length === 0) return "Empty WHOIS response";
+
+  for (const pattern of WHOIS_ERROR_PATTERNS) {
+    const match = raw.match(pattern);
+    if (match) {
+      const matchLine = raw.split("\n").find((l) => pattern.test(l));
+      return matchLine?.trim() || match[0];
+    }
+  }
+  return null;
+}
+
+function isEmptyResult(result: { domain: string; registrar: string; creationDate: string; expirationDate: string; nameServers: string[] }): boolean {
+  return (
+    (!result.domain || result.domain === "") &&
+    result.registrar === "Unknown" &&
+    result.creationDate === "Unknown" &&
+    result.expirationDate === "Unknown" &&
+    result.nameServers.length === 0
+  );
+}
+
 function getLookupOptions(domain: string) {
   const isDomain = !!extractDomain(domain);
   return {
@@ -90,6 +132,20 @@ export async function lookupWhois(domain: string): Promise<WhoisResult> {
     if (whoisRawData) {
       try {
         const result = await analyzeWhois(whoisRawData);
+
+        if (isEmptyResult(result)) {
+          const whoisError = detectWhoisError(whoisRawData);
+          if (whoisError) {
+            return {
+              time: (performance.now() - startTime) / 1000,
+              status: false,
+              cached: false,
+              source: "whois",
+              error: whoisError,
+              rawWhoisContent: whoisRawData,
+            };
+          }
+        }
 
         try {
           const rdapData = await lookupRdap(domain);
