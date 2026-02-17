@@ -1,11 +1,10 @@
 import "@/styles/globals.css";
 import type { AppProps } from "next/app";
 import Head from "next/head";
-import { cn } from "@/lib/utils";
+
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { strEnv } from "@/lib/env";
-import { inter } from "@/lib/fonts";
 import PWAInstaller from "@/components/pwa_installer";
 import { Navbar } from "@/components/navbar";
 
@@ -48,7 +47,7 @@ export default function App({ Component, pageProps }: AppProps) {
           <div className="absolute inset-0 bg-dot-pattern opacity-10" />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/20 to-background" />
         </div>
-        <div className={cn(`relative w-full min-h-screen`, inter.className)}>
+        <div className="relative w-full min-h-screen font-sans">
           <Navbar />
           <main className="pt-16">
             <Component {...pageProps} />

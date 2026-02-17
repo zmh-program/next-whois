@@ -62,6 +62,13 @@ export async function lookupWhois(domain: string): Promise<WhoisResult> {
     const rdapData = await lookupRdap(domain);
     const result = await convertRdapToWhoisResult(rdapData, domain);
 
+    try {
+      result.rawWhoisContent = await getLookupRawWhois(
+        domain,
+        getLookupOptions(domain),
+      );
+    } catch {}
+
     return {
       time: (performance.now() - startTime) / 1000,
       status: true,
@@ -78,6 +85,11 @@ export async function lookupWhois(domain: string): Promise<WhoisResult> {
         getLookupOptions(domain),
       );
       const result = await analyzeWhois(whoisData);
+
+      try {
+        const rdapData = await lookupRdap(domain);
+        result.rawRdapContent = JSON.stringify(rdapData, null, 2);
+      } catch {}
 
       return {
         time: (performance.now() - startTime) / 1000,
