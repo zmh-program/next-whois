@@ -280,8 +280,6 @@ export default function DocsPage() {
   "time": 1.23,
   "cached": false,
   "source": "rdap",
-  "rawWhoisContent": "Domain Name: GOOGLE.COM\\nRegistry Domain ID: ...",
-  "rawRdapContent": "{\\n  \\"objectClassName\\": \\"domain\\",\\n  ...\\n}",
   "result": {
     "domain": "google.com",
     "registrar": "MarkMonitor Inc.",
@@ -298,7 +296,9 @@ export default function DocsPage() {
     "nameServers": ["ns1.google.com", "ns2.google.com", "ns3.google.com", "ns4.google.com"],
     "dnssec": "unsigned",
     "domainAge": 28,
-    "remainingDays": 945
+    "remainingDays": 945,
+    "rawWhoisContent": "Domain Name: GOOGLE.COM\\nRegistry Domain ID: ...",
+    "rawRdapContent": "{\\n  \\"objectClassName\\": \\"domain\\",\\n  ...\\n}"
   }
 }`}</CodeBlock>
                 </div>
@@ -310,9 +310,7 @@ export default function DocsPage() {
                   <CodeBlock>{`{
   "status": false,
   "time": 0.45,
-  "error": "No match for domain \"EXAMPLE.INVALID\"",
-  "rawWhoisContent": "% IANA WHOIS server\\n% for more information...",
-  "rawRdapContent": null
+  "error": "No match for domain \"EXAMPLE.INVALID\""
 }`}</CodeBlock>
                 </div>
               </CardContent>

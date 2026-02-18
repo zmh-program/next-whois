@@ -133,14 +133,8 @@ function mergeResults(
       rdap.registrantCountry,
       whoisParsed.registrantCountry,
     ),
-    registrantPhone: pickStr(
-      rdap.registrantPhone,
-      whoisParsed.registrantPhone,
-    ),
-    registrantEmail: pickStr(
-      rdap.registrantEmail,
-      whoisParsed.registrantEmail,
-    ),
+    registrantPhone: pickStr(rdap.registrantPhone, whoisParsed.registrantPhone),
+    registrantEmail: pickStr(rdap.registrantEmail, whoisParsed.registrantEmail),
     dnssec: pickStr(rdap.dnssec, whoisParsed.dnssec),
     rawWhoisContent: rdap.rawWhoisContent || whoisParsed.rawWhoisContent,
     rawRdapContent: rdap.rawRdapContent || whoisParsed.rawRdapContent,
@@ -217,8 +211,6 @@ export async function lookupWhois(domain: string): Promise<WhoisResult> {
         cached: false,
         source: "rdap",
         result,
-        rawWhoisContent: whoisRawData || undefined,
-        rawRdapContent: rdapRaw,
       };
     } catch {}
   }
@@ -236,8 +228,6 @@ export async function lookupWhois(domain: string): Promise<WhoisResult> {
             cached: false,
             source: "whois",
             error: whoisError,
-            rawWhoisContent: whoisRawData,
-            rawRdapContent: rdapRaw,
           };
         }
       }
@@ -250,8 +240,6 @@ export async function lookupWhois(domain: string): Promise<WhoisResult> {
         cached: false,
         source: "whois",
         result,
-        rawWhoisContent: whoisRawData,
-        rawRdapContent: rdapRaw,
       };
     } catch (parseError: unknown) {
       return {
@@ -263,8 +251,6 @@ export async function lookupWhois(domain: string): Promise<WhoisResult> {
           parseError instanceof Error
             ? parseError.message
             : "Failed to parse WHOIS response",
-        rawWhoisContent: whoisRawData,
-        rawRdapContent: rdapRaw,
       };
     }
   }

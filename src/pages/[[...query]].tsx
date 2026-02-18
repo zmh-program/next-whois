@@ -91,8 +91,8 @@ const REGISTRAR_ICONS: Record<string, { slug: string | null; color: string }> =
     godaddy: { slug: "godaddy", color: "#1BDBDB" },
     namecheap: { slug: "namecheap", color: "#DE3723" },
     cloudflare: { slug: "cloudflare", color: "#F38020" },
-    google: { slug: "google", color: "#4285F4" },
-    googledomains: { slug: "google", color: "#4285F4" },
+    google: { slug: "google", color: "#000000" },
+    googledomains: { slug: "google", color: "#000000" },
     ovh: { slug: "ovh", color: "#123F6D" },
     ovhcloud: { slug: "ovh", color: "#123F6D" },
     ionos: { slug: "ionos", color: "#003D8F" },
@@ -224,8 +224,8 @@ const NS_BRAND_MAP: Record<
   "azure-dns.net": { brand: "Azure DNS", slug: null, color: "#0078D4" },
   "azure-dns.org": { brand: "Azure DNS", slug: null, color: "#0078D4" },
   "azure-dns.info": { brand: "Azure DNS", slug: null, color: "#0078D4" },
-  "googledomains.com": { brand: "Google", slug: "google", color: "#4285F4" },
-  "google.com": { brand: "Google", slug: "google", color: "#4285F4" },
+  "googledomains.com": { brand: "Google", slug: "google", color: "#000000" },
+  "google.com": { brand: "Google", slug: "google", color: "#000000" },
   "linode.com": { brand: "Akamai", slug: "akamai", color: "#0096D6" },
   "dns.he.net": { brand: "Hurricane Electric", slug: null, color: "#E40000" },
   "dnspod.net": { brand: "DNSPod", slug: null, color: "#4478E6" },
@@ -298,6 +298,15 @@ function getRegistrarIcon(
     if (normalized.includes(key)) return info;
   }
   return null;
+}
+
+function getDarkModeIconColor(color: string): string {
+  const hex = color.replace("#", "");
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance < 0.4 ? "white" : hex;
 }
 
 function getRegistrarFallbackColor(registrar: string): string {
@@ -1136,15 +1145,10 @@ function LookupPage({ data, target }: { data: WhoisResult; target: string }) {
               </div>
 
               <div className="lg:col-span-4">
-                {data.rawWhoisContent ||
-                data.rawRdapContent ||
-                (result &&
-                  (result.rawWhoisContent || result.rawRdapContent)) ? (
+                {result && (result.rawWhoisContent || result.rawRdapContent) ? (
                   <ResponsePanel
-                    whoisContent={
-                      data.rawWhoisContent || result?.rawWhoisContent || ""
-                    }
-                    rdapContent={data.rawRdapContent || result?.rawRdapContent}
+                    whoisContent={result.rawWhoisContent || ""}
+                    rdapContent={result.rawRdapContent}
                     target={target}
                     copy={copy}
                     save={save}
@@ -1417,7 +1421,7 @@ function LookupPage({ data, target }: { data: WhoisResult; target: string }) {
                                         className="w-3.5 h-3.5 object-contain dark:hidden"
                                       />
                                       <img
-                                        src={`https://cdn.simpleicons.org/${nsBrand.slug}/white`}
+                                        src={`https://cdn.simpleicons.org/${nsBrand.slug}/${getDarkModeIconColor(nsBrand.color)}`}
                                         alt=""
                                         className="w-3.5 h-3.5 object-contain hidden dark:block"
                                       />
@@ -1618,7 +1622,7 @@ function LookupPage({ data, target }: { data: WhoisResult; target: string }) {
                                 className="w-full h-full object-contain dark:hidden"
                               />
                               <img
-                                src={`https://cdn.simpleicons.org/${registrarIcon.slug}/white`}
+                                src={`https://cdn.simpleicons.org/${registrarIcon.slug}/${getDarkModeIconColor(registrarIcon.color)}`}
                                 alt=""
                                 className="w-full h-full object-contain hidden dark:block"
                               />

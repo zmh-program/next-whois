@@ -98,4 +98,3 @@ export function removeHistory(query: string) {
     console.warn("Failed to remove history from localStorage:", error);
   }
 }
-

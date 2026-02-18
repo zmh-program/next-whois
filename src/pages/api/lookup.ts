@@ -9,8 +9,6 @@ type Data = {
   source?: "rdap" | "whois";
   result?: WhoisAnalyzeResult;
   error?: string;
-  rawWhoisContent?: string;
-  rawRdapContent?: string;
 };
 
 export default async function handler(
@@ -25,25 +23,12 @@ export default async function handler(
       .json({ time: -1, status: false, error: "Query is required" });
   }
 
-  const data = await lookupWhoisWithCache(query);
-  if (!data.status) {
-    return res.status(500).json({
-      time: data.time,
-      status: data.status,
-      error: data.error,
-      rawWhoisContent: data.rawWhoisContent,
-      rawRdapContent: data.rawRdapContent,
-    });
+  const { time, status, result, error, cached, source } =
+    await lookupWhoisWithCache(query);
+  if (!status) {
+    return res.status(500).json({ time, status, error });
   }
 
   res.setHeader("Cache-Control", "s-maxage=3600, stale-while-revalidate=86400");
-  return res.status(200).json({
-    time: data.time,
-    status: data.status,
-    result: data.result,
-    cached: data.cached,
-    source: data.source,
-    rawWhoisContent: data.rawWhoisContent,
-    rawRdapContent: data.rawRdapContent,
-  });
+  return res.status(200).json({ time, status, result, cached, source });
 }
