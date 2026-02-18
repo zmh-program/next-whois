@@ -92,7 +92,7 @@ export async function analyzeWhois(data: string): Promise<WhoisAnalyzeResult> {
     let key: string;
     let value: string;
 
-    const bracketMatch = line.match(/^\[(.+?)\]\s+(.+)/);
+    const bracketMatch = line.match(/^(?:[a-z]\.\s*)?\[(.+?)\]\s+(.+)/);
     if (bracketMatch) {
       key = bracketMatch[1].trim().toLowerCase();
       value = bracketMatch[2].trim();
@@ -112,6 +112,8 @@ export async function analyzeWhois(data: string): Promise<WhoisAnalyzeResult> {
         result.domain = value;
         break;
       case "registrar":
+      case "authorized agency":
+      case "sponsoring registrar":
         result.registrar = value;
         break;
       case "registrar url":
@@ -133,12 +135,14 @@ export async function analyzeWhois(data: string): Promise<WhoisAnalyzeResult> {
         result.whoisServer = value;
         break;
       case "updated date":
+      case "last updated date":
         result.updatedDate = analyzeTime(value);
         break;
       case "changed":
         result.updatedDate = analyzeTime(value);
         break;
       case "creation date":
+      case "registered date":
         result.creationDate = analyzeTime(value);
         break;
       case "domain name commencement date":
@@ -153,13 +157,23 @@ export async function analyzeWhois(data: string): Promise<WhoisAnalyzeResult> {
       case "registry expiry date":
         result.expirationDate = analyzeTime(value);
         break;
+      case "state": {
+        const expiryMatch = value.match(/\((\d{4}\/\d{2}\/\d{2})\)/);
+        if (expiryMatch && result.expirationDate === "Unknown") {
+          result.expirationDate = analyzeTime(expiryMatch[1]);
+        }
+        result.status.push(analyzeDomainStatus(value));
+        break;
+      }
       case "status":
+      case "registration status":
         result.status.push(analyzeDomainStatus(value));
         break;
       case "domain status":
         result.status.push(analyzeDomainStatus(value));
         break;
       case "name server":
+      case "host name":
         result.nameServers.push(value);
         break;
       case "nameservers":
@@ -206,6 +220,7 @@ export async function analyzeWhois(data: string): Promise<WhoisAnalyzeResult> {
         result.registrantPhone = value.replace("tel:", "").replace(".", " ");
         break;
       case "registrar abuse contact phone":
+      case "ac phone number":
         result.registrantPhone = value.replace("tel:", "").replace(".", " ");
         break;
       case "orgtechphone":
@@ -221,6 +236,7 @@ export async function analyzeWhois(data: string): Promise<WhoisAnalyzeResult> {
         result.dnssec = value;
         break;
       case "email":
+      case "ac e-mail":
         result.registrantEmail = value;
         break;
       case "e-mail":
