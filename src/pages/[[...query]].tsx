@@ -405,10 +405,11 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       return { props: { mode: "home" } };
     }
     const target = cleanDomain(querySegments[0]);
+    const data = await lookupWhoisWithCache(target);
     return {
       props: {
         mode: "lookup",
-        data: await lookupWhoisWithCache(target),
+        data: JSON.parse(JSON.stringify(data)),
         target,
       },
     };
@@ -416,10 +417,11 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   if (querySegments.length === 2) {
     const target = cleanDomain(querySegments[1]);
+    const data = await lookupWhoisWithCache(target);
     return {
       props: {
         mode: "lookup",
-        data: await lookupWhoisWithCache(target),
+        data: JSON.parse(JSON.stringify(data)),
         target,
       },
     };
