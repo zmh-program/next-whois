@@ -43,7 +43,7 @@ import {
   RiServerLine,
   RiEarthLine,
 } from "@remixicon/react";
-import React, { useEffect, useMemo, useCallback, useRef } from "react";
+import React, { useEffect, useMemo, useCallback } from "react";
 import {
   addHistory,
   detectQueryType,
@@ -56,12 +56,11 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { WhoisAnalyzeResult, WhoisResult } from "@/lib/whois/types";
 import { getEppStatusInfo, getEppStatusColor, getEppStatusDisplayName, getEppStatusLink } from "@/lib/whois/epp-status";
-import Icon from "@/components/icon";
 import Clickable from "@/components/motion/clickable";
 import { SearchBox } from "@/components/search_box";
 import { useTranslation } from "@/lib/i18n";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   Popover,
   PopoverContent,
@@ -91,15 +90,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
 import { format } from "date-fns";
 
 const LOCALES = ["en", "zh", "zh-tw", "de", "ru", "ja", "fr", "ko"];
@@ -359,6 +349,7 @@ function ShortcutsList() {
         { label: "Clear / Blur", keys: ["Esc"] },
         { label: "Sort", keys: ["Alt", "S"] },
         { label: "Filter", keys: ["Alt", "F"] },
+        { label: "History", keys: ["Alt", "H"] },
         { label: "Shortcuts", keys: ["?"] },
       ].map((item, i) => (
         <div
@@ -389,17 +380,14 @@ function ShortcutsList() {
 function HomePage() {
   const { t } = useTranslation();
   const [loading, setLoading] = React.useState(false);
-  const [trashMode, setTrashMode] = React.useState(false);
-  const [searchTerm, setSearchTerm] = React.useState("");
-  const [sortOrder, setSortOrder] = React.useState<"asc" | "desc">("desc");
-  const [selectedType, setSelectedType] = React.useState("all");
-  const [currentPage, setCurrentPage] = React.useState(1);
   const [mounted, setMounted] = React.useState(false);
   const [refreshTrigger, setRefreshTrigger] = React.useState(0);
+  const [showHistory, setShowHistory] = React.useState(false);
+  const [historySearch, setHistorySearch] = React.useState("");
+  const [sortOrder, setSortOrder] = React.useState<"asc" | "desc">("desc");
+  const [selectedType, setSelectedType] = React.useState("all");
+  const [trashMode, setTrashMode] = React.useState(false);
   const [showShortcuts, setShowShortcuts] = React.useState(false);
-
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  const itemsPerPage = 5;
 
   useEffect(() => {
     setMounted(true);
@@ -426,521 +414,247 @@ function HomePage() {
         return;
       }
       if (e.key === "Escape") {
-        if (showShortcuts) {
-          setShowShortcuts(false);
-          return;
-        }
+        if (showShortcuts) { setShowShortcuts(false); return; }
+        if (showHistory) { setShowHistory(false); return; }
         const mainInput = document.getElementById("main-search-input");
         if (active === mainInput) mainInput?.blur();
         else if (active instanceof HTMLElement) active.blur();
-        setSearchTerm("");
         return;
       }
-      if (e.key.toLowerCase() === "s" && e.altKey) {
+      if (e.key.toLowerCase() === "h" && e.altKey) {
         e.preventDefault();
-        setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
-      }
-      if (e.key.toLowerCase() === "f" && e.altKey) {
-        e.preventDefault();
+        setShowHistory((prev) => !prev);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [showShortcuts]);
-
-  const processedHistory = useMemo(() => {
-    if (!mounted) return [];
-    const items = searchTerm ? searchHistory(searchTerm) : listHistory();
-    const filtered =
-      selectedType === "all"
-        ? items
-        : items.filter((item) => item.queryType === selectedType);
-    return [...filtered].sort((a, b) =>
-      sortOrder === "desc"
-        ? b.timestamp - a.timestamp
-        : a.timestamp - b.timestamp,
-    );
-  }, [mounted, searchTerm, sortOrder, selectedType, refreshTrigger]);
-
-  const paginationData = useMemo(() => {
-    const totalPages = Math.ceil(processedHistory.length / itemsPerPage);
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const currentItems = processedHistory.slice(
-      startIndex,
-      startIndex + itemsPerPage,
-    );
-    return {
-      totalPages,
-      currentItems,
-      hasItems: processedHistory.length > 0,
-      hasPagination: processedHistory.length > itemsPerPage,
-    };
-  }, [processedHistory, currentPage]);
+  }, [showShortcuts, showHistory]);
 
   const handleSearch = useCallback((query: string) => {
     setLoading(true);
     window.location.href = toSearchURI(query);
   }, []);
 
+  const recentHistory = useMemo(() => {
+    if (!mounted) return [];
+    return listHistory().sort((a, b) => b.timestamp - a.timestamp).slice(0, 5);
+  }, [mounted, refreshTrigger]);
+
+  const filteredHistory = useMemo(() => {
+    if (!mounted) return [];
+    const items = historySearch ? searchHistory(historySearch) : listHistory();
+    const filtered = selectedType === "all" ? items : items.filter((item) => item.queryType === selectedType);
+    return [...filtered].sort((a, b) => sortOrder === "desc" ? b.timestamp - a.timestamp : a.timestamp - b.timestamp);
+  }, [mounted, historySearch, sortOrder, selectedType, refreshTrigger]);
+
   const getTypeColor = useCallback((type: string) => {
-    const colorMap = {
-      domain: "text-blue-500",
-      ipv4: "text-green-500",
-      ipv6: "text-purple-500",
-      asn: "text-orange-500",
-      cidr: "text-pink-500",
-    } as const;
+    const colorMap = { domain: "text-blue-500", ipv4: "text-green-500", ipv6: "text-purple-500", asn: "text-orange-500", cidr: "text-pink-500" } as const;
     return colorMap[type as keyof typeof colorMap] || "text-gray-500";
   }, []);
 
-  const handleRemoveHistory = useCallback(
-    (query: string) => {
-      if (!mounted) return;
-      removeHistory(query);
-      setRefreshTrigger((prev) => prev + 1);
-      setTimeout(() => {
-        const newHistory = listHistory();
-        const newTotalPages = Math.ceil(newHistory.length / itemsPerPage);
-        if (currentPage > newTotalPages && newTotalPages > 0)
-          setCurrentPage(1);
-      }, 0);
-    },
-    [mounted, currentPage],
-  );
-
-  useEffect(() => {
-    if (
-      currentPage > paginationData.totalPages &&
-      paginationData.totalPages > 0
-    )
-      setCurrentPage(1);
-  }, [paginationData.totalPages, currentPage]);
+  const handleRemoveHistory = useCallback((query: string) => {
+    if (!mounted) return;
+    removeHistory(query);
+    setRefreshTrigger((prev) => prev + 1);
+  }, [mounted]);
 
   return (
+    <>
     <ScrollArea className="w-full h-[calc(100vh-4rem)]">
-      <main className="w-full min-h-[calc(100vh-4rem)] grid place-items-center p-4 md:p-6 relative overflow-hidden">
-        <div className="flex flex-col items-center w-full h-fit max-w-[640px]">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            className="text-center mb-8"
-          >
-            <h1 className="text-3xl md:text-5xl font-bold tracking-tight select-none mb-3 bg-gradient-to-br from-foreground to-muted-foreground bg-clip-text text-transparent">
+      <main className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-6 min-h-[calc(100vh-4rem)]">
+        <div className="flex items-center gap-3 mb-6">
+          <Link href="/docs">
+            <Button variant="ghost" size="icon-sm" className="shrink-0 text-muted-foreground">
+              <RiExternalLinkLine className="w-4 h-4" />
+            </Button>
+          </Link>
+          <div className="flex-1 relative group">
+            <SearchBox onSearch={handleSearch} loading={loading} autoFocus />
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-none opacity-50 group-hover:opacity-100 transition-opacity">
+              <KeyboardShortcut k="/" />
+            </div>
+          </div>
+          <Popover open={showShortcuts} onOpenChange={setShowShortcuts}>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="icon-sm" className="shrink-0 text-muted-foreground" title="Keyboard Shortcuts (?)">
+                <RiKeyboardLine className="w-4 h-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-44 p-0" sideOffset={5}>
+              <ShortcutsList />
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="space-y-6"
+        >
+          <div className="glass-panel border border-border rounded-xl p-8 sm:p-12 text-center">
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">
               {t("title")}
             </h1>
-            <p className="text-muted-foreground text-sm md:text-base max-w-sm mx-auto">
+            <p className="text-muted-foreground text-sm max-w-md mx-auto">
               Lightning fast domain & IP lookup availability.
             </p>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="w-full relative z-10"
-          >
-            <div className="relative group">
-              <SearchBox onSearch={handleSearch} loading={loading} autoFocus />
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-none opacity-50 group-hover:opacity-100 transition-opacity">
-                <KeyboardShortcut k="/" />
+          {recentHistory.length > 0 && (
+            <div>
+              <div className="flex items-center justify-between mb-3 px-1">
+                <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                  <RiHistoryLine className="w-3.5 h-3.5" />
+                  Recent Lookups
+                </h2>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs text-muted-foreground h-7"
+                  onClick={() => setShowHistory(true)}
+                >
+                  View All
+                  <RiArrowRightSLine className="w-3.5 h-3.5 ml-1" />
+                </Button>
               </div>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="w-full flex flex-row items-center justify-between mt-10 mb-4 px-1"
-          >
-            <div className="flex flex-row items-center gap-3">
-              <div className="relative group">
-                <Input
-                  ref={searchInputRef}
-                  className="w-24 sm:w-48 lg:w-64 h-8 text-xs pl-8 border-input focus:border-primary/50 transition-all duration-300 bg-background/50 backdrop-blur-sm"
-                  placeholder={t("search_history")}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                <RiSearchLine className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground transition-colors duration-300 group-hover:text-foreground" />
-              </div>
-            </div>
-
-            <div className="flex flex-row gap-2">
-              <Popover open={showShortcuts} onOpenChange={setShowShortcuts}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon-sm"
-                    className="relative border-input hover:border-primary/50 transition-all duration-300 bg-background/50"
-                    title="Keyboard Shortcuts (?)"
-                  >
-                    <RiKeyboardLine className="h-3.5 w-3.5" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent
-                  align="end"
-                  className="w-40 p-0"
-                  sideOffset={5}
-                >
-                  <ShortcutsList />
-                </PopoverContent>
-              </Popover>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon-sm"
-                    className="relative border-input hover:border-primary/50 transition-all duration-300 bg-background/50"
-                  >
-                    <RiFilterLine className="h-3.5 w-3.5" />
-                    {selectedType !== "all" && (
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full"
-                      />
-                    )}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
-                    {t("filter_by_type")}
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator className="my-1.5" />
-                  <DropdownMenuRadioGroup
-                    value={selectedType}
-                    onValueChange={setSelectedType}
-                  >
-                    <DropdownMenuRadioItem value="all" className="text-xs">
-                      {t("all_types")}
-                    </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="domain" className="text-xs">
-                      {t("domain_only")}
-                    </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="ipv4" className="text-xs">
-                      {t("ipv4_only")}
-                    </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="ipv6" className="text-xs">
-                      {t("ipv6_only")}
-                    </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="asn" className="text-xs">
-                      {t("asn_only")}
-                    </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="cidr" className="text-xs">
-                      {t("cidr_only")}
-                    </DropdownMenuRadioItem>
-                  </DropdownMenuRadioGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              <Button
-                variant="outline"
-                size="icon-sm"
-                onClick={() =>
-                  setSortOrder(sortOrder === "asc" ? "desc" : "asc")
-                }
-                className="relative group border-input hover:border-primary/50 transition-all duration-300 bg-background/50"
-              >
-                <motion.div
-                  key={sortOrder}
-                  initial={{ rotate: 180, opacity: 0 }}
-                  animate={{ rotate: 0, opacity: 1 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  {sortOrder === "asc" ? (
-                    <RiSortAsc className="h-3.5 w-3.5" />
-                  ) : (
-                    <RiSortDesc className="h-3.5 w-3.5" />
-                  )}
-                </motion.div>
-              </Button>
-
-              <Button
-                variant="outline"
-                size="icon-sm"
-                onClick={() => setTrashMode(!trashMode)}
-                className={cn(
-                  "relative group border-input hover:border-primary/50 transition-all duration-300 bg-background/50",
-                  trashMode &&
-                    "bg-destructive/5 hover:bg-destructive/10 text-destructive border-destructive",
-                )}
-              >
-                <motion.div
-                  key={trashMode ? "trash" : "normal"}
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <Icon
-                    icon={
-                      trashMode ? <RiArrowGoBackLine /> : <RiDeleteBinLine />
-                    }
-                    className="w-3.5 h-3.5"
-                  />
-                </motion.div>
-              </Button>
-            </div>
-          </motion.div>
-
-          <AnimatePresence mode="wait">
-            {paginationData.hasItems ? (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.5, delay: 0.6 }}
-                className="w-full"
-              >
-                <div className="w-full grid grid-cols-1 gap-2.5">
-                  {paginationData.currentItems.map((item, index) => (
-                    <motion.div
-                      key={`${item.query}-${item.timestamp}`}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: 20 }}
-                      transition={{
-                        duration: 0.3,
-                        delay: index * 0.05,
-                        ease: "easeOut",
-                      }}
-                    >
-                      <Clickable tapScale={0.99}>
-                        <Card
-                          className={cn(
-                            "group transition-all duration-200 border",
-                            "bg-card/40 hover:bg-card/60 backdrop-blur-sm",
-                            "hover:border-primary/20",
-                            trashMode &&
-                              "hover:border-destructive hover:bg-destructive/5",
-                          )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                {recentHistory.map((item) => (
+                  <Clickable key={item.query} tapScale={0.98}>
+                    <Card className="group transition-all duration-200 border bg-card/40 hover:bg-card/60 hover:border-primary/20">
+                      <CardContent className="p-3">
+                        <Link
+                          className="flex items-center gap-3"
+                          href={toSearchURI(item.query)}
+                          onClick={() => handleSearch(item.query)}
                         >
-                          <CardContent className="p-3">
-                            <Link
-                              className="flex flex-row items-center"
-                              href={toSearchURI(item.query)}
-                              onClick={(e) => {
-                                if (trashMode) {
-                                  e.preventDefault();
-                                  handleRemoveHistory(item.query);
-                                } else {
-                                  handleSearch(item.query);
-                                }
-                              }}
-                            >
-                              <div
-                                className={cn(
-                                  "w-9 h-9 rounded-md grid place-items-center border shrink-0 transition-all duration-300",
-                                  trashMode
-                                    ? "border-destructive/30 bg-destructive/5 group-hover:border-destructive"
-                                    : "border-border bg-muted/20 group-hover:border-primary/30",
-                                )}
-                              >
-                                <motion.div
-                                  key={trashMode ? "trash" : "link"}
-                                  initial={{ scale: 0.8, opacity: 0 }}
-                                  animate={{ scale: 1, opacity: 1 }}
-                                  transition={{ duration: 0.2 }}
-                                >
-                                  <Icon
-                                    icon={
-                                      !trashMode ? (
-                                        <RiGlobalLine />
-                                      ) : (
-                                        <RiDeleteBinLine />
-                                      )
-                                    }
-                                    className={cn(
-                                      "w-4 h-4 transition-colors duration-300",
-                                      trashMode
-                                        ? "text-destructive"
-                                        : getTypeColor(item.queryType),
-                                    )}
-                                  />
-                                </motion.div>
-                              </div>
+                          <div className="w-8 h-8 rounded-md grid place-items-center border border-border bg-muted/20 group-hover:border-primary/30 shrink-0">
+                            <RiGlobalLine className={cn("w-3.5 h-3.5", getTypeColor(item.queryType))} />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-semibold truncate">{item.query}</p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <Badge variant="outline" className="text-[8px] px-1 py-0 uppercase tracking-wider">{item.queryType}</Badge>
+                              <span className="text-[10px] text-muted-foreground">{format(item.timestamp, "MMM dd")}</span>
+                            </div>
+                          </div>
+                          <RiArrowRightSLine className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                        </Link>
+                      </CardContent>
+                    </Card>
+                  </Clickable>
+                ))}
+              </div>
+            </div>
+          )}
 
-                              <div className="ml-3 flex-grow min-w-0">
-                                <div className="flex items-center gap-2">
-                                  <p className="text-sm font-semibold tracking-wide truncate text-foreground">
-                                    {item.query}
-                                  </p>
-                                  <Badge
-                                    variant="outline"
-                                    className={cn(
-                                      "text-[9px] px-1.5 py-0 font-medium border uppercase tracking-wider transition-all duration-300",
-                                      "group-hover:border-primary/30",
-                                    )}
-                                  >
-                                    {item.queryType}
-                                  </Badge>
-                                </div>
-                                <div className="flex items-center mt-1 space-x-3 text-[10px] text-muted-foreground font-medium">
-                                  <span>
-                                    {format(item.timestamp, "MMM dd, yyyy")}
-                                  </span>
-                                  <div className="w-0.5 h-2 bg-muted-foreground/30" />
-                                  <span>
-                                    {format(item.timestamp, "HH:mm")}
-                                  </span>
-                                </div>
-                              </div>
-
-                              <motion.div
-                                className={cn(
-                                  "w-7 h-7 rounded-full grid place-items-center ml-2 transition-all duration-300",
-                                  "opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0",
-                                  "bg-primary/5 text-primary",
-                                  trashMode &&
-                                    "bg-destructive/10 text-destructive",
-                                )}
-                              >
-                                <RiArrowRightSLine className="w-4 h-4" />
-                              </motion.div>
-                            </Link>
-                          </CardContent>
-                        </Card>
-                      </Clickable>
-                    </motion.div>
-                  ))}
-                </div>
-                {paginationData.hasPagination && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: 0.2 }}
-                    className="mt-6"
-                  >
-                    <Pagination className="justify-center select-none">
-                      <PaginationContent className="gap-1 bg-muted/20 p-1 rounded-full border border-border/50 backdrop-blur-sm">
-                        <PaginationItem className="hidden sm:inline-block">
-                          <PaginationPrevious
-                            onClick={() =>
-                              setCurrentPage((prev) => Math.max(1, prev - 1))
-                            }
-                            className={cn(
-                              "h-7 min-w-7 px-2 text-xs transition-all duration-300 hover:bg-background rounded-full",
-                              currentPage === 1 &&
-                                "pointer-events-none opacity-50",
-                            )}
-                          />
-                        </PaginationItem>
-                        {(() => {
-                          const { totalPages } = paginationData;
-                          const maxVisiblePages =
-                            typeof window !== "undefined" &&
-                            window.innerWidth < 640
-                              ? 3
-                              : 5;
-                          const pages: (number | string)[] = [];
-                          if (totalPages <= maxVisiblePages) {
-                            for (let i = 1; i <= totalPages; i++) pages.push(i);
-                          } else {
-                            if (currentPage <= 3) {
-                              for (let i = 1; i <= 3; i++) pages.push(i);
-                              pages.push("ellipsis");
-                              pages.push(totalPages);
-                            } else if (currentPage >= totalPages - 2) {
-                              pages.push(1);
-                              pages.push("ellipsis");
-                              for (let i = totalPages - 2; i <= totalPages; i++)
-                                pages.push(i);
-                            } else {
-                              pages.push(1);
-                              pages.push("ellipsis");
-                              pages.push(currentPage - 1);
-                              pages.push(currentPage);
-                              pages.push(currentPage + 1);
-                              pages.push("ellipsis");
-                              pages.push(totalPages);
-                            }
-                          }
-                          return pages.map((page, index) => (
-                            <PaginationItem key={index}>
-                              {page === "ellipsis" ? (
-                                <PaginationEllipsis className="h-7 min-w-7 text-xs" />
-                              ) : (
-                                <PaginationLink
-                                  onClick={() =>
-                                    setCurrentPage(page as number)
-                                  }
-                                  isActive={currentPage === page}
-                                  className={cn(
-                                    "h-7 min-w-7 text-xs transition-all duration-300 rounded-full",
-                                    currentPage === page &&
-                                      "bg-background shadow-sm text-primary font-bold",
-                                  )}
-                                >
-                                  {page}
-                                </PaginationLink>
-                              )}
-                            </PaginationItem>
-                          ));
-                        })()}
-                        <PaginationItem className="hidden sm:inline-block">
-                          <PaginationNext
-                            onClick={() =>
-                              setCurrentPage((prev) =>
-                                Math.min(paginationData.totalPages, prev + 1),
-                              )
-                            }
-                            className={cn(
-                              "h-7 min-w-7 px-2 text-xs transition-all duration-300 hover:bg-background rounded-full",
-                              currentPage === paginationData.totalPages &&
-                                "pointer-events-none opacity-50",
-                            )}
-                          />
-                        </PaginationItem>
-                      </PaginationContent>
-                    </Pagination>
-                  </motion.div>
-                )}
-              </motion.div>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.3 }}
-                className="w-full mt-12 flex flex-col items-center text-center"
-              >
-                <motion.div
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ duration: 0.5, delay: 0.5 }}
-                  className="w-20 h-20 backdrop-blur-sm rounded-full bg-gradient-to-br from-muted/30 to-muted/10 grid place-items-center mb-6 border-2 border-muted/50"
-                >
-                  <RiHistoryLine className="w-10 h-10 text-muted-foreground" />
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.7 }}
-                >
-                  <h3 className="text-lg font-medium tracking-wide mb-3 bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
-                    {t("no_history_title")}
-                  </h3>
-                  <p className="text-sm text-muted-foreground max-w-[320px] leading-relaxed mb-6">
-                    {t("no_history_description")}
-                  </p>
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.3, delay: 0.9 }}
-                  onClick={() => setShowShortcuts(true)}
-                  className="flex items-center gap-2 text-xs text-muted-foreground border rounded-full px-4 py-2 bg-secondary/25 backdrop-blur-sm hover:bg-secondary/40 transition-all duration-300 cursor-pointer"
-                >
-                  <KeyboardShortcut k="?" />
-                  <span>Press for shortcuts</span>
-                </motion.div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+          {recentHistory.length === 0 && (
+            <div className="text-center py-12">
+              <RiHistoryLine className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
+              <h3 className="text-sm font-medium text-muted-foreground mb-1">{t("no_history_title")}</h3>
+              <p className="text-xs text-muted-foreground/70">{t("no_history_description")}</p>
+            </div>
+          )}
+        </motion.div>
       </main>
     </ScrollArea>
+
+    <Dialog open={showHistory} onOpenChange={setShowHistory}>
+      <DialogContent className="max-w-lg max-h-[80vh] flex flex-col">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <RiHistoryLine className="w-4 h-4" />
+            Lookup History
+          </DialogTitle>
+        </DialogHeader>
+        <div className="flex items-center gap-2 mb-3">
+          <div className="relative flex-1">
+            <Input
+              className="h-8 text-xs pl-8"
+              placeholder={t("search_history")}
+              value={historySearch}
+              onChange={(e) => setHistorySearch(e.target.value)}
+            />
+            <RiSearchLine className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon-sm" className="shrink-0">
+                <RiFilterLine className="h-3.5 w-3.5" />
+                {selectedType !== "all" && <div className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full" />}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuRadioGroup value={selectedType} onValueChange={setSelectedType}>
+                <DropdownMenuRadioItem value="all" className="text-xs">{t("all_types")}</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="domain" className="text-xs">{t("domain_only")}</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="ipv4" className="text-xs">{t("ipv4_only")}</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="ipv6" className="text-xs">{t("ipv6_only")}</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="asn" className="text-xs">{t("asn_only")}</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="cidr" className="text-xs">{t("cidr_only")}</DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button variant="outline" size="icon-sm" className="shrink-0" onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}>
+            {sortOrder === "asc" ? <RiSortAsc className="h-3.5 w-3.5" /> : <RiSortDesc className="h-3.5 w-3.5" />}
+          </Button>
+          <Button
+            variant="outline"
+            size="icon-sm"
+            className={cn("shrink-0", trashMode && "bg-destructive/10 text-destructive border-destructive")}
+            onClick={() => setTrashMode(!trashMode)}
+          >
+            {trashMode ? <RiArrowGoBackLine className="h-3.5 w-3.5" /> : <RiDeleteBinLine className="h-3.5 w-3.5" />}
+          </Button>
+        </div>
+        <ScrollArea className="flex-1 -mx-6 px-6">
+          <div className="space-y-1.5">
+            {filteredHistory.length === 0 && (
+              <div className="text-center py-8">
+                <p className="text-xs text-muted-foreground">No history found</p>
+              </div>
+            )}
+            {filteredHistory.map((item) => (
+              <div
+                key={`${item.query}-${item.timestamp}`}
+                className={cn(
+                  "flex items-center gap-3 p-2.5 rounded-lg border transition-colors cursor-pointer",
+                  trashMode ? "hover:bg-destructive/5 hover:border-destructive/50" : "hover:bg-muted/50",
+                )}
+                onClick={() => {
+                  if (trashMode) {
+                    handleRemoveHistory(item.query);
+                  } else {
+                    setShowHistory(false);
+                    handleSearch(item.query);
+                  }
+                }}
+              >
+                <div className={cn(
+                  "w-8 h-8 rounded-md grid place-items-center border shrink-0",
+                  trashMode ? "border-destructive/30 bg-destructive/5" : "border-border bg-muted/20",
+                )}>
+                  {trashMode ? (
+                    <RiDeleteBinLine className="w-3.5 h-3.5 text-destructive" />
+                  ) : (
+                    <RiGlobalLine className={cn("w-3.5 h-3.5", getTypeColor(item.queryType))} />
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium truncate">{item.query}</p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <Badge variant="outline" className="text-[8px] px-1 py-0 uppercase">{item.queryType}</Badge>
+                    <span className="text-[10px] text-muted-foreground">{format(item.timestamp, "MMM dd, yyyy HH:mm")}</span>
+                  </div>
+                </div>
+                {!trashMode && <RiArrowRightSLine className="w-4 h-4 text-muted-foreground shrink-0" />}
+              </div>
+            ))}
+          </div>
+        </ScrollArea>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }
 
