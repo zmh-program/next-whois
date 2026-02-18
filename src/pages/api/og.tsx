@@ -44,7 +44,10 @@ function isValid(v: string | undefined | null): v is string {
 function formatDate(dateStr: string): string {
   if (!dateStr || dateStr === "Unknown") return "";
   try {
-    return dateStr.split("T")[0];
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}`;
   } catch {
     return dateStr;
   }

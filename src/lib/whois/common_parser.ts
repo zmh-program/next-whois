@@ -157,7 +157,7 @@ export async function analyzeWhois(data: string): Promise<WhoisAnalyzeResult> {
         result.nameServers.push(value);
         break;
       case "nserver":
-        result.nameServers.push(value);
+        result.nameServers.push(value.split(/\s+/)[0]);
         break;
       case "registrant name":
         result.registrantOrganization = value;

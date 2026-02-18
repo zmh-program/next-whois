@@ -24,7 +24,12 @@ const WHOIS_ERROR_PATTERNS = [
   /status:\s*available/i,
   /is available for/i,
   /no whois information/i,
+  /tld is not supported/i,
 ];
+
+function isIanaFallback(raw: string): boolean {
+  return raw.includes("% IANA WHOIS server");
+}
 
 function detectWhoisError(raw: string): string | null {
   const lines = raw
@@ -197,10 +202,12 @@ export async function lookupWhois(domain: string): Promise<WhoisResult> {
       let result = await convertRdapToWhoisResult(rdapData, domain);
 
       if (whoisRawData) {
-        try {
-          const whoisParsed = await analyzeWhois(whoisRawData);
-          result = mergeResults(result, whoisParsed);
-        } catch {}
+        if (!isIanaFallback(whoisRawData)) {
+          try {
+            const whoisParsed = await analyzeWhois(whoisRawData);
+            result = mergeResults(result, whoisParsed);
+          } catch {}
+        }
         result.rawWhoisContent = whoisRawData;
       }
       result.rawRdapContent = rdapRaw!;
@@ -216,20 +223,28 @@ export async function lookupWhois(domain: string): Promise<WhoisResult> {
   }
 
   if (whoisRawData) {
+    if (isIanaFallback(whoisRawData)) {
+      return {
+        time: elapsed(),
+        status: false,
+        cached: false,
+        source: "whois",
+        error: "No WHOIS/RDAP server available for this TLD",
+      };
+    }
+
     try {
       const result = await analyzeWhois(whoisRawData);
 
-      if (isEmptyResult(result)) {
-        const whoisError = detectWhoisError(whoisRawData);
-        if (whoisError) {
-          return {
-            time: elapsed(),
-            status: false,
-            cached: false,
-            source: "whois",
-            error: whoisError,
-          };
-        }
+      const whoisError = detectWhoisError(whoisRawData);
+      if (whoisError || isEmptyResult(result)) {
+        return {
+          time: elapsed(),
+          status: false,
+          cached: false,
+          source: "whois",
+          error: whoisError || "Empty WHOIS response",
+        };
       }
 
       if (rdapRaw) result.rawRdapContent = rdapRaw;
