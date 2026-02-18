@@ -89,14 +89,22 @@ export async function analyzeWhois(data: string): Promise<WhoisAnalyzeResult> {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
 
-    let segments = line.split(":");
-    if (segments.length < 2) continue;
-    if (segments.length >= 3 && segments[0].toLowerCase() === "network") {
-      segments = segments.slice(1);
-    }
+    let key: string;
+    let value: string;
 
-    const key = segments[0].trim().toLowerCase();
-    const value = segments.slice(1).join(":").trim();
+    const bracketMatch = line.match(/^\[(.+?)\]\s+(.+)/);
+    if (bracketMatch) {
+      key = bracketMatch[1].trim().toLowerCase();
+      value = bracketMatch[2].trim();
+    } else {
+      let segments = line.split(":");
+      if (segments.length < 2) continue;
+      if (segments.length >= 3 && segments[0].toLowerCase() === "network") {
+        segments = segments.slice(1);
+      }
+      key = segments[0].trim().toLowerCase();
+      value = segments.slice(1).join(":").trim();
+    }
 
     switch (key) {
       case "domain name":
