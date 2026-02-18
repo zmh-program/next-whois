@@ -133,7 +133,7 @@ async function getLookupWhois(domain: string): Promise<WhoisRawResult> {
   const rawParts: string[] = [];
   for (const s of servers) {
     const entry = (data as any)[s];
-    if (entry?.text && Array.isArray(entry.text)) rawParts.push(entry.text.join("\n"));
+    if (entry?.__raw) rawParts.push(entry.__raw);
   }
   const raw = rawParts.join("\n\n") || "";
 
