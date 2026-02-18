@@ -100,6 +100,7 @@ export async function analyzeWhois(data: string): Promise<WhoisAnalyzeResult> {
 
     switch (key) {
       case "domain name":
+      case "domain":
         result.domain = value;
         break;
       case "registrar":
