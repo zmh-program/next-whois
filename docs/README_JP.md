@@ -1,187 +1,90 @@
 <div align="center">
 
-# 🧪 Next Whois
+<img src="/public/icons/icon-512x512.png" alt="Next Whois" width="64" height="64">
 
-😎 軽量で美しい Whois クエリツール
+# Next Whois
+
+Next.js で構築された、高速でモダンな WHOIS/RDAP ルックアップツール。
 
 [English](/README.md) · [简体中文](/docs/README_CN.md) · [繁體中文](/docs/README_TW.md) · [Русский](/docs/README_RU.md) · [日本語](/docs/README_JP.md) · [Deutsch](/docs/README_DE.md) · [Français](/docs/README_FR.md) · [한국어](/docs/README_KR.md)
 
 [![Deploy to Vercel](https://vercel.com/button)](https://vercel.com/import/project?template=https://github.com/zmh-program/next-whois-ui)
-
 [![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/zmh-program/next-whois-ui)
 
 </div>
 
-## 😎 特徴
+![Banner](/public/banner.png)
 
-多くを語る必要はありません、試してみてください！ 🥳
+## 特徴
 
-1. ✨ **美しいUI**: [Shadcn UI](https://ui.shadcn.com)を使用したモダンなデザインで、快適に使用できます。
-2. 📱 **レスポンシブ**: モバイル✅ / タブレット✅ / デスクトップ✅でうまく動作し、PWAアプリのサポートもあります。
-3. 🌈 **マルチテーマ**: 複数のテーマをサポート（*ライト＆ダーク*）、システムテーマの検出、好きなテーマに切り替え可能。
-4. 🚀 **柔軟なクエリ**: Next.jsを使用しており、サーバーレスデプロイメントと高速クエリをサポート。
-5. 📚 **履歴記録**: 履歴はローカルストレージに保存され、履歴の表示とクエリが簡単です。
-6. 📡 **オープンAPI**: シンプルなWhoisクエリAPIで、他のサービスとの統合が容易です。
-7. 🌍 **IPv4＆IPv6 Whois**: IPv4、IPv6、ドメイン、ASN、CIDRのWhoisクエリをサポート。
-8. 📦 **結果キャプチャ**: Whois結果をキャプチャし、共有や保存が簡単です。
-9. 📡 **結果キャッシュ**：Redisベースのキャッシュで高速なクエリを実現。
-10. 🌍 **国際化**：多言語対応
-11. 🚀 **RDAP サポート**：最新のRDAPプロトコルをサポートし、自動的にWHOISにフォールバック
+- **WHOIS & RDAP** - ドメイン、IPv4、IPv6、ASN、CIDR のルックアップに対応。RDAP 優先、WHOIS へ自動フォールバック
+- **動的 OG 画像** - Satori ベースの Open Graph 画像生成（`/api/og` 経由）
+- **レスポンシブ UI** - Shadcn UI + Tailwind CSS、モバイル・タブレット・デスクトップに対応。PWA サポート
+- **ダーク / ライトテーマ** - システム設定の自動検出と手動切り替え
+- **履歴とショートカット** - ローカル履歴の検索・フィルタリング・キーボードショートカット対応
+- **EPP ステータスコード** - ICANN リファレンス付きの分かりやすいステータス説明
+- **レジストラ & NS ブランディング** - 主要レジストラとネームサーバープロバイダーのアイコン自動検出
+- **ドメインメトリクス** - Moz DA/PA/Spam Score 統合（オプション）
+- **Redis キャッシュ** - サーバーサイドの結果キャッシュと `Cache-Control` ヘッダー対応
+- **オープン API** - `/api/lookup` でプログラマティックアクセス、`/api/og` で画像生成
+- **国際化** - 英語、中国語（簡体字/繁体字）、ドイツ語、ロシア語、日本語、フランス語、韓国語
+- **API ドキュメント** - インタラクティブな例を含む組み込みの `/docs` ページ
 
-👉 [コントリビュート](https://github.com/zmh-program/next-whois-ui/pulls)
+[コントリビュート](https://github.com/zmh-program/next-whois-ui/pulls)
 
 ## デプロイ
 
-#### `1` 🚀 プラットフォーム（推奨）
+### プラットフォーム（推奨）
 
 [Vercel](https://vercel.com/import/project?template=https://github.com/zmh-program/next-whois-ui) / [Netlify](https://app.netlify.com/start/deploy?repository=https://github.com/zmh-program/next-whois-ui) / [Zeabur](https://zeabur.com/templates/UHCCCT)
 
-#### `2` 🐳 Docker
+### Docker
 
 ```bash
 docker run -d -p 3000:3000 programzmh/next-whois-ui
 ```
 
-#### `3` 🔨 ソースコード
+### ソースコード
 
 ```bash
 git clone https://github.com/zmh-program/next-whois-ui
 cd next-whois-ui
-
-npm install -g pnpm
 pnpm install
 pnpm dev
 ```
 
-## 📏 環境変数
+## 環境変数
 
-### SEO
+| 変数 | 説明 | デフォルト値 |
+|------|------|-------------|
+| `NEXT_PUBLIC_SITE_TITLE` | サイトタイトル | Next Whois |
+| `NEXT_PUBLIC_SITE_DESCRIPTION` | サイト説明 | — |
+| `NEXT_PUBLIC_SITE_KEYWORDS` | サイトキーワード | — |
+| `NEXT_PUBLIC_HISTORY_LIMIT` | 最大履歴件数（-1 = 無制限） | -1 |
+| `NEXT_PUBLIC_MAX_WHOIS_FOLLOW` | 最大ドメイン WHOIS フォロー深度 | 0 |
+| `MOZ_ACCESS_ID` | Moz API Access ID | — |
+| `MOZ_SECRET_KEY` | Moz API Secret Key | — |
+| `REDIS_HOST` | Redis ホスト（空 = キャッシュ無効） | — |
+| `REDIS_PORT` | Redis ポート | 6379 |
+| `REDIS_PASSWORD` | Redis パスワード | — |
+| `REDIS_DB` | Redis データベースインデックス | 0 |
+| `REDIS_CACHE_TTL` | キャッシュ TTL（秒） | 3600 |
 
-- `NEXT_PUBLIC_SITE_TITLE`: サイトタイトル
-- `NEXT_PUBLIC_SITE_DESCRIPTION`: サイト説明
-- `NEXT_PUBLIC_SITE_KEYWORDS`: サイトキーワード
+## API
 
-### WHOIS
+組み込みの [API ドキュメント](https://gtb.zmh.me/docs) ページをご覧ください。または：
 
-- `NEXT_PUBLIC_HISTORY_LIMIT`: 履歴制限（デフォルト値：-1）
-- `NEXT_PUBLIC_MAX_WHOIS_FOLLOW`: 最大ドメインWhoisフォロー数（デフォルト値：0）
-- `NEXT_PUBLIC_MAX_IP_WHOIS_FOLLOW`: 最大IP Whoisフォロー数（デフォルト値：5）
+**`GET /api/lookup?query=google.com`** — WHOIS/RDAP ルックアップ
 
-### MOZ API
+**`GET /api/og?domain=google.com`** — 動的 OG 画像生成
 
-- `MOZ_ACCESS_ID`: Moz APIアクセスID（ドメインメトリクスに必要）
-- `MOZ_SECRET_KEY`: Moz APIシークレットキー（ドメインメトリクスに必要）
+## 技術スタック
 
-### キャッシュ
+- Next.js (Pages Router, Edge Runtime for OG)
+- Shadcn UI, Tailwind CSS, Framer Motion
+- [whois-raw](https://www.npmjs.com/package/whois-raw) + RDAP client
+- Satori (via `next/og`) for image generation
 
-- `REDIS_HOST`: Redisホスト（空の場合はキャッシュ無効）
-- `REDIS_PORT`: Redisポート（デフォルト値：6379）
-- `REDIS_PASSWORD`: Redisパスワード（オプション）
-- `REDIS_DB`: Redisデータベース（デフォルト値：0）
-- `REDIS_CACHE_TTL`: RedisキャッシュTTL秒数（デフォルト値：3600）
+## ライセンス
 
-## 📝 APIリファレンス
-
-`GET` `/api/lookup?query=google.com`
-
-<details>
-<summary><strong>レスポンス</strong> OK (200)</summary>
-
-```json
-{
-  "time": 1.547,
-  "status": true,
-  "cached": false,
-  "source": "rdap",
-  "result": {
-    "domain": "GOOGLE.COM",
-    "registrar": "MarkMonitor Inc.",
-    "registrarURL": "http://www.markmonitor.com",
-    "ianaId": "292",
-    "whoisServer": "whois.markmonitor.com",
-    "updatedDate": "2019-09-09T15:39:04.000Z",
-    "creationDate": "1997-09-15T04:00:00.000Z",
-    "expirationDate": "2028-09-14T04:00:00.000Z",
-    "status": [
-      {
-        "status": "clientDeleteProhibited",
-        "url": "https://icann.org/epp#clientDeleteProhibited"
-      },
-      {
-        "status": "clientTransferProhibited",
-        "url": "https://icann.org/epp#clientTransferProhibited"
-      },
-      {
-        "status": "clientUpdateProhibited",
-        "url": "https://icann.org/epp#clientUpdateProhibited"
-      },
-      {
-        "status": "serverDeleteProhibited",
-        "url": "https://icann.org/epp#serverDeleteProhibited"
-      },
-      {
-        "status": "serverTransferProhibited",
-        "url": "https://icann.org/epp#serverTransferProhibited"
-      },
-      {
-        "status": "serverUpdateProhibited",
-        "url": "https://icann.org/epp#serverUpdateProhibited"
-      }
-    ],
-    "nameServers": [
-      "NS1.GOOGLE.COM",
-      "NS2.GOOGLE.COM",
-      "NS3.GOOGLE.COM",
-      "NS4.GOOGLE.COM"
-    ],
-    "registrantOrganization": "Unknown",
-    "registrantProvince": "Unknown",
-    "registrantCountry": "Unknown",
-    "registrantPhone": "+1 2086851750",
-    "registrantEmail": "Unknown",
-    "rawWhoisContent": "...",
-    "rawRdapContent": "..."
-  }
-}
-```
-
-</details>
-
-<details>
-<summary><strong>エラーレスポンス</strong> Internal Server Error (500)</summary>
-
-```json
-{
-  "time": 0.609,
-  "status": false,
-  "error": "No match for domain google.notfound (e.g. domain is not registered)"
-}
-```
-
-</details>
-
-<details>
-<summary><strong>エラーレスポンス</strong> Bad Request (400)</summary>
-
-```json
-{
-  "time": -1,
-  "status": false,
-  "error": "Query is required"
-}
-```
-
-</details>
-
-## 🧠 技術スタック
-
-- Next.js
-- Shadcn UI & Tailwind CSS
-- Whois Core Lib (@[whois-raw](https://www.npmjs.com/package/whois-raw))
-- RDAP サポート (@[node-rdap](https://www.npmjs.com/package/node-rdap))
-
-## 💪 TLDsサポート
-
-👉 [TLDs Whoisパーサーライブラリのソースコード](../src/lib/whois/lib.ts)
-
-❤ ヒント: 一部のTLDsのWhoisパーサーは現在互換性がない場合があります。より多くのTLDsをサポートするために、あなたの[プルリクエスト](https://github.com/zmh-program/next-whois-ui/pulls)をお待ちしています！
+MIT

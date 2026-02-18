@@ -3,9 +3,41 @@ import { NextRequest } from "next/server";
 
 export const config = { runtime: "edge" };
 
+function detectType(q: string): string {
+  if (!q) return "unknown";
+  if (/^AS\d+$/i.test(q)) return "ASN";
+  if (/\/\d{1,3}$/.test(q)) return "CIDR";
+  if (q.includes(":")) return "IPv6";
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(q)) return "IPv4";
+  return "DOMAIN";
+}
+
+function getRelativeTime(dateStr: string): string {
+  if (!dateStr) return "";
+  try {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffDays = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24),
+    );
+    if (diffDays < 0) {
+      const abs = Math.abs(diffDays);
+      if (abs < 30) return `in ${abs}d`;
+      if (abs < 365) return `in ${Math.floor(abs / 30)}mo`;
+      return `in ${Math.floor(abs / 365)}y`;
+    }
+    if (diffDays < 1) return "today";
+    if (diffDays < 30) return `${diffDays}d ago`;
+    if (diffDays < 365) return `${Math.floor(diffDays / 30)}mo ago`;
+    return `${Math.floor(diffDays / 365)}y ago`;
+  } catch {
+    return "";
+  }
+}
+
 export default async function handler(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const domain = searchParams.get("domain");
+  const query = searchParams.get("query") || searchParams.get("q") || searchParams.get("domain");
   const registrar = searchParams.get("registrar");
   const created = searchParams.get("created");
   const expires = searchParams.get("expires");
@@ -34,6 +66,7 @@ export default async function handler(req: NextRequest) {
   const redColor = "#ef4444";
   const amberColor = isDark ? "#fbbf24" : "#d97706";
 
+  const queryType = query ? detectType(query) : "unknown";
   const hasDetails = registrar || created || expires;
   const statusList = status ? status.split(",").slice(0, 6) : [];
   const nsList = ns ? ns.split(",").slice(0, 4) : [];
@@ -41,6 +74,20 @@ export default async function handler(req: NextRequest) {
 
   const statusColor = remainingDays === null ? muted : remainingDays <= 0 ? redColor : remainingDays <= 60 ? amberColor : greenColor;
   const statusLabel = remainingDays === null ? "N/A" : remainingDays <= 0 ? "EXPIRED" : remainingDays <= 60 ? "EXPIRING SOON" : "ACTIVE";
+
+  const typeBadgeColors: Record<string, { bg: string; fg: string }> = {
+    DOMAIN: { bg: isDark ? "#1e3a5f" : "#dbeafe", fg: isDark ? "#60a5fa" : "#2563eb" },
+    IPv4: { bg: isDark ? "#064e3b" : "#d1fae5", fg: isDark ? "#34d399" : "#059669" },
+    IPv6: { bg: isDark ? "#2e1065" : "#ede9fe", fg: isDark ? "#a78bfa" : "#7c3aed" },
+    ASN: { bg: isDark ? "#431407" : "#ffedd5", fg: isDark ? "#fb923c" : "#ea580c" },
+    CIDR: { bg: isDark ? "#500724" : "#fce7f3", fg: isDark ? "#f472b6" : "#db2777" },
+    unknown: { bg: subtleBg, fg: muted },
+  };
+  const typeBadge = typeBadgeColors[queryType] || typeBadgeColors.unknown;
+
+  const createdRelative = created ? getRelativeTime(created) : "";
+  const expiresRelative = expires ? getRelativeTime(expires) : "";
+  const updatedRelative = updated ? getRelativeTime(updated) : "";
 
   return new ImageResponse(
     (
@@ -59,7 +106,7 @@ export default async function handler(req: NextRequest) {
           position: "relative",
         }}
       >
-        {domain && hasDetails ? (
+        {query && hasDetails ? (
           <div
             style={{
               display: "flex",
@@ -79,21 +126,21 @@ export default async function handler(req: NextRequest) {
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                   <div
                     style={{
-                      padding: "2px 8px",
+                      padding: "3px 10px",
                       borderRadius: "4px",
-                      backgroundColor: subtleBg,
+                      backgroundColor: typeBadge.bg,
                       fontSize: "11px",
                       fontWeight: 700,
-                      color: muted,
+                      color: typeBadge.fg,
                       letterSpacing: "0.08em",
                     }}
                   >
-                    WHOIS
+                    {queryType}
                   </div>
                   {age && (
                     <div
                       style={{
-                        padding: "2px 8px",
+                        padding: "3px 10px",
                         borderRadius: "4px",
                         backgroundColor: subtleBg,
                         fontSize: "11px",
@@ -107,14 +154,14 @@ export default async function handler(req: NextRequest) {
                 </div>
                 <span
                   style={{
-                    fontSize: Math.min(52, Math.max(28, Math.floor(750 / Math.max(domain.length, 1) * 1.5))),
+                    fontSize: Math.min(52, Math.max(28, Math.floor(750 / Math.max(query.length, 1) * 1.5))),
                     fontWeight: 700,
                     color: fg,
                     letterSpacing: "-0.02em",
                     lineHeight: 1.15,
                   }}
                 >
-                  {domain}
+                  {query}
                 </span>
                 {registrar && (
                   <span style={{ fontSize: "14px", color: muted, fontWeight: 400, marginTop: "2px" }}>
@@ -128,14 +175,14 @@ export default async function handler(req: NextRequest) {
                     display: "flex",
                     alignItems: "center",
                     gap: "6px",
-                    padding: "4px 10px",
-                    borderRadius: "6px",
+                    padding: "5px 12px",
+                    borderRadius: "8px",
                     backgroundColor: `${statusColor}18`,
                     border: `1px solid ${statusColor}40`,
                   }}
                 >
-                  <div style={{ width: "7px", height: "7px", borderRadius: "50%", backgroundColor: statusColor }} />
-                  <span style={{ fontSize: "11px", fontWeight: 700, color: statusColor, letterSpacing: "0.04em" }}>{statusLabel}</span>
+                  <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: statusColor }} />
+                  <span style={{ fontSize: "12px", fontWeight: 700, color: statusColor, letterSpacing: "0.04em" }}>{statusLabel}</span>
                 </div>
                 {remainingDays !== null && remainingDays > 0 && (
                   <span style={{ fontSize: "11px", color: muted, fontWeight: 500 }}>
@@ -145,44 +192,58 @@ export default async function handler(req: NextRequest) {
               </div>
             </div>
 
-            <div style={{ display: "flex", borderTop: `1px solid ${border}`, paddingTop: "16px", gap: "28px", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", borderTop: `1px solid ${border}`, paddingTop: "16px", gap: "32px", flexWrap: "wrap" }}>
               {created && (
-                <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                  <span style={{ fontSize: "10px", color: muted, fontWeight: 600, letterSpacing: "0.06em" }}>CREATED</span>
+                <div style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
+                  <span style={{ fontSize: "10px", color: muted, fontWeight: 600, letterSpacing: "0.08em" }}>CREATED</span>
                   <span style={{ fontSize: "15px", color: fg, fontWeight: 600, fontFamily: "monospace" }}>{created}</span>
+                  {createdRelative && (
+                    <span style={{ fontSize: "10px", color: muted, fontWeight: 400 }}>{createdRelative}</span>
+                  )}
                 </div>
               )}
               {expires && (
-                <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                  <span style={{ fontSize: "10px", color: muted, fontWeight: 600, letterSpacing: "0.06em" }}>EXPIRES</span>
+                <div style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
+                  <span style={{ fontSize: "10px", color: muted, fontWeight: 600, letterSpacing: "0.08em" }}>EXPIRES</span>
                   <span style={{ fontSize: "15px", color: fg, fontWeight: 600, fontFamily: "monospace" }}>{expires}</span>
+                  {expiresRelative && (
+                    <span style={{ fontSize: "10px", color: remainingDays !== null && remainingDays > 60 ? greenColor : muted, fontWeight: 500 }}>{expiresRelative}</span>
+                  )}
                 </div>
               )}
               {updated && (
-                <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                  <span style={{ fontSize: "10px", color: muted, fontWeight: 600, letterSpacing: "0.06em" }}>UPDATED</span>
+                <div style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
+                  <span style={{ fontSize: "10px", color: muted, fontWeight: 600, letterSpacing: "0.08em" }}>UPDATED</span>
                   <span style={{ fontSize: "15px", color: fg, fontWeight: 600, fontFamily: "monospace" }}>{updated}</span>
-                </div>
-              )}
-              {country && (
-                <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                  <span style={{ fontSize: "10px", color: muted, fontWeight: 600, letterSpacing: "0.06em" }}>COUNTRY</span>
-                  <span style={{ fontSize: "15px", color: fg, fontWeight: 600 }}>{country}</span>
-                </div>
-              )}
-              {whoisServer && (
-                <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                  <span style={{ fontSize: "10px", color: muted, fontWeight: 600, letterSpacing: "0.06em" }}>WHOIS SERVER</span>
-                  <span style={{ fontSize: "13px", color: muted, fontWeight: 500, fontFamily: "monospace" }}>{whoisServer}</span>
+                  {updatedRelative && (
+                    <span style={{ fontSize: "10px", color: muted, fontWeight: 400 }}>{updatedRelative}</span>
+                  )}
                 </div>
               )}
             </div>
 
-            {(statusList.length > 0 || nsList.length > 0 || dnssec) && (
+            {(registrantOrg || country) && (
+              <div style={{ display: "flex", gap: "32px", flexWrap: "wrap" }}>
+                {registrantOrg && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                    <span style={{ fontSize: "10px", color: muted, fontWeight: 600, letterSpacing: "0.08em" }}>ORGANIZATION</span>
+                    <span style={{ fontSize: "13px", color: fg, fontWeight: 500 }}>{registrantOrg}</span>
+                  </div>
+                )}
+                {country && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                    <span style={{ fontSize: "10px", color: muted, fontWeight: 600, letterSpacing: "0.08em" }}>COUNTRY</span>
+                    <span style={{ fontSize: "13px", color: fg, fontWeight: 500 }}>{country}</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {(statusList.length > 0 || nsList.length > 0 || dnssec || whoisServer) && (
               <div style={{ display: "flex", gap: "28px", flexWrap: "wrap" }}>
                 {statusList.length > 0 && (
                   <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                    <span style={{ fontSize: "10px", color: muted, fontWeight: 600, letterSpacing: "0.06em" }}>STATUS</span>
+                    <span style={{ fontSize: "10px", color: muted, fontWeight: 600, letterSpacing: "0.08em" }}>STATUS</span>
                     <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
                       {statusList.map((s) => (
                         <div
@@ -205,7 +266,7 @@ export default async function handler(req: NextRequest) {
                 )}
                 {nsList.length > 0 && (
                   <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                    <span style={{ fontSize: "10px", color: muted, fontWeight: 600, letterSpacing: "0.06em" }}>NAMESERVERS</span>
+                    <span style={{ fontSize: "10px", color: muted, fontWeight: 600, letterSpacing: "0.08em" }}>NAMESERVERS</span>
                     <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
                       {nsList.map((n) => (
                         <div
@@ -228,8 +289,14 @@ export default async function handler(req: NextRequest) {
                 )}
                 {dnssec && (
                   <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                    <span style={{ fontSize: "10px", color: muted, fontWeight: 600, letterSpacing: "0.06em" }}>DNSSEC</span>
+                    <span style={{ fontSize: "10px", color: muted, fontWeight: 600, letterSpacing: "0.08em" }}>DNSSEC</span>
                     <span style={{ fontSize: "12px", color: muted, fontWeight: 500, fontFamily: "monospace" }}>{dnssec}</span>
+                  </div>
+                )}
+                {whoisServer && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+                    <span style={{ fontSize: "10px", color: muted, fontWeight: 600, letterSpacing: "0.08em" }}>WHOIS SERVER</span>
+                    <span style={{ fontSize: "12px", color: muted, fontWeight: 500, fontFamily: "monospace" }}>{whoisServer}</span>
                   </div>
                 )}
               </div>
@@ -288,11 +355,11 @@ export default async function handler(req: NextRequest) {
               <span style={{ fontSize: "22px", fontWeight: 600, color: fg, letterSpacing: "0.05em" }}>NEXT WHOIS</span>
             </div>
 
-            {domain ? (
+            {query ? (
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
                 <span
                   style={{
-                    fontSize: Math.min(72, Math.max(36, Math.floor(1200 / Math.max(domain.length, 1) * 1.2))),
+                    fontSize: Math.min(72, Math.max(36, Math.floor(1200 / Math.max(query.length, 1) * 1.2))),
                     fontWeight: 700,
                     color: fg,
                     letterSpacing: "-0.02em",
@@ -301,11 +368,20 @@ export default async function handler(req: NextRequest) {
                     wordBreak: "break-all",
                   }}
                 >
-                  {domain}
+                  {query}
                 </span>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <div style={{ padding: "4px 14px", borderRadius: "9999px", border: `1px solid ${border}`, fontSize: "14px", color: muted }}>
-                    WHOIS Lookup
+                  <div
+                    style={{
+                      padding: "4px 14px",
+                      borderRadius: "9999px",
+                      backgroundColor: typeBadge.bg,
+                      fontSize: "14px",
+                      color: typeBadge.fg,
+                      fontWeight: 600,
+                    }}
+                  >
+                    {queryType} Lookup
                   </div>
                 </div>
               </div>

@@ -3,7 +3,6 @@ import {
   cleanDomain,
   cn,
   getWindowHref,
-  toReadableISODate,
   toSearchURI,
   useClipboard,
   useSaver,
@@ -14,13 +13,7 @@ import Link from "next/link";
 import Head from "next/head";
 import { Button } from "@/components/ui/button";
 import {
-  RiArrowRightSLine,
-  RiSearchLine,
   RiDeleteBinLine,
-  RiArrowGoBackLine,
-  RiFilterLine,
-  RiSortAsc,
-  RiSortDesc,
   RiHistoryLine,
   RiGlobalLine,
   RiKeyboardLine,
@@ -35,7 +28,6 @@ import {
   RiRedditLine,
   RiWhatsappLine,
   RiTelegramLine,
-  RiArrowLeftSLine,
   RiTimeLine,
   RiExchangeDollarFill,
   RiBillLine,
@@ -49,14 +41,11 @@ import {
   detectQueryType,
   listHistory,
   removeHistory,
-  searchHistory,
 } from "@/lib/history";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { WhoisAnalyzeResult, WhoisResult } from "@/lib/whois/types";
 import { getEppStatusInfo, getEppStatusColor, getEppStatusDisplayName, getEppStatusLink } from "@/lib/whois/epp-status";
-import Clickable from "@/components/motion/clickable";
 import { SearchBox } from "@/components/search_box";
 import { useTranslation } from "@/lib/i18n";
 import { toast } from "sonner";
@@ -73,8 +62,6 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
   DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu";
 import {
   Dialog,
@@ -271,7 +258,7 @@ function formatDate(dateStr: string): string {
 
 function buildOgUrl(target: string, result: WhoisAnalyzeResult | undefined, overrides?: { w?: number; h?: number; theme?: string }): string {
   const params = new URLSearchParams();
-  params.set("domain", target);
+  params.set("query", target);
   if (result) {
     if (result.registrar && result.registrar !== "Unknown") params.set("registrar", result.registrar);
     if (result.creationDate && result.creationDate !== "Unknown") params.set("created", result.creationDate.split("T")[0]);
@@ -347,9 +334,6 @@ function ShortcutsList() {
       {[
         { label: "Search", keys: ["/"] },
         { label: "Clear / Blur", keys: ["Esc"] },
-        { label: "Sort", keys: ["Alt", "S"] },
-        { label: "Filter", keys: ["Alt", "F"] },
-        { label: "History", keys: ["Alt", "H"] },
         { label: "Shortcuts", keys: ["?"] },
       ].map((item, i) => (
         <div
@@ -377,16 +361,44 @@ function ShortcutsList() {
   );
 }
 
+function QueryTypeIcon({ type, className }: { type: string; className?: string }) {
+  const config = {
+    domain: { label: "", icon: RiGlobalLine, color: "text-blue-500", bg: "bg-blue-500/10" },
+    ipv4: { label: "4", icon: null, color: "text-emerald-600", bg: "bg-emerald-500/10" },
+    ipv6: { label: "6", icon: null, color: "text-purple-500", bg: "bg-purple-500/10" },
+    asn: { label: "AS", icon: null, color: "text-orange-500", bg: "bg-orange-500/10" },
+    cidr: { label: "/", icon: null, color: "text-pink-500", bg: "bg-pink-500/10" },
+  }[type] || { label: "?", icon: null, color: "text-gray-500", bg: "bg-gray-500/10" };
+
+  if (config.icon) {
+    const Icon = config.icon;
+    return <Icon className={cn("w-3.5 h-3.5", config.color, className)} />;
+  }
+  return (
+    <span className={cn("text-[9px] font-bold", config.color, className)}>
+      {config.label}
+    </span>
+  );
+}
+
+function getDateGroupLabel(timestamp: number): string {
+  const date = new Date(timestamp);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterday = new Date(today.getTime() - 86400000);
+  const itemDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+  if (itemDate.getTime() === today.getTime()) return "Today";
+  if (itemDate.getTime() === yesterday.getTime()) return "Yesterday";
+  if (date.getFullYear() === now.getFullYear()) return format(date, "MMM dd");
+  return format(date, "MMM dd, yyyy");
+}
+
 function HomePage() {
   const { t } = useTranslation();
   const [loading, setLoading] = React.useState(false);
   const [mounted, setMounted] = React.useState(false);
   const [refreshTrigger, setRefreshTrigger] = React.useState(0);
-  const [showHistory, setShowHistory] = React.useState(false);
-  const [historySearch, setHistorySearch] = React.useState("");
-  const [sortOrder, setSortOrder] = React.useState<"asc" | "desc">("desc");
-  const [selectedType, setSelectedType] = React.useState("all");
-  const [trashMode, setTrashMode] = React.useState(false);
   const [showShortcuts, setShowShortcuts] = React.useState(false);
 
   useEffect(() => {
@@ -415,42 +427,44 @@ function HomePage() {
       }
       if (e.key === "Escape") {
         if (showShortcuts) { setShowShortcuts(false); return; }
-        if (showHistory) { setShowHistory(false); return; }
         const mainInput = document.getElementById("main-search-input");
         if (active === mainInput) mainInput?.blur();
         else if (active instanceof HTMLElement) active.blur();
         return;
       }
-      if (e.key.toLowerCase() === "h" && e.altKey) {
-        e.preventDefault();
-        setShowHistory((prev) => !prev);
-      }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [showShortcuts, showHistory]);
+  }, [showShortcuts]);
 
   const handleSearch = useCallback((query: string) => {
     setLoading(true);
     window.location.href = toSearchURI(query);
   }, []);
 
-  const recentHistory = useMemo(() => {
+  const allHistory = useMemo(() => {
     if (!mounted) return [];
-    return listHistory().sort((a, b) => b.timestamp - a.timestamp).slice(0, 5);
+    return listHistory().sort((a, b) => b.timestamp - a.timestamp);
   }, [mounted, refreshTrigger]);
 
-  const filteredHistory = useMemo(() => {
-    if (!mounted) return [];
-    const items = historySearch ? searchHistory(historySearch) : listHistory();
-    const filtered = selectedType === "all" ? items : items.filter((item) => item.queryType === selectedType);
-    return [...filtered].sort((a, b) => sortOrder === "desc" ? b.timestamp - a.timestamp : a.timestamp - b.timestamp);
-  }, [mounted, historySearch, sortOrder, selectedType, refreshTrigger]);
-
-  const getTypeColor = useCallback((type: string) => {
-    const colorMap = { domain: "text-blue-500", ipv4: "text-green-500", ipv6: "text-purple-500", asn: "text-orange-500", cidr: "text-pink-500" } as const;
-    return colorMap[type as keyof typeof colorMap] || "text-gray-500";
-  }, []);
+  const groupedHistory = useMemo(() => {
+    const groups: { label: string; items: typeof allHistory }[] = [];
+    if (allHistory.length === 0) return groups;
+    let currentLabel = "";
+    let currentGroup: typeof allHistory = [];
+    for (const item of allHistory) {
+      const label = getDateGroupLabel(item.timestamp);
+      if (label !== currentLabel) {
+        if (currentGroup.length > 0) groups.push({ label: currentLabel, items: currentGroup });
+        currentLabel = label;
+        currentGroup = [item];
+      } else {
+        currentGroup.push(item);
+      }
+    }
+    if (currentGroup.length > 0) groups.push({ label: currentLabel, items: currentGroup });
+    return groups;
+  }, [allHistory]);
 
   const handleRemoveHistory = useCallback((query: string) => {
     if (!mounted) return;
@@ -459,15 +473,9 @@ function HomePage() {
   }, [mounted]);
 
   return (
-    <>
     <ScrollArea className="w-full h-[calc(100vh-4rem)]">
       <main className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-6 min-h-[calc(100vh-4rem)]">
         <div className="flex items-center gap-3 mb-6">
-          <Link href="/docs">
-            <Button variant="ghost" size="icon-sm" className="shrink-0 text-muted-foreground">
-              <RiExternalLinkLine className="w-4 h-4" />
-            </Button>
-          </Link>
           <div className="flex-1 relative group">
             <SearchBox onSearch={handleSearch} loading={loading} autoFocus />
             <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-none opacity-50 group-hover:opacity-100 transition-opacity">
@@ -490,65 +498,53 @@ function HomePage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.1 }}
-          className="space-y-6"
         >
-          <div className="glass-panel border border-border rounded-xl p-8 sm:p-12 text-center">
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">
-              {t("title")}
-            </h1>
-            <p className="text-muted-foreground text-sm max-w-md mx-auto">
-              Lightning fast domain & IP lookup availability.
-            </p>
-          </div>
-
-          {recentHistory.length > 0 && (
-            <div>
-              <div className="flex items-center justify-between mb-3 px-1">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                  <RiHistoryLine className="w-3.5 h-3.5" />
-                  Recent Lookups
-                </h2>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-xs text-muted-foreground h-7"
-                  onClick={() => setShowHistory(true)}
-                >
-                  View All
-                  <RiArrowRightSLine className="w-3.5 h-3.5 ml-1" />
-                </Button>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                {recentHistory.map((item) => (
-                  <Clickable key={item.query} tapScale={0.98}>
-                    <Card className="group transition-all duration-200 border bg-card/40 hover:bg-card/60 hover:border-primary/20">
-                      <CardContent className="p-3">
-                        <Link
-                          className="flex items-center gap-3"
-                          href={toSearchURI(item.query)}
-                          onClick={() => handleSearch(item.query)}
-                        >
-                          <div className="w-8 h-8 rounded-md grid place-items-center border border-border bg-muted/20 group-hover:border-primary/30 shrink-0">
-                            <RiGlobalLine className={cn("w-3.5 h-3.5", getTypeColor(item.queryType))} />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-sm font-semibold truncate">{item.query}</p>
-                            <div className="flex items-center gap-2 mt-0.5">
-                              <Badge variant="outline" className="text-[8px] px-1 py-0 uppercase tracking-wider">{item.queryType}</Badge>
-                              <span className="text-[10px] text-muted-foreground">{format(item.timestamp, "MMM dd")}</span>
-                            </div>
-                          </div>
-                          <RiArrowRightSLine className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                        </Link>
-                      </CardContent>
-                    </Card>
-                  </Clickable>
-                ))}
-              </div>
+          {allHistory.length > 0 ? (
+            <div className="space-y-1">
+              {groupedHistory.map((group) => (
+                <div key={group.label}>
+                  <div className="flex items-center gap-3 py-2 px-1">
+                    <div className="h-px flex-1 bg-border" />
+                    <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
+                      {group.label}
+                    </span>
+                    <div className="h-px flex-1 bg-border" />
+                  </div>
+                  {group.items.map((item) => (
+                    <Link
+                      key={`${item.query}-${item.timestamp}`}
+                      href={toSearchURI(item.query)}
+                      onClick={() => handleSearch(item.query)}
+                      className="group flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="w-7 h-7 rounded-md grid place-items-center border border-border bg-muted/20 group-hover:border-primary/30 shrink-0">
+                        <QueryTypeIcon type={item.queryType} />
+                      </div>
+                      <span className="text-sm font-medium truncate flex-1 min-w-0">
+                        {item.query}
+                      </span>
+                      <Badge variant="outline" className="text-[8px] px-1.5 py-0 uppercase tracking-wider shrink-0">
+                        {item.queryType}
+                      </Badge>
+                      <span className="text-[11px] text-muted-foreground tabular-nums shrink-0">
+                        {format(item.timestamp, "h:mm a")}
+                      </span>
+                      <button
+                        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-destructive/10 shrink-0"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleRemoveHistory(item.query);
+                        }}
+                      >
+                        <RiDeleteBinLine className="w-3.5 h-3.5 text-muted-foreground hover:text-destructive" />
+                      </button>
+                    </Link>
+                  ))}
+                </div>
+              ))}
             </div>
-          )}
-
-          {recentHistory.length === 0 && (
+          ) : (
             <div className="text-center py-12">
               <RiHistoryLine className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
               <h3 className="text-sm font-medium text-muted-foreground mb-1">{t("no_history_title")}</h3>
@@ -558,103 +554,6 @@ function HomePage() {
         </motion.div>
       </main>
     </ScrollArea>
-
-    <Dialog open={showHistory} onOpenChange={setShowHistory}>
-      <DialogContent className="max-w-lg max-h-[80vh] flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <RiHistoryLine className="w-4 h-4" />
-            Lookup History
-          </DialogTitle>
-        </DialogHeader>
-        <div className="flex items-center gap-2 mb-3">
-          <div className="relative flex-1">
-            <Input
-              className="h-8 text-xs pl-8"
-              placeholder={t("search_history")}
-              value={historySearch}
-              onChange={(e) => setHistorySearch(e.target.value)}
-            />
-            <RiSearchLine className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-          </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon-sm" className="shrink-0">
-                <RiFilterLine className="h-3.5 w-3.5" />
-                {selectedType !== "all" && <div className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full" />}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-40">
-              <DropdownMenuRadioGroup value={selectedType} onValueChange={setSelectedType}>
-                <DropdownMenuRadioItem value="all" className="text-xs">{t("all_types")}</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="domain" className="text-xs">{t("domain_only")}</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="ipv4" className="text-xs">{t("ipv4_only")}</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="ipv6" className="text-xs">{t("ipv6_only")}</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="asn" className="text-xs">{t("asn_only")}</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="cidr" className="text-xs">{t("cidr_only")}</DropdownMenuRadioItem>
-              </DropdownMenuRadioGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <Button variant="outline" size="icon-sm" className="shrink-0" onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}>
-            {sortOrder === "asc" ? <RiSortAsc className="h-3.5 w-3.5" /> : <RiSortDesc className="h-3.5 w-3.5" />}
-          </Button>
-          <Button
-            variant="outline"
-            size="icon-sm"
-            className={cn("shrink-0", trashMode && "bg-destructive/10 text-destructive border-destructive")}
-            onClick={() => setTrashMode(!trashMode)}
-          >
-            {trashMode ? <RiArrowGoBackLine className="h-3.5 w-3.5" /> : <RiDeleteBinLine className="h-3.5 w-3.5" />}
-          </Button>
-        </div>
-        <ScrollArea className="flex-1 -mx-6 px-6">
-          <div className="space-y-1.5">
-            {filteredHistory.length === 0 && (
-              <div className="text-center py-8">
-                <p className="text-xs text-muted-foreground">No history found</p>
-              </div>
-            )}
-            {filteredHistory.map((item) => (
-              <div
-                key={`${item.query}-${item.timestamp}`}
-                className={cn(
-                  "flex items-center gap-3 p-2.5 rounded-lg border transition-colors cursor-pointer",
-                  trashMode ? "hover:bg-destructive/5 hover:border-destructive/50" : "hover:bg-muted/50",
-                )}
-                onClick={() => {
-                  if (trashMode) {
-                    handleRemoveHistory(item.query);
-                  } else {
-                    setShowHistory(false);
-                    handleSearch(item.query);
-                  }
-                }}
-              >
-                <div className={cn(
-                  "w-8 h-8 rounded-md grid place-items-center border shrink-0",
-                  trashMode ? "border-destructive/30 bg-destructive/5" : "border-border bg-muted/20",
-                )}>
-                  {trashMode ? (
-                    <RiDeleteBinLine className="w-3.5 h-3.5 text-destructive" />
-                  ) : (
-                    <RiGlobalLine className={cn("w-3.5 h-3.5", getTypeColor(item.queryType))} />
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium truncate">{item.query}</p>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <Badge variant="outline" className="text-[8px] px-1 py-0 uppercase">{item.queryType}</Badge>
-                    <span className="text-[10px] text-muted-foreground">{format(item.timestamp, "MMM dd, yyyy HH:mm")}</span>
-                  </div>
-                </div>
-                {!trashMode && <RiArrowRightSLine className="w-4 h-4 text-muted-foreground shrink-0" />}
-              </div>
-            ))}
-          </div>
-        </ScrollArea>
-      </DialogContent>
-    </Dialog>
-    </>
   );
 }
 
@@ -731,18 +630,13 @@ function LookupPage({ data, target }: { data: WhoisResult; target: string }) {
     <Head>
       <title>{`${target} - WHOIS Lookup`}</title>
       <meta property="og:title" content={`${target} - WHOIS Lookup`} />
-      <meta property="og:image" content={`/api/og?domain=${encodeURIComponent(target)}`} />
+      <meta property="og:image" content={`/api/og?query=${encodeURIComponent(target)}`} />
       <meta name="twitter:title" content={`${target} - WHOIS Lookup`} />
-      <meta name="twitter:image" content={`/api/og?domain=${encodeURIComponent(target)}`} />
+      <meta name="twitter:image" content={`/api/og?query=${encodeURIComponent(target)}`} />
     </Head>
     <ScrollArea className="w-full h-[calc(100vh-4rem)]">
       <main className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-6 min-h-[calc(100vh-4rem)]">
         <div className="flex items-center gap-3 mb-6">
-          <Link href="/">
-            <Button variant="ghost" size="icon-sm" className="shrink-0">
-              <RiArrowLeftSLine className="w-4 h-4" />
-            </Button>
-          </Link>
           <div className="flex-1 relative group">
             <SearchBox
               initialValue={target}

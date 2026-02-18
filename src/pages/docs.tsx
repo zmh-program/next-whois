@@ -248,7 +248,7 @@ export default function DocsPage() {
                 <div>
                   <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Parameters</h3>
                   <ParamsTable params={[
-                    { name: "domain", type: "string", required: false, description: "Domain name to display on the image", default: "—" },
+                    { name: "query", type: "string", required: false, description: "Domain name, IP, ASN, or CIDR to display on the image", default: "—" },
                     { name: "registrar", type: "string", required: false, description: "Registrar name", default: "—" },
                     { name: "created", type: "string", required: false, description: "Creation date (e.g. 2020-01-01)", default: "—" },
                     { name: "expires", type: "string", required: false, description: "Expiration date", default: "—" },
@@ -269,19 +269,19 @@ export default function DocsPage() {
 
                 <div>
                   <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Example Request</h3>
-                  <CodeBlock>{`curl "https://your-domain.com/api/og?domain=google.com&theme=dark" -o og.png`}</CodeBlock>
+                  <CodeBlock>{`curl "https://your-domain.com/api/og?query=google.com&theme=dark" -o og.png`}</CodeBlock>
                 </div>
 
                 <div>
                   <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Preview</h3>
                   <div className="rounded-lg border overflow-hidden bg-muted/30">
                     <img
-                      src="/api/og?domain=google.com"
+                      src="/api/og?query=google.com"
                       alt="OG Image Preview"
                       className="w-full h-auto"
                     />
                   </div>
-                  <p className="text-[10px] text-muted-foreground mt-2 font-mono">/api/og?domain=google.com</p>
+                  <p className="text-[10px] text-muted-foreground mt-2 font-mono">/api/og?query=google.com</p>
                 </div>
               </CardContent>
             </Card>
