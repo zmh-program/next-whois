@@ -27,7 +27,7 @@ function JsonHighlight({ content }: { content: string }) {
             continue;
           }
 
-          const keyMatch = remaining.match(/^(\s*)"([^"]+)"(\s*:\s*)/);
+          const keyMatch = remaining.match(/^(\s*)"((?:[^"\\]|\\.)+)"(\s*:\s*)/);
           if (keyMatch) {
             parts.push(<span key={`ws-${keyIdx}`}>{keyMatch[1]}</span>);
             parts.push(
@@ -41,7 +41,7 @@ function JsonHighlight({ content }: { content: string }) {
             continue;
           }
 
-          const strMatch = remaining.match(/^"([^"]*)"(,?\s*)/);
+          const strMatch = remaining.match(/^"((?:[^"\\]|\\.)*)"(,?\s*)/);
           if (strMatch) {
             if (strMatch[1] === "..." || strMatch[1].length > 60) {
               parts.push(

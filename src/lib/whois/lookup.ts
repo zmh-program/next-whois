@@ -4,7 +4,7 @@ import { getJsonRedisValue, setJsonRedisValue } from "@/lib/server/redis";
 import { analyzeWhois } from "@/lib/whois/common_parser";
 import { extractDomain } from "@/lib/utils";
 import { lookupRdap, convertRdapToWhoisResult } from "@/lib/whois/rdap_client";
-import whois from "whois-raw";
+import { whoisDomain, whoisIp, whoisAsn } from "whoiser";
 
 const LOOKUP_TIMEOUT = 15_000;
 
@@ -72,11 +72,6 @@ function isEmptyResult(result: {
   );
 }
 
-function getLookupOptions(domain: string) {
-  const isDomain = !!extractDomain(domain);
-  return { follow: isDomain ? MAX_WHOIS_FOLLOW : 0 };
-}
-
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error("Timeout")), ms);
@@ -93,17 +88,70 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   });
 }
 
-function getLookupRawWhois(domain: string, options?: any): Promise<string> {
-  return new Promise((resolve, reject) => {
-    try {
-      whois.lookup(domain, options, (err: Error, data: string) => {
-        if (err) reject(err);
-        else resolve(data);
-      });
-    } catch (e) {
-      reject(e);
-    }
+interface WhoisRawResult {
+  raw: string;
+  structured: Record<string, any>;
+  server: string;
+}
+
+function isIPAddress(query: string): boolean {
+  return (
+    /^(\d{1,3}\.){3}\d{1,3}$/.test(query) ||
+    /^([0-9a-fA-F]{0,4}:){1,7}[0-9a-fA-F]{0,4}$/.test(query)
+  );
+}
+
+function isASNumber(query: string): boolean {
+  return /^AS\d+$/i.test(query);
+}
+
+async function getLookupWhois(domain: string): Promise<WhoisRawResult> {
+  if (isIPAddress(domain)) {
+    const data = await whoisIp(domain, { timeout: LOOKUP_TIMEOUT });
+    return { raw: (data as any).__raw || "", structured: data as any, server: "ip-whois" };
+  }
+
+  if (isASNumber(domain)) {
+    const asNum = parseInt(domain.replace(/^AS/i, ""));
+    const data = await whoisAsn(asNum, { timeout: LOOKUP_TIMEOUT });
+    return { raw: (data as any).__raw || "", structured: data as any, server: "asn-whois" };
+  }
+
+  const domainToQuery = extractDomain(domain) || domain;
+  if (MAX_WHOIS_FOLLOW <= 0) throw new Error("WHOIS follow disabled");
+  const follow = Math.min(MAX_WHOIS_FOLLOW, 2) as 1 | 2;
+  const data = await whoisDomain(domainToQuery, {
+    raw: true,
+    follow,
+    timeout: LOOKUP_TIMEOUT,
   });
+
+  const servers = Object.keys(data);
+  if (servers.length === 0) throw new Error("No WHOIS server responded");
+
+  const lastServer = servers[servers.length - 1];
+  const structured = (data as any)[lastServer] || {};
+  const rawParts: string[] = [];
+  for (const s of servers) {
+    const entry = (data as any)[s];
+    if (entry?.__raw) {
+      rawParts.push(entry.__raw);
+    } else if (entry) {
+      const lines: string[] = [];
+      for (const [k, v] of Object.entries(entry)) {
+        if (k === "text" || k === "__raw" || k === "__comments") continue;
+        if (Array.isArray(v)) {
+          for (const item of v) lines.push(`${k}: ${item}`);
+        } else if (v !== undefined && v !== null && v !== "") {
+          lines.push(`${k}: ${v}`);
+        }
+      }
+      if (lines.length > 0) rawParts.push(lines.join("\n"));
+    }
+  }
+  const raw = rawParts.join("\n\n") || "";
+
+  return { raw, structured, server: lastServer };
 }
 
 function pickStr(a: string, b: string): string {
@@ -185,17 +233,15 @@ export async function lookupWhois(domain: string): Promise<WhoisResult> {
 
   const [rdapSettled, whoisSettled] = await Promise.allSettled([
     withTimeout(lookupRdap(domain), LOOKUP_TIMEOUT),
-    withTimeout(
-      getLookupRawWhois(domain, getLookupOptions(domain)),
-      LOOKUP_TIMEOUT,
-    ),
+    withTimeout(getLookupWhois(domain), LOOKUP_TIMEOUT),
   ]);
 
   const rdapData =
     rdapSettled.status === "fulfilled" ? rdapSettled.value : null;
-  const whoisRawData =
+  const whoisData =
     whoisSettled.status === "fulfilled" ? whoisSettled.value : null;
   const rdapRaw = rdapData ? JSON.stringify(rdapData, null, 2) : undefined;
+  const whoisRawData = whoisData?.raw || null;
 
   if (rdapData) {
     try {
@@ -209,6 +255,9 @@ export async function lookupWhois(domain: string): Promise<WhoisResult> {
           } catch {}
         }
         result.rawWhoisContent = whoisRawData;
+      }
+      if (whoisData?.server) {
+        result.whoisServer = pickStr(result.whoisServer, whoisData.server);
       }
       result.rawRdapContent = rdapRaw!;
 
@@ -247,6 +296,9 @@ export async function lookupWhois(domain: string): Promise<WhoisResult> {
         };
       }
 
+      if (whoisData?.server) {
+        result.whoisServer = pickStr(result.whoisServer, whoisData.server);
+      }
       if (rdapRaw) result.rawRdapContent = rdapRaw;
 
       return {
@@ -274,11 +326,15 @@ export async function lookupWhois(domain: string): Promise<WhoisResult> {
     rdapSettled.status === "rejected" ? rdapSettled.reason : null;
   const whoisError =
     whoisSettled.status === "rejected" ? whoisSettled.reason : null;
+  const whoisMsg = whoisError?.message || "";
+  const rdapMsg = rdapError?.message || "";
+  const isTldUnsupported = /not supported/i.test(whoisMsg);
   return {
     time: elapsed(),
     status: false,
     cached: false,
-    error:
-      rdapError?.message || whoisError?.message || "Unknown error occurred",
+    error: isTldUnsupported
+      ? `WHOIS/RDAP not available for this TLD`
+      : whoisMsg || rdapMsg || "Unknown error occurred",
   };
 }
