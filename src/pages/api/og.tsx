@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
+import { getEppStatusDisplayName } from "@/lib/whois/epp-status";
 
 export const config = { runtime: "edge" };
 
@@ -13,9 +14,10 @@ function detectType(q: string): string {
 }
 
 function getRelativeTime(dateStr: string): string {
-  if (!dateStr) return "";
+  if (!dateStr || dateStr === "Unknown") return "";
   try {
     const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return "";
     const now = new Date();
     const diffDays = Math.floor(
       (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24),
@@ -35,24 +37,22 @@ function getRelativeTime(dateStr: string): string {
   }
 }
 
+function isValid(v: string | undefined | null): v is string {
+  return !!v && v !== "Unknown" && v !== "N/A" && v !== "";
+}
+
+function formatDate(dateStr: string): string {
+  if (!dateStr || dateStr === "Unknown") return "";
+  try {
+    return dateStr.split("T")[0];
+  } catch {
+    return dateStr;
+  }
+}
+
 export default async function handler(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const query =
-    searchParams.get("query") ||
-    searchParams.get("q") ||
-    searchParams.get("domain");
-  const registrar = searchParams.get("registrar");
-  const created = searchParams.get("created");
-  const expires = searchParams.get("expires");
-  const updated = searchParams.get("updated");
-  const status = searchParams.get("status");
-  const ns = searchParams.get("ns");
-  const age = searchParams.get("age");
-  const remaining = searchParams.get("remaining");
-  const dnssec = searchParams.get("dnssec");
-  const whoisServer = searchParams.get("whoisServer");
-  const registrantOrg = searchParams.get("registrantOrg");
-  const country = searchParams.get("country");
+  const query = searchParams.get("query") || searchParams.get("q") || "";
   const w = Math.min(
     Math.max(parseInt(searchParams.get("w") || "1200") || 1200, 200),
     4096,
@@ -76,27 +76,6 @@ export default async function handler(req: NextRequest) {
   const amberColor = isDark ? "#fbbf24" : "#d97706";
 
   const queryType = query ? detectType(query) : "unknown";
-  const hasDetails = registrar || created || expires;
-  const statusList = status ? status.split(",").slice(0, 6) : [];
-  const nsList = ns ? ns.split(",").slice(0, 4) : [];
-  const remainingDays = remaining ? parseInt(remaining) : null;
-
-  const statusColor =
-    remainingDays === null
-      ? muted
-      : remainingDays <= 0
-        ? redColor
-        : remainingDays <= 60
-          ? amberColor
-          : greenColor;
-  const statusLabel =
-    remainingDays === null
-      ? "N/A"
-      : remainingDays <= 0
-        ? "EXPIRED"
-        : remainingDays <= 60
-          ? "EXPIRING SOON"
-          : "ACTIVE";
 
   const typeBadgeColors: Record<string, { bg: string; fg: string }> = {
     DOMAIN: {
@@ -123,8 +102,79 @@ export default async function handler(req: NextRequest) {
   };
   const typeBadge = typeBadgeColors[queryType] || typeBadgeColors.unknown;
 
+  let registrar = "";
+  let created = "";
+  let expires = "";
+  let updated = "";
+  let statusList: string[] = [];
+  let nsList: string[] = [];
+  let age = "";
+  let remainingDays: number | null = null;
+  let dnssec = "";
+  let whoisServer = "";
+  let registrantOrg = "";
+  let country = "";
+  let hasDetails = false;
+
+  if (query) {
+    try {
+      const origin = new URL(req.url).origin;
+      const res = await fetch(
+        `${origin}/api/lookup?query=${encodeURIComponent(query)}`,
+      );
+      const data = await res.json();
+      if (data.status && data.result) {
+        const r = data.result;
+        if (isValid(r.registrar)) registrar = r.registrar;
+        if (isValid(r.creationDate)) created = formatDate(r.creationDate);
+        if (isValid(r.expirationDate)) expires = formatDate(r.expirationDate);
+        if (isValid(r.updatedDate)) updated = formatDate(r.updatedDate);
+        if (Array.isArray(r.status) && r.status.length > 0) {
+          statusList = r.status
+            .slice(0, 6)
+            .map((s: { status: string }) => getEppStatusDisplayName(s.status));
+        }
+        if (Array.isArray(r.nameServers) && r.nameServers.length > 0) {
+          nsList = r.nameServers.slice(0, 4);
+        }
+        if (r.domainAge != null) age = String(r.domainAge);
+        if (r.remainingDays != null) remainingDays = r.remainingDays;
+        if (isValid(r.dnssec)) dnssec = r.dnssec;
+        if (isValid(r.whoisServer)) whoisServer = r.whoisServer;
+        if (isValid(r.registrantOrganization))
+          registrantOrg = r.registrantOrganization;
+        if (isValid(r.registrantCountry)) country = r.registrantCountry;
+        hasDetails = !!(registrar || created || expires);
+      }
+    } catch {}
+  }
+
+  const statusColor =
+    remainingDays === null
+      ? muted
+      : remainingDays <= 0
+        ? redColor
+        : remainingDays <= 60
+          ? amberColor
+          : greenColor;
+  const statusLabel =
+    remainingDays === null
+      ? "N/A"
+      : remainingDays <= 0
+        ? "EXPIRED"
+        : remainingDays <= 60
+          ? "EXPIRING SOON"
+          : "ACTIVE";
+
   const createdRelative = created ? getRelativeTime(created) : "";
-  const expiresRelative = expires ? getRelativeTime(expires) : "";
+  const expiresRelative =
+    remainingDays !== null
+      ? remainingDays > 0
+        ? `${remainingDays}d remaining`
+        : "Expired"
+      : expires
+        ? getRelativeTime(expires)
+        : "";
   const updatedRelative = updated ? getRelativeTime(updated) : "";
 
   return new ImageResponse(
@@ -285,7 +335,7 @@ export default async function handler(req: NextRequest) {
                   <span
                     style={{ fontSize: "11px", color: muted, fontWeight: 500 }}
                   >
-                    {remainingDays}d remaining
+                    {`${remainingDays}d remaining`}
                   </span>
                 )}
               </div>

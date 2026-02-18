@@ -15,7 +15,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>,
 ) {
-  const { query } = req.query;
+  const query = req.query.query || req.query.q;
 
   if (!query || typeof query !== "string" || query.length === 0) {
     return res

@@ -258,7 +258,7 @@ export default function DocsPage() {
                         type: "string",
                         required: true,
                         description:
-                          "Domain name, IPv4/IPv6 address, ASN (e.g. AS13335), or CIDR range",
+                          "Domain name, IPv4/IPv6 address, ASN (e.g. AS13335), or CIDR range. Alias: q",
                       },
                     ]}
                   />
@@ -325,7 +325,9 @@ export default function DocsPage() {
                   <code className="font-mono text-sm">/api/og</code>
                 </CardTitle>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Generate a dynamic Open Graph image. Returns a PNG image.
+                  Generate a dynamic Open Graph image with WHOIS details.
+                  Internally queries /api/lookup and renders a card-style
+                  summary. Returns a PNG image.
                 </p>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -340,91 +342,7 @@ export default function DocsPage() {
                         type: "string",
                         required: false,
                         description:
-                          "Domain name, IP, ASN, or CIDR to display on the image",
-                        default: "—",
-                      },
-                      {
-                        name: "registrar",
-                        type: "string",
-                        required: false,
-                        description: "Registrar name",
-                        default: "—",
-                      },
-                      {
-                        name: "created",
-                        type: "string",
-                        required: false,
-                        description: "Creation date (e.g. 2020-01-01)",
-                        default: "—",
-                      },
-                      {
-                        name: "expires",
-                        type: "string",
-                        required: false,
-                        description: "Expiration date",
-                        default: "—",
-                      },
-                      {
-                        name: "updated",
-                        type: "string",
-                        required: false,
-                        description: "Last updated date",
-                        default: "—",
-                      },
-                      {
-                        name: "status",
-                        type: "string",
-                        required: false,
-                        description: "Comma-separated EPP status codes",
-                        default: "—",
-                      },
-                      {
-                        name: "ns",
-                        type: "string",
-                        required: false,
-                        description: "Comma-separated nameservers",
-                        default: "—",
-                      },
-                      {
-                        name: "age",
-                        type: "number",
-                        required: false,
-                        description: "Domain age in years",
-                        default: "—",
-                      },
-                      {
-                        name: "remaining",
-                        type: "number",
-                        required: false,
-                        description: "Remaining days until expiration",
-                        default: "—",
-                      },
-                      {
-                        name: "dnssec",
-                        type: "string",
-                        required: false,
-                        description: "DNSSEC status",
-                        default: "—",
-                      },
-                      {
-                        name: "whoisServer",
-                        type: "string",
-                        required: false,
-                        description: "WHOIS server hostname",
-                        default: "—",
-                      },
-                      {
-                        name: "registrantOrg",
-                        type: "string",
-                        required: false,
-                        description: "Registrant organization",
-                        default: "—",
-                      },
-                      {
-                        name: "country",
-                        type: "string",
-                        required: false,
-                        description: "Registrant country",
+                          "Domain name, IP, ASN, or CIDR to look up and display. Alias: q",
                         default: "—",
                       },
                       {

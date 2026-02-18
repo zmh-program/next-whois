@@ -65,9 +65,13 @@ export async function getDomainPricing(
       return null;
     }
 
-    const data: NazhumiResponse = await response.json().then((res) => res.data);
-    const registrar =
-      data.price.length > 0 ? data.price[0] : { ...defaultDomainPricing };
+    const data: NazhumiResponse | undefined = await response
+      .json()
+      .then((res) => res.data);
+    if (!data || !Array.isArray(data.price) || data.price.length === 0) {
+      return null;
+    }
+    const registrar = data.price[0];
 
     return {
       ...registrar,

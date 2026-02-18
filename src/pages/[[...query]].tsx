@@ -352,40 +352,11 @@ function formatDate(dateStr: string): string {
 
 function buildOgUrl(
   target: string,
-  result: WhoisAnalyzeResult | undefined,
+  _result?: WhoisAnalyzeResult | undefined,
   overrides?: { w?: number; h?: number; theme?: string },
 ): string {
   const params = new URLSearchParams();
   params.set("query", target);
-  if (result) {
-    if (result.registrar && result.registrar !== "Unknown")
-      params.set("registrar", result.registrar);
-    if (result.creationDate && result.creationDate !== "Unknown")
-      params.set("created", result.creationDate.split("T")[0]);
-    if (result.expirationDate && result.expirationDate !== "Unknown")
-      params.set("expires", result.expirationDate.split("T")[0]);
-    if (result.updatedDate && result.updatedDate !== "Unknown")
-      params.set("updated", result.updatedDate.split("T")[0]);
-    if (result.status.length > 0)
-      params.set("status", result.status.map((s) => s.status).join(","));
-    if (result.nameServers.length > 0)
-      params.set("ns", result.nameServers.join(","));
-    if (result.domainAge !== null && result.domainAge !== undefined)
-      params.set("age", String(result.domainAge));
-    if (result.remainingDays !== null && result.remainingDays !== undefined)
-      params.set("remaining", String(result.remainingDays));
-    if (result.dnssec && result.dnssec !== "Unknown")
-      params.set("dnssec", result.dnssec);
-    if (result.whoisServer && result.whoisServer !== "Unknown")
-      params.set("whoisServer", result.whoisServer);
-    if (
-      result.registrantOrganization &&
-      result.registrantOrganization !== "Unknown"
-    )
-      params.set("registrantOrg", result.registrantOrganization);
-    if (result.registrantCountry && result.registrantCountry !== "Unknown")
-      params.set("country", result.registrantCountry);
-  }
   if (overrides?.w) params.set("w", String(overrides.w));
   if (overrides?.h) params.set("h", String(overrides.h));
   const themeVal =
@@ -1322,11 +1293,13 @@ function LookupPage({ data, target }: { data: WhoisResult; target: string }) {
                         ]
                           .filter((f) => f.value && f.value !== "Unknown")
                           .map((f, i) => (
-                            <div key={i}>
+                            <div key={i} className="min-w-0">
                               <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1">
                                 {f.label}
                               </p>
-                              <p className="text-xs font-mono">{f.value}</p>
+                              <p className="text-xs font-mono whitespace-pre-wrap break-all">
+                                {f.value}
+                              </p>
                             </div>
                           ))}
                       </div>
@@ -1595,10 +1568,10 @@ function LookupPage({ data, target }: { data: WhoisResult; target: string }) {
                     </div>
                   )}
                 </div>
-                <div className="lg:col-span-4 relative">
-                  <div className="flex flex-col gap-6 lg:absolute lg:inset-0">
+                <div className="lg:col-span-4 relative overflow-hidden">
+                  <div className="flex flex-col gap-6 lg:absolute lg:inset-0 lg:overflow-y-auto">
                     {result.registrar && result.registrar !== "Unknown" && (
-                      <div className="glass-panel border border-border rounded-xl p-5 shrink-0">
+                      <div className="glass-panel border border-border rounded-xl p-5 shrink-0 overflow-hidden">
                         <div className="flex items-center justify-between mb-4">
                           <h3 className="text-sm font-semibold">
                             {t("whois_fields.registrar")}
@@ -1653,7 +1626,7 @@ function LookupPage({ data, target }: { data: WhoisResult; target: string }) {
                                   }
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-xs text-blue-600 dark:text-blue-400 hover:underline truncate block"
+                                  className="text-xs text-blue-600 dark:text-blue-400 hover:underline break-all block"
                                 >
                                   {result.registrarURL}
                                 </a>
@@ -1666,7 +1639,7 @@ function LookupPage({ data, target }: { data: WhoisResult; target: string }) {
                               <p className="text-[10px] uppercase text-muted-foreground font-medium mb-1">
                                 Whois Server
                               </p>
-                              <p className="text-xs font-mono text-muted-foreground truncate">
+                              <p className="text-xs font-mono text-muted-foreground whitespace-pre-wrap break-all">
                                 {result.whoisServer}
                               </p>
                             </div>
@@ -1677,7 +1650,7 @@ function LookupPage({ data, target }: { data: WhoisResult; target: string }) {
                               <p className="text-[10px] uppercase text-muted-foreground font-medium mb-1">
                                 Contact Email
                               </p>
-                              <p className="text-xs font-mono text-muted-foreground truncate">
+                              <p className="text-xs font-mono text-muted-foreground whitespace-pre-wrap break-all">
                                 {result.registrantEmail}
                               </p>
                             </div>
