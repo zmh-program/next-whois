@@ -3,7 +3,6 @@ import { twMerge } from "tailwind-merge";
 import React from "react";
 import { toast } from "sonner";
 import { getDomain } from "tldjs";
-import { ParsedUrlQuery } from "node:querystring";
 import { getSpecialDomain } from "@/lib/whois/lib";
 import { useTranslation } from "@/lib/i18n";
 
@@ -116,26 +115,12 @@ export function toSearchURI(query: string) {
   return q ? `/${locale}/${encodeURIComponent(q)}` : `/${locale}`;
 }
 
-export function toReadableISODate(date: string | null) {
-  if (!date) return "Unknown";
-  return date.replace("T", " ").replace("Z", "").replace(".000", "");
-}
-
-export function filterRepeat<T>(arr: T[]): T[] {
-  return Array.from(new Set(arr));
-}
-
 export function includeArgs(from: string, ...args: string[]): boolean {
   return args.some((arg) => from.toLowerCase().includes(arg.toLowerCase()));
 }
 
 export function toErrorMessage(e: any): string {
   return e.message || "Unknown error";
-}
-
-export function countDuration(startTime: number, _endTime?: number): number {
-  const endTime = _endTime ?? Date.now();
-  return (endTime - startTime) / 1000; // seconds
 }
 
 export function extractDomain(url: string): string | null {
@@ -161,13 +146,6 @@ export function cleanDomain(domain: string): string {
   }
 
   return domain;
-}
-
-export function cleanDomainQuery(query: ParsedUrlQuery): string {
-  const domain =
-    (query.query as string | string[] | undefined)?.toString() ?? "";
-
-  return cleanDomain(domain);
 }
 
 export function getWindowHref(): string {

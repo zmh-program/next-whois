@@ -33,7 +33,8 @@ const categoryLabels: Record<EppStatusCategory, string> = {
 const EPP_STATUS_MAP: Record<string, EppStatusInfo> = {
   ok: {
     displayName: "ok",
-    description: "This is the standard status for a domain, meaning no pending operations or prohibitions.",
+    description:
+      "This is the standard status for a domain, meaning no pending operations or prohibitions.",
     category: "ok",
   },
   active: {
@@ -43,37 +44,44 @@ const EPP_STATUS_MAP: Record<string, EppStatusInfo> = {
   },
   inactive: {
     displayName: "inactive",
-    description: "The domain has not been delegated in the DNS and will not resolve.",
+    description:
+      "The domain has not been delegated in the DNS and will not resolve.",
     category: "redemption",
   },
   addperiod: {
     displayName: "addPeriod",
-    description: "Initial registration grace period. The domain can be deleted for a refund within a few days of registration.",
+    description:
+      "Initial registration grace period. The domain can be deleted for a refund within a few days of registration.",
     category: "grace",
   },
   autorenewperiod: {
     displayName: "autoRenewPeriod",
-    description: "Auto-renewal grace period after automatic renewal. Registrar may delete registration for a refund.",
+    description:
+      "Auto-renewal grace period after automatic renewal. Registrar may delete registration for a refund.",
     category: "grace",
   },
   renewperiod: {
     displayName: "renewPeriod",
-    description: "Renewal grace period. The registrar may delete the registration for a refund.",
+    description:
+      "Renewal grace period. The registrar may delete the registration for a refund.",
     category: "grace",
   },
   transferperiod: {
     displayName: "transferPeriod",
-    description: "Transfer grace period after a successful transfer. The new registrar may delete for a refund.",
+    description:
+      "Transfer grace period after a successful transfer. The new registrar may delete for a refund.",
     category: "grace",
   },
   clientdeleteprohibited: {
     displayName: "clientDeleteProhibited",
-    description: "The registrar has set this status to prevent the domain from being deleted.",
+    description:
+      "The registrar has set this status to prevent the domain from being deleted.",
     category: "client",
   },
   clienthold: {
     displayName: "clientHold",
-    description: "The registrar has suspended the domain. It will not resolve in the DNS.",
+    description:
+      "The registrar has suspended the domain. It will not resolve in the DNS.",
     category: "client",
   },
   clientrenewprohibited: {
@@ -83,22 +91,26 @@ const EPP_STATUS_MAP: Record<string, EppStatusInfo> = {
   },
   clienttransferprohibited: {
     displayName: "clientTransferProhibited",
-    description: "The registrar has locked the domain to prevent transfer to another registrar.",
+    description:
+      "The registrar has locked the domain to prevent transfer to another registrar.",
     category: "client",
   },
   clientupdateprohibited: {
     displayName: "clientUpdateProhibited",
-    description: "The registrar has locked the domain to prevent any changes to the domain record.",
+    description:
+      "The registrar has locked the domain to prevent any changes to the domain record.",
     category: "client",
   },
   serverdeleteprohibited: {
     displayName: "serverDeleteProhibited",
-    description: "The registry has set this status to prevent the domain from being deleted.",
+    description:
+      "The registry has set this status to prevent the domain from being deleted.",
     category: "server",
   },
   serverhold: {
     displayName: "serverHold",
-    description: "The registry has suspended the domain. It will not resolve in the DNS.",
+    description:
+      "The registry has suspended the domain. It will not resolve in the DNS.",
     category: "server",
   },
   serverrenewprohibited: {
@@ -118,37 +130,44 @@ const EPP_STATUS_MAP: Record<string, EppStatusInfo> = {
   },
   pendingcreate: {
     displayName: "pendingCreate",
-    description: "A request to create the domain has been received and is being processed.",
+    description:
+      "A request to create the domain has been received and is being processed.",
     category: "pending",
   },
   pendingdelete: {
     displayName: "pendingDelete",
-    description: "The domain is scheduled for deletion. It cannot be restored and will be purged soon.",
+    description:
+      "The domain is scheduled for deletion. It cannot be restored and will be purged soon.",
     category: "pending",
   },
   pendingrenew: {
     displayName: "pendingRenew",
-    description: "A request to renew the domain has been received and is being processed.",
+    description:
+      "A request to renew the domain has been received and is being processed.",
     category: "pending",
   },
   pendingrestore: {
     displayName: "pendingRestore",
-    description: "A restore request has been received after redemption period. Pending registry approval.",
+    description:
+      "A restore request has been received after redemption period. Pending registry approval.",
     category: "pending",
   },
   pendingtransfer: {
     displayName: "pendingTransfer",
-    description: "A transfer request has been received and is pending approval or rejection.",
+    description:
+      "A transfer request has been received and is pending approval or rejection.",
     category: "pending",
   },
   pendingupdate: {
     displayName: "pendingUpdate",
-    description: "A request to update the domain has been received and is being processed.",
+    description:
+      "A request to update the domain has been received and is being processed.",
     category: "pending",
   },
   redemptionperiod: {
     displayName: "redemptionPeriod",
-    description: "The domain has been deleted but can still be restored by the registrar for an additional fee.",
+    description:
+      "The domain has been deleted but can still be restored by the registrar for an additional fee.",
     category: "redemption",
   },
 };

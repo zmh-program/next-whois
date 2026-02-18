@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import {
   RiLoader2Line,
   RiSendPlaneLine,
-  RiSearchLine,
   RiHistoryLine,
   RiLinkM,
 } from "@remixicon/react";
@@ -86,7 +85,6 @@ export function SearchBox({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [selectedGroup, setSelectedGroup] = useState(-1);
-  const [predictedType, setPredictedType] = useState<string>("domain");
   const [isEnterPressed, setIsEnterPressed] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
@@ -206,7 +204,6 @@ export function SearchBox({
     if (!value) return [];
 
     const type = predictQueryType(value);
-    setPredictedType(type);
 
     const suggestionGroups: SuggestionGroup[] = [];
 
@@ -279,10 +276,6 @@ export function SearchBox({
     if (e.key === "ArrowDown" || e.key === "ArrowUp") {
       e.preventDefault();
 
-      let totalItems = suggestions.reduce(
-        (sum, group) => sum + group.items.length,
-        0,
-      );
       let currentIndex = selectedIndex;
       let currentGroup = selectedGroup;
 

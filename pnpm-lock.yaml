@@ -65,9 +65,6 @@ importers:
       geist:
         specifier: ^1.7.0
         version: 1.7.0(next@14.2.35(@babel/core@7.28.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
-      html-to-image:
-        specifier: ^1.11.11
-        version: 1.11.13
       i18next:
         specifier: ^23.12.2
         version: 23.16.8
@@ -2161,9 +2158,6 @@ packages:
 
   html-parse-stringify@3.0.1:
     resolution: {integrity: sha512-KknJ50kTInJ7qIScF3jeaFRpMpE8/lfiTdzf/twXyPBLAGrLRTmkz3AdTnKeh40X8k9L2fdYwEp/42WGXIRGcg==}
-
-  html-to-image@1.11.13:
-    resolution: {integrity: sha512-cuOPoI7WApyhBElTTb9oqsawRvZ0rHhaHwghRLlTuffoD1B2aDemlCruLeZrUIIdvG7gs9xeELEPm6PhuASqrg==}
 
   i18next-fs-backend@2.6.0:
     resolution: {integrity: sha512-3ZlhNoF9yxnM8pa8bWp5120/Ob6t4lVl1l/tbLmkml/ei3ud8IWySCHt2lrY5xWRlSU5D9IV2sm5bEbGuTqwTw==}
@@ -5711,8 +5705,6 @@ snapshots:
   html-parse-stringify@3.0.1:
     dependencies:
       void-elements: 3.1.0
-
-  html-to-image@1.11.13: {}
 
   i18next-fs-backend@2.6.0: {}
 

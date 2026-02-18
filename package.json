@@ -30,7 +30,6 @@
     "date-fns": "^4.1.0",
     "framer-motion": "^11.3.21",
     "geist": "^1.7.0",
-    "html-to-image": "^1.11.11",
     "i18next": "^23.12.2",
     "ioredis": "^5.4.1",
     "lucide-react": "^0.513.0",

@@ -37,7 +37,10 @@ function getRelativeTime(dateStr: string): string {
 
 export default async function handler(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const query = searchParams.get("query") || searchParams.get("q") || searchParams.get("domain");
+  const query =
+    searchParams.get("query") ||
+    searchParams.get("q") ||
+    searchParams.get("domain");
   const registrar = searchParams.get("registrar");
   const created = searchParams.get("created");
   const expires = searchParams.get("expires");
@@ -50,8 +53,14 @@ export default async function handler(req: NextRequest) {
   const whoisServer = searchParams.get("whoisServer");
   const registrantOrg = searchParams.get("registrantOrg");
   const country = searchParams.get("country");
-  const w = Math.min(Math.max(parseInt(searchParams.get("w") || "1200") || 1200, 200), 4096);
-  const h = Math.min(Math.max(parseInt(searchParams.get("h") || "630") || 630, 200), 4096);
+  const w = Math.min(
+    Math.max(parseInt(searchParams.get("w") || "1200") || 1200, 200),
+    4096,
+  );
+  const h = Math.min(
+    Math.max(parseInt(searchParams.get("h") || "630") || 630, 200),
+    4096,
+  );
   const theme = searchParams.get("theme") === "dark" ? "dark" : "light";
 
   const isDark = theme === "dark";
@@ -72,15 +81,44 @@ export default async function handler(req: NextRequest) {
   const nsList = ns ? ns.split(",").slice(0, 4) : [];
   const remainingDays = remaining ? parseInt(remaining) : null;
 
-  const statusColor = remainingDays === null ? muted : remainingDays <= 0 ? redColor : remainingDays <= 60 ? amberColor : greenColor;
-  const statusLabel = remainingDays === null ? "N/A" : remainingDays <= 0 ? "EXPIRED" : remainingDays <= 60 ? "EXPIRING SOON" : "ACTIVE";
+  const statusColor =
+    remainingDays === null
+      ? muted
+      : remainingDays <= 0
+        ? redColor
+        : remainingDays <= 60
+          ? amberColor
+          : greenColor;
+  const statusLabel =
+    remainingDays === null
+      ? "N/A"
+      : remainingDays <= 0
+        ? "EXPIRED"
+        : remainingDays <= 60
+          ? "EXPIRING SOON"
+          : "ACTIVE";
 
   const typeBadgeColors: Record<string, { bg: string; fg: string }> = {
-    DOMAIN: { bg: isDark ? "#1e3a5f" : "#dbeafe", fg: isDark ? "#60a5fa" : "#2563eb" },
-    IPv4: { bg: isDark ? "#064e3b" : "#d1fae5", fg: isDark ? "#34d399" : "#059669" },
-    IPv6: { bg: isDark ? "#2e1065" : "#ede9fe", fg: isDark ? "#a78bfa" : "#7c3aed" },
-    ASN: { bg: isDark ? "#431407" : "#ffedd5", fg: isDark ? "#fb923c" : "#ea580c" },
-    CIDR: { bg: isDark ? "#500724" : "#fce7f3", fg: isDark ? "#f472b6" : "#db2777" },
+    DOMAIN: {
+      bg: isDark ? "#1e3a5f" : "#dbeafe",
+      fg: isDark ? "#60a5fa" : "#2563eb",
+    },
+    IPv4: {
+      bg: isDark ? "#064e3b" : "#d1fae5",
+      fg: isDark ? "#34d399" : "#059669",
+    },
+    IPv6: {
+      bg: isDark ? "#2e1065" : "#ede9fe",
+      fg: isDark ? "#a78bfa" : "#7c3aed",
+    },
+    ASN: {
+      bg: isDark ? "#431407" : "#ffedd5",
+      fg: isDark ? "#fb923c" : "#ea580c",
+    },
+    CIDR: {
+      bg: isDark ? "#500724" : "#fce7f3",
+      fg: isDark ? "#f472b6" : "#db2777",
+    },
     unknown: { bg: subtleBg, fg: muted },
   };
   const typeBadge = typeBadgeColors[queryType] || typeBadgeColors.unknown;
@@ -118,12 +156,30 @@ export default async function handler(req: NextRequest) {
               borderRadius: "16px",
               padding: "36px 44px",
               gap: "20px",
-              boxShadow: isDark ? "0 4px 24px rgba(0,0,0,0.3)" : "0 4px 24px rgba(0,0,0,0.06)",
+              boxShadow: isDark
+                ? "0 4px 24px rgba(0,0,0,0.3)"
+                : "0 4px 24px rgba(0,0,0,0.06)",
             }}
           >
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px", flex: 1, minWidth: 0 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "flex-start",
+                justifyContent: "space-between",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "6px",
+                  flex: 1,
+                  minWidth: 0,
+                }}
+              >
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                >
                   <div
                     style={{
                       padding: "3px 10px",
@@ -148,13 +204,19 @@ export default async function handler(req: NextRequest) {
                         color: muted,
                       }}
                     >
-                      {age} {parseInt(age) === 1 ? "year" : "years"}
+                      {`${age} ${parseInt(age) === 1 ? "year" : "years"}`}
                     </div>
                   )}
                 </div>
                 <span
                   style={{
-                    fontSize: Math.min(52, Math.max(28, Math.floor(750 / Math.max(query.length, 1) * 1.5))),
+                    fontSize: Math.min(
+                      52,
+                      Math.max(
+                        28,
+                        Math.floor((750 / Math.max(query.length, 1)) * 1.5),
+                      ),
+                    ),
                     fontWeight: 700,
                     color: fg,
                     letterSpacing: "-0.02em",
@@ -164,12 +226,31 @@ export default async function handler(req: NextRequest) {
                   {query}
                 </span>
                 {registrar && (
-                  <span style={{ fontSize: "14px", color: muted, fontWeight: 400, marginTop: "2px" }}>
-                    {registrar}{registrantOrg && registrantOrg !== registrar ? ` · ${registrantOrg}` : ""}
+                  <span
+                    style={{
+                      fontSize: "14px",
+                      color: muted,
+                      fontWeight: 400,
+                      marginTop: "2px",
+                    }}
+                  >
+                    {registrar}
+                    {registrantOrg && registrantOrg !== registrar
+                      ? ` · ${registrantOrg}`
+                      : ""}
                   </span>
                 )}
               </div>
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "6px", marginLeft: "16px", flexShrink: 0 }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "flex-end",
+                  gap: "6px",
+                  marginLeft: "16px",
+                  flexShrink: 0,
+                }}
+              >
                 <div
                   style={{
                     display: "flex",
@@ -181,42 +262,167 @@ export default async function handler(req: NextRequest) {
                     border: `1px solid ${statusColor}40`,
                   }}
                 >
-                  <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: statusColor }} />
-                  <span style={{ fontSize: "12px", fontWeight: 700, color: statusColor, letterSpacing: "0.04em" }}>{statusLabel}</span>
+                  <div
+                    style={{
+                      width: "8px",
+                      height: "8px",
+                      borderRadius: "50%",
+                      backgroundColor: statusColor,
+                    }}
+                  />
+                  <span
+                    style={{
+                      fontSize: "12px",
+                      fontWeight: 700,
+                      color: statusColor,
+                      letterSpacing: "0.04em",
+                    }}
+                  >
+                    {statusLabel}
+                  </span>
                 </div>
                 {remainingDays !== null && remainingDays > 0 && (
-                  <span style={{ fontSize: "11px", color: muted, fontWeight: 500 }}>
+                  <span
+                    style={{ fontSize: "11px", color: muted, fontWeight: 500 }}
+                  >
                     {remainingDays}d remaining
                   </span>
                 )}
               </div>
             </div>
 
-            <div style={{ display: "flex", borderTop: `1px solid ${border}`, paddingTop: "16px", gap: "32px", flexWrap: "wrap" }}>
+            <div
+              style={{
+                display: "flex",
+                borderTop: `1px solid ${border}`,
+                paddingTop: "16px",
+                gap: "32px",
+                flexWrap: "wrap",
+              }}
+            >
               {created && (
-                <div style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
-                  <span style={{ fontSize: "10px", color: muted, fontWeight: 600, letterSpacing: "0.08em" }}>CREATED</span>
-                  <span style={{ fontSize: "15px", color: fg, fontWeight: 600, fontFamily: "monospace" }}>{created}</span>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "3px",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: "10px",
+                      color: muted,
+                      fontWeight: 600,
+                      letterSpacing: "0.08em",
+                    }}
+                  >
+                    CREATED
+                  </span>
+                  <span
+                    style={{
+                      fontSize: "15px",
+                      color: fg,
+                      fontWeight: 600,
+                      fontFamily: "monospace",
+                    }}
+                  >
+                    {created}
+                  </span>
                   {createdRelative && (
-                    <span style={{ fontSize: "10px", color: muted, fontWeight: 400 }}>{createdRelative}</span>
+                    <span
+                      style={{
+                        fontSize: "10px",
+                        color: muted,
+                        fontWeight: 400,
+                      }}
+                    >
+                      {createdRelative}
+                    </span>
                   )}
                 </div>
               )}
               {expires && (
-                <div style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
-                  <span style={{ fontSize: "10px", color: muted, fontWeight: 600, letterSpacing: "0.08em" }}>EXPIRES</span>
-                  <span style={{ fontSize: "15px", color: fg, fontWeight: 600, fontFamily: "monospace" }}>{expires}</span>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "3px",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: "10px",
+                      color: muted,
+                      fontWeight: 600,
+                      letterSpacing: "0.08em",
+                    }}
+                  >
+                    EXPIRES
+                  </span>
+                  <span
+                    style={{
+                      fontSize: "15px",
+                      color: fg,
+                      fontWeight: 600,
+                      fontFamily: "monospace",
+                    }}
+                  >
+                    {expires}
+                  </span>
                   {expiresRelative && (
-                    <span style={{ fontSize: "10px", color: remainingDays !== null && remainingDays > 60 ? greenColor : muted, fontWeight: 500 }}>{expiresRelative}</span>
+                    <span
+                      style={{
+                        fontSize: "10px",
+                        color:
+                          remainingDays !== null && remainingDays > 60
+                            ? greenColor
+                            : muted,
+                        fontWeight: 500,
+                      }}
+                    >
+                      {expiresRelative}
+                    </span>
                   )}
                 </div>
               )}
               {updated && (
-                <div style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
-                  <span style={{ fontSize: "10px", color: muted, fontWeight: 600, letterSpacing: "0.08em" }}>UPDATED</span>
-                  <span style={{ fontSize: "15px", color: fg, fontWeight: 600, fontFamily: "monospace" }}>{updated}</span>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "3px",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: "10px",
+                      color: muted,
+                      fontWeight: 600,
+                      letterSpacing: "0.08em",
+                    }}
+                  >
+                    UPDATED
+                  </span>
+                  <span
+                    style={{
+                      fontSize: "15px",
+                      color: fg,
+                      fontWeight: 600,
+                      fontFamily: "monospace",
+                    }}
+                  >
+                    {updated}
+                  </span>
                   {updatedRelative && (
-                    <span style={{ fontSize: "10px", color: muted, fontWeight: 400 }}>{updatedRelative}</span>
+                    <span
+                      style={{
+                        fontSize: "10px",
+                        color: muted,
+                        fontWeight: 400,
+                      }}
+                    >
+                      {updatedRelative}
+                    </span>
                   )}
                 </div>
               )}
@@ -225,26 +431,84 @@ export default async function handler(req: NextRequest) {
             {(registrantOrg || country) && (
               <div style={{ display: "flex", gap: "32px", flexWrap: "wrap" }}>
                 {registrantOrg && (
-                  <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                    <span style={{ fontSize: "10px", color: muted, fontWeight: 600, letterSpacing: "0.08em" }}>ORGANIZATION</span>
-                    <span style={{ fontSize: "13px", color: fg, fontWeight: 500 }}>{registrantOrg}</span>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "2px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: "10px",
+                        color: muted,
+                        fontWeight: 600,
+                        letterSpacing: "0.08em",
+                      }}
+                    >
+                      ORGANIZATION
+                    </span>
+                    <span
+                      style={{ fontSize: "13px", color: fg, fontWeight: 500 }}
+                    >
+                      {registrantOrg}
+                    </span>
                   </div>
                 )}
                 {country && (
-                  <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                    <span style={{ fontSize: "10px", color: muted, fontWeight: 600, letterSpacing: "0.08em" }}>COUNTRY</span>
-                    <span style={{ fontSize: "13px", color: fg, fontWeight: 500 }}>{country}</span>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "2px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: "10px",
+                        color: muted,
+                        fontWeight: 600,
+                        letterSpacing: "0.08em",
+                      }}
+                    >
+                      COUNTRY
+                    </span>
+                    <span
+                      style={{ fontSize: "13px", color: fg, fontWeight: 500 }}
+                    >
+                      {country}
+                    </span>
                   </div>
                 )}
               </div>
             )}
 
-            {(statusList.length > 0 || nsList.length > 0 || dnssec || whoisServer) && (
+            {(statusList.length > 0 ||
+              nsList.length > 0 ||
+              dnssec ||
+              whoisServer) && (
               <div style={{ display: "flex", gap: "28px", flexWrap: "wrap" }}>
                 {statusList.length > 0 && (
-                  <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                    <span style={{ fontSize: "10px", color: muted, fontWeight: 600, letterSpacing: "0.08em" }}>STATUS</span>
-                    <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "5px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: "10px",
+                        color: muted,
+                        fontWeight: 600,
+                        letterSpacing: "0.08em",
+                      }}
+                    >
+                      STATUS
+                    </span>
+                    <div
+                      style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}
+                    >
                       {statusList.map((s) => (
                         <div
                           key={s}
@@ -265,9 +529,26 @@ export default async function handler(req: NextRequest) {
                   </div>
                 )}
                 {nsList.length > 0 && (
-                  <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                    <span style={{ fontSize: "10px", color: muted, fontWeight: 600, letterSpacing: "0.08em" }}>NAMESERVERS</span>
-                    <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "5px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: "10px",
+                        color: muted,
+                        fontWeight: 600,
+                        letterSpacing: "0.08em",
+                      }}
+                    >
+                      NAMESERVERS
+                    </span>
+                    <div
+                      style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}
+                    >
                       {nsList.map((n) => (
                         <div
                           key={n}
@@ -288,22 +569,79 @@ export default async function handler(req: NextRequest) {
                   </div>
                 )}
                 {dnssec && (
-                  <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                    <span style={{ fontSize: "10px", color: muted, fontWeight: 600, letterSpacing: "0.08em" }}>DNSSEC</span>
-                    <span style={{ fontSize: "12px", color: muted, fontWeight: 500, fontFamily: "monospace" }}>{dnssec}</span>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "5px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: "10px",
+                        color: muted,
+                        fontWeight: 600,
+                        letterSpacing: "0.08em",
+                      }}
+                    >
+                      DNSSEC
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "12px",
+                        color: muted,
+                        fontWeight: 500,
+                        fontFamily: "monospace",
+                      }}
+                    >
+                      {dnssec}
+                    </span>
                   </div>
                 )}
                 {whoisServer && (
-                  <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                    <span style={{ fontSize: "10px", color: muted, fontWeight: 600, letterSpacing: "0.08em" }}>WHOIS SERVER</span>
-                    <span style={{ fontSize: "12px", color: muted, fontWeight: 500, fontFamily: "monospace" }}>{whoisServer}</span>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "5px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: "10px",
+                        color: muted,
+                        fontWeight: 600,
+                        letterSpacing: "0.08em",
+                      }}
+                    >
+                      WHOIS SERVER
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "12px",
+                        color: muted,
+                        fontWeight: 500,
+                        fontFamily: "monospace",
+                      }}
+                    >
+                      {whoisServer}
+                    </span>
                   </div>
                 )}
               </div>
             )}
 
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "4px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginTop: "4px",
+              }}
+            >
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "6px" }}
+              >
                 <div
                   style={{
                     width: "20px",
@@ -320,9 +658,15 @@ export default async function handler(req: NextRequest) {
                 >
                   W
                 </div>
-                <span style={{ fontSize: "12px", color: muted, fontWeight: 500 }}>next-whois-ui</span>
+                <span
+                  style={{ fontSize: "12px", color: muted, fontWeight: 500 }}
+                >
+                  next-whois-ui
+                </span>
               </div>
-              <span style={{ fontSize: "11px", color: accent }}>github.com/zmh-program/next-whois-ui</span>
+              <span style={{ fontSize: "11px", color: accent }}>
+                github.com/zmh-program/next-whois-ui
+              </span>
             </div>
           </div>
         ) : (
@@ -352,14 +696,36 @@ export default async function handler(req: NextRequest) {
               >
                 W
               </div>
-              <span style={{ fontSize: "22px", fontWeight: 600, color: fg, letterSpacing: "0.05em" }}>NEXT WHOIS</span>
+              <span
+                style={{
+                  fontSize: "22px",
+                  fontWeight: 600,
+                  color: fg,
+                  letterSpacing: "0.05em",
+                }}
+              >
+                NEXT WHOIS
+              </span>
             </div>
 
             {query ? (
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: "16px",
+                }}
+              >
                 <span
                   style={{
-                    fontSize: Math.min(72, Math.max(36, Math.floor(1200 / Math.max(query.length, 1) * 1.2))),
+                    fontSize: Math.min(
+                      72,
+                      Math.max(
+                        36,
+                        Math.floor((1200 / Math.max(query.length, 1)) * 1.2),
+                      ),
+                    ),
                     fontWeight: 700,
                     color: fg,
                     letterSpacing: "-0.02em",
@@ -370,7 +736,9 @@ export default async function handler(req: NextRequest) {
                 >
                   {query}
                 </span>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                >
                   <div
                     style={{
                       padding: "4px 14px",
@@ -381,21 +749,58 @@ export default async function handler(req: NextRequest) {
                       fontWeight: 600,
                     }}
                   >
-                    {queryType} Lookup
+                    {`${queryType} Lookup`}
                   </div>
                 </div>
               </div>
             ) : (
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
-                <span style={{ fontSize: "48px", fontWeight: 700, color: fg, letterSpacing: "-0.02em" }}>WHOIS Lookup Tool</span>
-                <span style={{ fontSize: "18px", color: muted, textAlign: "center", maxWidth: "600px" }}>Domain / IPv4 / IPv6 / ASN / CIDR</span>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: "12px",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: "48px",
+                    fontWeight: 700,
+                    color: fg,
+                    letterSpacing: "-0.02em",
+                  }}
+                >
+                  WHOIS Lookup Tool
+                </span>
+                <span
+                  style={{
+                    fontSize: "18px",
+                    color: muted,
+                    textAlign: "center",
+                    maxWidth: "600px",
+                  }}
+                >
+                  Domain / IPv4 / IPv6 / ASN / CIDR
+                </span>
               </div>
             )}
 
-            <div style={{ position: "absolute", bottom: "30px", display: "flex", alignItems: "center", gap: "8px", fontSize: "14px", color: muted }}>
+            <div
+              style={{
+                position: "absolute",
+                bottom: "30px",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                fontSize: "14px",
+                color: muted,
+              }}
+            >
               <span>next-whois-ui</span>
               <span style={{ color: border }}>·</span>
-              <span style={{ color: accent }}>github.com/zmh-program/next-whois-ui</span>
+              <span style={{ color: accent }}>
+                github.com/zmh-program/next-whois-ui
+              </span>
             </div>
           </div>
         )}
