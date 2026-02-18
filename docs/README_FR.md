@@ -76,7 +76,7 @@ Consultez la page de [documentation API](https://gtb.zmh.me/docs) integree, ou :
 
 **`GET /api/lookup?query=google.com`** — Recherche WHOIS/RDAP
 
-**`GET /api/og?domain=google.com`** — Generation d'image OG dynamique
+**`GET /api/og?query=google.com`** — Generation d'image OG dynamique
 
 ## Stack technique
 

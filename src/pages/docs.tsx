@@ -241,7 +241,9 @@ export default function DocsPage() {
                 </CardTitle>
                 <p className="text-sm text-muted-foreground mt-1">
                   Query WHOIS/RDAP information for a domain, IP address, ASN, or
-                  CIDR range.
+                  CIDR range. RDAP and WHOIS are queried in parallel; structured
+                  fields prefer RDAP data, falling back to WHOIS. Both raw
+                  responses are included.
                 </p>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -278,6 +280,8 @@ export default function DocsPage() {
   "time": 1.23,
   "cached": false,
   "source": "rdap",
+  "rawWhoisContent": "Domain Name: GOOGLE.COM\\nRegistry Domain ID: ...",
+  "rawRdapContent": "{\\n  \\"objectClassName\\": \\"domain\\",\\n  ...\\n}",
   "result": {
     "domain": "google.com",
     "registrar": "MarkMonitor Inc.",
@@ -289,18 +293,12 @@ export default function DocsPage() {
     "updatedDate": "2019-09-09T15:39:04Z",
     "status": [
       { "status": "clientDeleteProhibited", "url": "..." },
-      { "status": "clientTransferProhibited", "url": "..." },
-      { "status": "clientUpdateProhibited", "url": "..." },
-      { "status": "serverDeleteProhibited", "url": "..." },
-      { "status": "serverTransferProhibited", "url": "..." },
-      { "status": "serverUpdateProhibited", "url": "..." }
+      { "status": "clientTransferProhibited", "url": "..." }
     ],
     "nameServers": ["ns1.google.com", "ns2.google.com", "ns3.google.com", "ns4.google.com"],
     "dnssec": "unsigned",
     "domainAge": 28,
-    "remainingDays": 945,
-    "rawWhoisContent": "...",
-    "rawRdapContent": "..."
+    "remainingDays": 945
   }
 }`}</CodeBlock>
                 </div>
@@ -313,7 +311,8 @@ export default function DocsPage() {
   "status": false,
   "time": 0.45,
   "error": "No match for domain \"EXAMPLE.INVALID\"",
-  "rawWhoisContent": "% IANA WHOIS server\\n% for more information..."
+  "rawWhoisContent": "% IANA WHOIS server\\n% for more information...",
+  "rawRdapContent": null
 }`}</CodeBlock>
                 </div>
               </CardContent>

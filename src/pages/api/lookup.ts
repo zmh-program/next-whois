@@ -36,10 +36,7 @@ export default async function handler(
     });
   }
 
-  res.setHeader(
-    "Cache-Control",
-    "s-maxage=3600, stale-while-revalidate=86400",
-  );
+  res.setHeader("Cache-Control", "s-maxage=3600, stale-while-revalidate=86400");
   return res.status(200).json({
     time: data.time,
     status: data.status,

@@ -76,7 +76,7 @@ pnpm dev
 
 **`GET /api/lookup?query=google.com`** — WHOIS/RDAP-запрос
 
-**`GET /api/og?domain=google.com`** — Генерация динамического OG-изображения
+**`GET /api/og?query=google.com`** — Генерация динамического OG-изображения
 
 ## Технологический стек
 

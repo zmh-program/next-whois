@@ -74,9 +74,9 @@ pnpm dev
 
 See the built-in [API Documentation](https://gtb.zmh.me/docs) page, or:
 
-**`GET /api/lookup?query=google.com`** — WHOIS/RDAP lookup
+**`GET /api/lookup?query=google.com`** — WHOIS/RDAP lookup (parallel, merged results, includes raw responses)
 
-**`GET /api/og?domain=google.com`** — Dynamic OG image generation
+**`GET /api/og?query=google.com`** — Dynamic OG image generation
 
 ## Tech Stack
 

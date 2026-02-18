@@ -76,7 +76,7 @@ pnpm dev
 
 **`GET /api/lookup?query=google.com`** — WHOIS/RDAP 查詢
 
-**`GET /api/og?domain=google.com`** — 動態 OG 圖片生成
+**`GET /api/og?query=google.com`** — 動態 OG 圖片生成
 
 ## 技術棧
 

@@ -76,7 +76,7 @@ pnpm dev
 
 **`GET /api/lookup?query=google.com`** — WHOIS/RDAP 조회
 
-**`GET /api/og?domain=google.com`** — 동적 OG 이미지 생성
+**`GET /api/og?query=google.com`** — 동적 OG 이미지 생성
 
 ## 기술 스택
 

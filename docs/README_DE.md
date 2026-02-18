@@ -76,7 +76,7 @@ Siehe die integrierte [API-Dokumentation](https://gtb.zmh.me/docs)-Seite, oder:
 
 **`GET /api/lookup?query=google.com`** — WHOIS/RDAP-Abfrage
 
-**`GET /api/og?domain=google.com`** — Dynamische OG-Bildgenerierung
+**`GET /api/og?query=google.com`** — Dynamische OG-Bildgenerierung
 
 ## Tech-Stack
 

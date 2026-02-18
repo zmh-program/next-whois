@@ -76,7 +76,7 @@ pnpm dev
 
 **`GET /api/lookup?query=google.com`** — WHOIS/RDAP ルックアップ
 
-**`GET /api/og?domain=google.com`** — 動的 OG 画像生成
+**`GET /api/og?query=google.com`** — 動的 OG 画像生成
 
 ## 技術スタック
 
