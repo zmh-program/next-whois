@@ -118,7 +118,8 @@ async function getLookupWhois(domain: string): Promise<WhoisRawResult> {
   }
 
   const domainToQuery = extractDomain(domain) || domain;
-  const follow = Math.min(Math.max(MAX_WHOIS_FOLLOW, 1), 2) as 1 | 2;
+  if (MAX_WHOIS_FOLLOW <= 0) throw new Error("WHOIS follow disabled");
+  const follow = Math.min(MAX_WHOIS_FOLLOW, 2) as 1 | 2;
   const data = await whoisDomain(domainToQuery, {
     raw: true,
     follow,
