@@ -325,11 +325,15 @@ export async function lookupWhois(domain: string): Promise<WhoisResult> {
     rdapSettled.status === "rejected" ? rdapSettled.reason : null;
   const whoisError =
     whoisSettled.status === "rejected" ? whoisSettled.reason : null;
+  const whoisMsg = whoisError?.message || "";
+  const rdapMsg = rdapError?.message || "";
+  const isTldUnsupported = /not supported/i.test(whoisMsg);
   return {
     time: elapsed(),
     status: false,
     cached: false,
-    error:
-      rdapError?.message || whoisError?.message || "Unknown error occurred",
+    error: isTldUnsupported
+      ? `WHOIS/RDAP not available for this TLD`
+      : whoisMsg || rdapMsg || "Unknown error occurred",
   };
 }
