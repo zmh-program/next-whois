@@ -8,6 +8,7 @@ import {
   useSaver,
 } from "@/lib/utils";
 import { GetServerSidePropsContext } from "next";
+import { getOrigin } from "@/lib/seo";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import Head from "next/head";
@@ -369,20 +370,21 @@ function buildOgUrl(
   return `/api/og?${params.toString()}`;
 }
 
-type HomeProps = { mode: "home" };
-type LookupProps = { mode: "lookup"; data: WhoisResult; target: string };
+type HomeProps = { mode: "home"; origin: string };
+type LookupProps = { mode: "lookup"; data: WhoisResult; target: string; origin: string };
 type PageProps = HomeProps | LookupProps;
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const querySegments: string[] = (context.params?.query as string[]) ?? [];
+  const origin = getOrigin(context.req);
 
   if (querySegments.length === 0) {
-    return { props: { mode: "home" } };
+    return { props: { mode: "home", origin } };
   }
 
   if (querySegments.length === 1) {
     if (LOCALES.includes(querySegments[0])) {
-      return { props: { mode: "home" } };
+      return { props: { mode: "home", origin } };
     }
     const target = cleanDomain(querySegments[0]);
     const data = await lookupWhoisWithCache(target);
@@ -391,6 +393,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         mode: "lookup",
         data: JSON.parse(JSON.stringify(data)),
         target,
+        origin,
       },
     };
   }
@@ -403,6 +406,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         mode: "lookup",
         data: JSON.parse(JSON.stringify(data)),
         target,
+        origin,
       },
     };
   }
@@ -707,7 +711,7 @@ function HomePage() {
   );
 }
 
-function LookupPage({ data, target }: { data: WhoisResult; target: string }) {
+function LookupPage({ data, target, origin }: { data: WhoisResult; target: string; origin: string }) {
   const { t } = useTranslation();
   const [loading, setLoading] = React.useState(false);
   const [expandStatus, setExpandStatus] = React.useState(false);
@@ -774,15 +778,17 @@ function LookupPage({ data, target }: { data: WhoisResult; target: string }) {
     <>
       <Head>
         <title>{`${target} - WHOIS Lookup`}</title>
-        <meta property="og:title" content={`${target} - WHOIS Lookup`} />
+        <meta key="og:title" property="og:title" content={`${target} - WHOIS Lookup`} />
         <meta
+          key="og:image"
           property="og:image"
-          content={`/api/og?query=${encodeURIComponent(target)}`}
+          content={`${origin}/api/og?query=${encodeURIComponent(target)}`}
         />
-        <meta name="twitter:title" content={`${target} - WHOIS Lookup`} />
+        <meta key="twitter:title" name="twitter:title" content={`${target} - WHOIS Lookup`} />
         <meta
+          key="twitter:image"
           name="twitter:image"
-          content={`/api/og?query=${encodeURIComponent(target)}`}
+          content={`${origin}/api/og?query=${encodeURIComponent(target)}`}
         />
       </Head>
       <ScrollArea className="w-full h-[calc(100vh-4rem)]">
@@ -2091,5 +2097,5 @@ function ResponsePanel({
 
 export default function Page(props: PageProps) {
   if (props.mode === "home") return <HomePage />;
-  return <LookupPage data={props.data} target={props.target} />;
+  return <LookupPage data={props.data} target={props.target} origin={props.origin} />;
 }

@@ -1,27 +1,15 @@
 import "@/styles/globals.css";
 import type { AppProps } from "next/app";
 import Head from "next/head";
-
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme-provider";
-import { strEnv } from "@/lib/env";
+import { siteTitle, siteDescription, siteKeywords } from "@/lib/seo";
 import PWAInstaller from "@/components/pwa_installer";
 import { Navbar } from "@/components/navbar";
 
-const siteTitle = strEnv(
-  "NEXT_PUBLIC_SITE_TITLE",
-  "Next Whois - Easily Lookup Whois Information",
-);
-const siteDescription = strEnv(
-  "NEXT_PUBLIC_SITE_DESCRIPTION",
-  "🧪 Your Next Generation Of Whois Lookup Tool With Modern UI. Support Domain/IPv4/IPv6/ASN/CIDR Whois Lookup And Powerful Features.",
-);
-const siteKeywords = strEnv(
-  "NEXT_PUBLIC_SITE_KEYWORDS",
-  "Whois, Lookup, Tool, Next Whois",
-);
-
 export default function App({ Component, pageProps }: AppProps) {
+  const origin: string = pageProps.origin || "";
+
   return (
     <>
       <Head>
@@ -30,14 +18,15 @@ export default function App({ Component, pageProps }: AppProps) {
         <meta name="tags" content={siteKeywords} />
         <meta name="keywords" content={siteKeywords} />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta property="og:title" content={siteTitle} />
-        <meta property="og:description" content={siteDescription} />
-        <meta property="og:image" content="/banner.png" />
-        <meta property="og:type" content="website" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={siteTitle} />
-        <meta name="twitter:description" content={siteDescription} />
-        <meta name="twitter:image" content="/banner.png" />
+        <meta key="og:title" property="og:title" content={siteTitle} />
+        <meta key="og:description" property="og:description" content={siteDescription} />
+        <meta key="og:image" property="og:image" content={`${origin}/banner.png`} />
+        <meta key="og:url" property="og:url" content={origin} />
+        <meta key="og:type" property="og:type" content="website" />
+        <meta key="twitter:card" name="twitter:card" content="summary_large_image" />
+        <meta key="twitter:title" name="twitter:title" content={siteTitle} />
+        <meta key="twitter:description" name="twitter:description" content={siteDescription} />
+        <meta key="twitter:image" name="twitter:image" content={`${origin}/banner.png`} />
       </Head>
       <Toaster />
       <ThemeProvider

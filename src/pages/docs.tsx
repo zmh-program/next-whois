@@ -1,6 +1,8 @@
 import React from "react";
 import Head from "next/head";
 import Link from "next/link";
+import { GetServerSidePropsContext } from "next";
+import { getOrigin } from "@/lib/seo";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -199,12 +201,19 @@ function ParamsTable({
   );
 }
 
-export default function DocsPage() {
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  return { props: { origin: getOrigin(context.req) } };
+}
+
+export default function DocsPage({ origin }: { origin: string }) {
   return (
     <>
       <Head>
         <title>API Documentation - Next Whois</title>
-        <meta property="og:title" content="API Documentation - Next Whois" />
+        <meta key="og:title" property="og:title" content="API Documentation - Next Whois" />
+        <meta key="og:image" property="og:image" content={`${origin}/banner.png`} />
+        <meta key="twitter:title" name="twitter:title" content="API Documentation - Next Whois" />
+        <meta key="twitter:image" name="twitter:image" content={`${origin}/banner.png`} />
       </Head>
       <ScrollArea className="w-full h-[calc(100vh-4rem)]">
         <main className="w-full max-w-4xl mx-auto px-4 sm:px-6 py-6 min-h-[calc(100vh-4rem)]">
