@@ -80,11 +80,6 @@ See the built-in [API Documentation](https://gtb.zmh.me/docs) page, or:
 
 ## Tech Stack
 
-- Next.js (Pages Router, Edge Runtime for OG)
-- Shadcn UI, Tailwind CSS, Framer Motion
-- [whois-raw](https://www.npmjs.com/package/whois-raw) + RDAP client
+- Next.js 14 (Pages Router, Edge Runtime for OG)
+- [Whoiser](https://www.npmjs.com/package/whoiser) + RDAP client
 - Satori (via `next/og`) for image generation
-
-## License
-
-MIT
