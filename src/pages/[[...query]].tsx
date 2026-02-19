@@ -782,13 +782,13 @@ function LookupPage({ data, target, origin }: { data: WhoisResult; target: strin
         <meta
           key="og:image"
           property="og:image"
-          content={`${origin}/api/og?query=${encodeURIComponent(target)}`}
+          content={`${origin}/api/og?query=${encodeURIComponent(target)}&theme=dark`}
         />
         <meta key="twitter:title" name="twitter:title" content={`${target} - WHOIS Lookup`} />
         <meta
           key="twitter:image"
           name="twitter:image"
-          content={`${origin}/api/og?query=${encodeURIComponent(target)}`}
+          content={`${origin}/api/og?query=${encodeURIComponent(target)}&theme=dark`}
         />
       </Head>
       <ScrollArea className="w-full h-[calc(100vh-4rem)]">
