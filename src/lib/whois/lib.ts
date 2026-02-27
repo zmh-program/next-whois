@@ -19,7 +19,6 @@ export type DomainRegex = {
 
 const specialDomains: Record<string, string> = {
   "gov.cn": "www.gov.cn",
-  "cn.com": "www.cn.com",
   "com.cn": "www.com.cn",
   "org.cn": "www.org.cn",
   "net.cn": "www.net.cn",
