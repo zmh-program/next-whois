@@ -545,6 +545,7 @@ function ResponsePanel({
   copy: (text: string) => void;
   save: (filename: string, content: string) => void;
 }) {
+  const { t } = useTranslation();
   const hasWhois = !!whoisContent;
   const hasRdap = !!rdapContent;
   const [activeTab, setActiveTab] = React.useState<"whois" | "rdap">(
@@ -595,14 +596,14 @@ function ResponsePanel({
             className="text-[10px] text-zinc-500 hover:text-white transition-colors uppercase font-medium tracking-wide flex items-center gap-1"
           >
             <RiFileCopyLine className="w-3 h-3" />
-            Copy
+            {t("copy")}
           </button>
           <button
             onClick={() => save(currentFilename, currentContent)}
             className="text-[10px] text-zinc-500 hover:text-white transition-colors uppercase font-medium tracking-wide flex items-center gap-1"
           >
             <RiDownloadLine className="w-3 h-3" />
-            Save
+            {t("save")}
           </button>
         </div>
       </div>
@@ -773,7 +774,7 @@ export default function LookupPage({
                   <RiTimeLine className="w-3 h-3 text-muted-foreground shrink-0" />
                   <span className="text-[11px] sm:text-xs font-normal text-muted-foreground">
                     {result.domainAge === 0 ? "<1" : result.domainAge}{" "}
-                    {result.domainAge === 1 ? "year" : "years"}
+                    {result.domainAge === 1 ? t("year") : t("years")}
                   </span>
                 </div>
               )}
@@ -824,7 +825,7 @@ export default function LookupPage({
                   >
                     <RiExchangeDollarFill className="w-3 h-3 text-muted-foreground shrink-0" />
                     <span className="text-[11px] sm:text-xs font-normal text-muted-foreground">
-                      Transfer {result.transferPrice.transfer}{" "}
+                      {t("transfer_price")}{result.transferPrice.transfer}{" "}
                       {result.transferPrice.currency.toUpperCase()}
                     </span>
                   </Link>
@@ -843,7 +844,7 @@ export default function LookupPage({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="min-w-[200px]">
                   <DropdownMenuLabel className="text-xs text-muted-foreground">
-                    Share
+                    {t("share")}
                   </DropdownMenuLabel>
                   <DropdownMenuItem asChild>
                     <Link
@@ -893,11 +894,11 @@ export default function LookupPage({
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => copy(current)}>
                     <RiLinkM className="w-4 h-4 mr-2" />
-                    Copy URL
+                    {t("copy_url")}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuLabel className="text-xs text-muted-foreground">
-                    Image
+                    {t("image")}
                   </DropdownMenuLabel>
                   <DropdownMenuItem
                     onClick={async () => {
@@ -911,14 +912,14 @@ export default function LookupPage({
                         a.download = `whois-${target}.png`;
                         a.click();
                         URL.revokeObjectURL(url);
-                        toast.success("Downloaded");
+                        toast.success(t("toast.downloaded"));
                       } catch {
-                        toast.error("Failed to download");
+                        toast.error(t("toast.download_failed"));
                       }
                     }}
                   >
                     <RiDownloadLine className="w-4 h-4 mr-2" />
-                    Download PNG
+                    {t("download_png")}
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={async () => {
@@ -929,18 +930,18 @@ export default function LookupPage({
                         await navigator.clipboard.write([
                           new ClipboardItem({ "image/png": blob }),
                         ]);
-                        toast.success("Copied to clipboard");
+                        toast.success(t("toast.copied_to_clipboard"));
                       } catch {
-                        toast.error("Failed to copy");
+                        toast.error(t("toast.copy_to_clipboard_failed"));
                       }
                     }}
                   >
                     <RiFileCopyLine className="w-4 h-4 mr-2" />
-                    Copy Image
+                    {t("copy_image")}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setShowImagePreview(true)}>
                     <RiCameraLine className="w-4 h-4 mr-2" />
-                    Preview & Customize
+                    {t("preview_customize")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -975,22 +976,21 @@ export default function LookupPage({
                       <path d="m14 8-6 6" />
                     </svg>
                   </div>
-                  <h2 className="text-2xl font-bold mb-2">Lookup Failed</h2>
+                  <h2 className="text-2xl font-bold mb-2">{t("lookup_failed")}</h2>
                   <p className="text-muted-foreground max-w-md mx-auto text-sm leading-relaxed mb-8">
-                    {"We couldn't find any registry data for "}
+                    {t("lookup_failed_description")}{" "}
                     <span className="font-mono font-medium text-foreground">
                       {target}
                     </span>
                     {". "}
-                    {error ||
-                      "This could be due to a typo or the domain might not be registered yet."}
+                    {error || t("lookup_failed_fallback")}
                   </p>
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                     <Button onClick={() => handleSearch(target)}>
-                      Try Again
+                      {t("try_again")}
                     </Button>
                     <Link href="/">
-                      <Button variant="outline">New Search</Button>
+                      <Button variant="outline">{t("new_search")}</Button>
                     </Link>
                   </div>
                 </div>
@@ -1012,21 +1012,21 @@ export default function LookupPage({
                         <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
                         <line x1="12" y1="17" x2="12.01" y2="17" />
                       </svg>
-                      Common Issues
+                      {t("common_issues")}
                     </h3>
                     <ul className="space-y-3">
                       {[
                         {
-                          title: "Invalid TLD",
-                          desc: "Ensure the domain extension (e.g., .com, .io) is typed correctly.",
+                          title: t("issue_invalid_tld"),
+                          desc: t("issue_invalid_tld_desc"),
                         },
                         {
-                          title: "Not Registered",
-                          desc: "The domain might be available for purchase.",
+                          title: t("issue_not_registered"),
+                          desc: t("issue_not_registered_desc"),
                         },
                         {
-                          title: "Rate Limited",
-                          desc: "The WHOIS server may have temporarily blocked requests.",
+                          title: t("issue_rate_limited"),
+                          desc: t("issue_rate_limited_desc"),
                         },
                       ].map((item) => (
                         <li key={item.title} className="flex items-start gap-2">
@@ -1045,18 +1045,18 @@ export default function LookupPage({
                   <div className="glass-panel border border-border rounded-xl p-6">
                     <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4 flex items-center gap-2">
                       <RiTimeLine className="w-4 h-4" />
-                      Query Details
+                      {t("query_details")}
                     </h3>
                     <div className="space-y-3 text-xs">
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground font-mono uppercase">
-                          Target
+                          {t("target")}
                         </span>
                         <span className="font-mono font-medium">{target}</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground font-mono uppercase">
-                          Type
+                          {t("type")}
                         </span>
                         <Badge
                           variant="outline"
@@ -1067,7 +1067,7 @@ export default function LookupPage({
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground font-mono uppercase">
-                          Time
+                          {t("time")}
                         </span>
                         <span className="font-mono">{time.toFixed(2)}s</span>
                       </div>
@@ -1089,7 +1089,7 @@ export default function LookupPage({
                   <div className="glass-panel border border-border rounded-xl p-6 text-center h-full flex flex-col items-center justify-center">
                     <RiServerLine className="w-8 h-8 text-muted-foreground/30 mb-3" />
                     <p className="text-xs text-muted-foreground">
-                      No raw response data available
+                      {t("no_raw_response")}
                     </p>
                   </div>
                 )}
@@ -1138,7 +1138,7 @@ export default function LookupPage({
                           result.remainingDays <= 0 ? (
                             <Badge className="bg-red-500 hover:bg-red-600 text-white border-0">
                               <div className="w-2 h-2 rounded-full bg-white/80 animate-pulse mr-1.5" />
-                              Expired
+                              {t("expired")}
                             </Badge>
                           ) : result.remainingDays <= 60 ? (
                             <Badge className="bg-amber-500 hover:bg-amber-600 text-white border-0">
@@ -1148,7 +1148,7 @@ export default function LookupPage({
                           ) : (
                             <Badge className="bg-primary hover:bg-primary/90 text-primary-foreground border-0">
                               <div className="w-2 h-2 rounded-full bg-emerald-400 mr-1.5" />
-                              Active
+                              {t("active")}
                             </Badge>
                           )
                         ) : (
@@ -1161,7 +1161,7 @@ export default function LookupPage({
                           </Badge>
                         )}
                         <span className="text-[10px] text-muted-foreground font-mono">
-                          {time.toFixed(2)}s{data.cached && " · cached"}
+                          {time.toFixed(2)}s{data.cached && ` · ${t("cached")}`}
                           {data.source && ` · ${data.source}`}
                         </span>
                       </div>
@@ -1205,8 +1205,8 @@ export default function LookupPage({
                               >
                                 {result.remainingDays !== null
                                   ? result.remainingDays > 0
-                                    ? `${result.remainingDays}d remaining`
-                                    : "Expired"
+                                    ? t("d_remaining", { days: result.remainingDays })
+                                    : t("expired")
                                   : getRelativeTime(result.expirationDate)}
                               </p>
                             </div>
@@ -1324,8 +1324,8 @@ export default function LookupPage({
                             className="text-xs text-muted-foreground hover:text-foreground transition-colors font-medium mt-3"
                           >
                             {expandStatus
-                              ? "Show less"
-                              : `+${result.status.length - 5} more`}
+                              ? t("show_less")
+                              : t("more_count", { count: result.status.length - 5 })}
                           </button>
                         )}
                       </div>
@@ -1400,7 +1400,7 @@ export default function LookupPage({
                       <div className="glass-panel border border-border rounded-xl p-5">
                         <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
                           <RiGlobalLine className="w-4 h-4 text-muted-foreground" />
-                          Network Info
+                          {t("whois_fields.network_info")}
                         </h3>
                         <div className="space-y-3">
                           {[
@@ -1598,7 +1598,7 @@ export default function LookupPage({
                           result.whoisServer !== "Unknown" && (
                             <div className="mb-3">
                               <p className="text-[10px] uppercase text-muted-foreground font-medium mb-1">
-                                Whois Server
+                                {t("whois_fields.whois_server")}
                               </p>
                               <p className="text-xs font-mono text-muted-foreground whitespace-pre-wrap break-all">
                                 {result.whoisServer}
@@ -1609,7 +1609,7 @@ export default function LookupPage({
                           result.registrantEmail !== "Unknown" && (
                             <div className="mb-3">
                               <p className="text-[10px] uppercase text-muted-foreground font-medium mb-1">
-                                Contact Email
+                                {t("whois_fields.contact_email")}
                               </p>
                               <p className="text-xs font-mono text-muted-foreground whitespace-pre-wrap break-all">
                                 {result.registrantEmail}
@@ -1620,7 +1620,7 @@ export default function LookupPage({
                           result.registrantPhone !== "Unknown" && (
                             <div>
                               <p className="text-[10px] uppercase text-muted-foreground font-medium mb-1">
-                                Contact Phone
+                                {t("whois_fields.contact_phone")}
                               </p>
                               <p className="text-xs font-mono text-muted-foreground">
                                 {result.registrantPhone}
@@ -1651,12 +1651,12 @@ export default function LookupPage({
       <Dialog open={showImagePreview} onOpenChange={setShowImagePreview}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Image Preview</DialogTitle>
+            <DialogTitle>{t("image_preview")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-3 gap-3">
               <div className="space-y-1.5">
-                <Label className="text-xs">Width</Label>
+                <Label className="text-xs">{t("width")}</Label>
                 <Input
                   type="number"
                   value={imgWidth}
@@ -1672,7 +1672,7 @@ export default function LookupPage({
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Height</Label>
+                <Label className="text-xs">{t("height")}</Label>
                 <Input
                   type="number"
                   value={imgHeight}
@@ -1688,7 +1688,7 @@ export default function LookupPage({
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Theme</Label>
+                <Label className="text-xs">{t("theme")}</Label>
                 <Select
                   value={imgTheme}
                   onValueChange={(v: "light" | "dark") => setImgTheme(v)}
@@ -1697,8 +1697,8 @@ export default function LookupPage({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="light">Light</SelectItem>
-                    <SelectItem value="dark">Dark</SelectItem>
+                    <SelectItem value="light">{t("light")}</SelectItem>
+                    <SelectItem value="dark">{t("dark")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -1732,14 +1732,14 @@ export default function LookupPage({
                     a.download = `whois-${target}-${imgWidth}x${imgHeight}.png`;
                     a.click();
                     URL.revokeObjectURL(url);
-                    toast.success("Downloaded");
+                    toast.success(t("toast.downloaded"));
                   } catch {
-                    toast.error("Failed to download");
+                    toast.error(t("toast.download_failed"));
                   }
                 }}
               >
                 <RiDownloadLine className="w-3.5 h-3.5 mr-1.5" />
-                Download
+                {t("download")}
               </Button>
               <Button
                 variant="outline"
@@ -1756,14 +1756,14 @@ export default function LookupPage({
                     await navigator.clipboard.write([
                       new ClipboardItem({ "image/png": blob }),
                     ]);
-                    toast.success("Copied to clipboard");
+                    toast.success(t("toast.copied_to_clipboard"));
                   } catch {
-                    toast.error("Failed to copy");
+                    toast.error(t("toast.copy_to_clipboard_failed"));
                   }
                 }}
               >
                 <RiFileCopyLine className="w-3.5 h-3.5 mr-1.5" />
-                Copy
+                {t("copy")}
               </Button>
               <Button
                 variant="outline"
@@ -1778,7 +1778,7 @@ export default function LookupPage({
                 }}
               >
                 <RiLinkM className="w-3.5 h-3.5 mr-1.5" />
-                Copy Link
+                {t("copy_link")}
               </Button>
             </div>
           </div>

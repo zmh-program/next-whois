@@ -12,7 +12,7 @@ import { detectQueryType, listHistory, removeHistory } from "@/lib/history";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SearchBox } from "@/components/search_box";
-import { useTranslation } from "@/lib/i18n";
+import { useTranslation, TranslationKey } from "@/lib/i18n";
 import { motion } from "framer-motion";
 import {
   Popover,
@@ -30,12 +30,13 @@ function KeyboardShortcut({ k }: { k: string }) {
 }
 
 function ShortcutsList() {
+  const { t } = useTranslation();
   return (
     <div className="grid gap-0.5 p-1">
       {[
-        { label: "Search", keys: ["/"] },
-        { label: "Clear / Blur", keys: ["Esc"] },
-        { label: "Shortcuts", keys: ["?"] },
+        { label: t("shortcut_search"), keys: ["/"] },
+        { label: t("shortcut_clear"), keys: ["Esc"] },
+        { label: t("shortcut_shortcuts"), keys: ["?"] },
       ].map((item, i) => (
         <div
           key={i}
@@ -118,7 +119,10 @@ function QueryTypeIcon({
   );
 }
 
-function getDateGroupLabel(timestamp: number): string {
+function getDateGroupLabel(
+  timestamp: number,
+  t: (key: TranslationKey) => string,
+): string {
   const date = new Date(timestamp);
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -129,8 +133,8 @@ function getDateGroupLabel(timestamp: number): string {
     date.getDate(),
   );
 
-  if (itemDate.getTime() === today.getTime()) return "Today";
-  if (itemDate.getTime() === yesterday.getTime()) return "Yesterday";
+  if (itemDate.getTime() === today.getTime()) return t("today");
+  if (itemDate.getTime() === yesterday.getTime()) return t("yesterday");
   if (date.getFullYear() === now.getFullYear()) return format(date, "MMM dd");
   return format(date, "MMM dd, yyyy");
 }
@@ -197,7 +201,7 @@ export default function HomePage() {
     let currentLabel = "";
     let currentGroup: typeof allHistory = [];
     for (const item of allHistory) {
-      const label = getDateGroupLabel(item.timestamp);
+      const label = getDateGroupLabel(item.timestamp, t);
       if (label !== currentLabel) {
         if (currentGroup.length > 0)
           groups.push({ label: currentLabel, items: currentGroup });
