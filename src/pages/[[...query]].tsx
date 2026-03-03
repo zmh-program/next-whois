@@ -371,7 +371,12 @@ function buildOgUrl(
 }
 
 type HomeProps = { mode: "home"; origin: string };
-type LookupProps = { mode: "lookup"; data: WhoisResult; target: string; origin: string };
+type LookupProps = {
+  mode: "lookup";
+  data: WhoisResult;
+  target: string;
+  origin: string;
+};
 type PageProps = HomeProps | LookupProps;
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
@@ -398,8 +403,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
-  if (querySegments.length === 2) {
-    const target = cleanDomain(querySegments[1]);
+  if (querySegments.length >= 2) {
+    const target = cleanDomain(querySegments.slice(1).join("/"));
     const data = await lookupWhoisWithCache(target);
     return {
       props: {
@@ -711,7 +716,15 @@ function HomePage() {
   );
 }
 
-function LookupPage({ data, target, origin }: { data: WhoisResult; target: string; origin: string }) {
+function LookupPage({
+  data,
+  target,
+  origin,
+}: {
+  data: WhoisResult;
+  target: string;
+  origin: string;
+}) {
   const { t } = useTranslation();
   const [loading, setLoading] = React.useState(false);
   const [expandStatus, setExpandStatus] = React.useState(false);
@@ -778,13 +791,21 @@ function LookupPage({ data, target, origin }: { data: WhoisResult; target: strin
     <>
       <Head>
         <title>{`${target} - WHOIS Lookup`}</title>
-        <meta key="og:title" property="og:title" content={`${target} - WHOIS Lookup`} />
+        <meta
+          key="og:title"
+          property="og:title"
+          content={`${target} - WHOIS Lookup`}
+        />
         <meta
           key="og:image"
           property="og:image"
           content={`${origin}/api/og?query=${encodeURIComponent(target)}&theme=dark`}
         />
-        <meta key="twitter:title" name="twitter:title" content={`${target} - WHOIS Lookup`} />
+        <meta
+          key="twitter:title"
+          name="twitter:title"
+          content={`${target} - WHOIS Lookup`}
+        />
         <meta
           key="twitter:image"
           name="twitter:image"
@@ -2097,5 +2118,7 @@ function ResponsePanel({
 
 export default function Page(props: PageProps) {
   if (props.mode === "home") return <HomePage />;
-  return <LookupPage data={props.data} target={props.target} origin={props.origin} />;
+  return (
+    <LookupPage data={props.data} target={props.target} origin={props.origin} />
+  );
 }

@@ -136,12 +136,16 @@ export function extractDomain(url: string): string | null {
 }
 
 export function cleanDomain(domain: string): string {
+  const cidrMatch = domain.match(/^((\d{1,3}\.){3}\d{1,3})\/(\d{1,2})$/);
+  if (cidrMatch) {
+    return cidrMatch[0];
+  }
+
   const hostname = extractDomain(domain);
   if (hostname) {
     return hostname;
   }
 
-  // if contains ip, extract it and return
   const ipMatch = domain.match(
     /^(https?:\/\/)?((\d{1,3}\.){3}\d{1,3})(:\d+)?(\/.*)?$/,
   );
