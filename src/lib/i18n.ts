@@ -1,3 +1,7 @@
+/**
+ * Internationalization (i18n) utilities
+ * Supports: en, zh, zh-tw, de, ru, ja, fr, ko
+ */
 import { useRouter } from "next/router";
 import en from "../../locales/en.json";
 import zh from "../../locales/zh.json";
