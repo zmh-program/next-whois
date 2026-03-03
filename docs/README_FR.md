@@ -72,7 +72,7 @@ pnpm dev
 
 ## API
 
-Consultez la page de [documentation API](https://gtb.zmh.me/docs) integree, ou :
+Consultez la page de [documentation API](https://who.zmh.me/docs) integree, ou :
 
 **`GET /api/lookup?query=google.com`** — Recherche WHOIS/RDAP
 

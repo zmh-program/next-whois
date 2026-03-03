@@ -72,7 +72,7 @@ pnpm dev
 
 ## API
 
-查看内置的 [API 文档](https://gtb.zmh.me/docs) 页面，或：
+查看内置的 [API 文档](https://who.zmh.me/docs) 页面，或：
 
 **`GET /api/lookup?query=google.com`** — WHOIS/RDAP 查询
 

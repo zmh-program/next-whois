@@ -72,7 +72,7 @@ pnpm dev
 
 ## API
 
-내장된 [API 문서](https://gtb.zmh.me/docs) 페이지를 참조하거나:
+내장된 [API 문서](https://who.zmh.me/docs) 페이지를 참조하거나:
 
 **`GET /api/lookup?query=google.com`** — WHOIS/RDAP 조회
 
