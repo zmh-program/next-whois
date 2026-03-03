@@ -136,9 +136,16 @@ export function extractDomain(url: string): string | null {
 }
 
 export function cleanDomain(domain: string): string {
-  const cidrMatch = domain.match(/^((\d{1,3}\.){3}\d{1,3})\/(\d{1,2})$/);
-  if (cidrMatch) {
-    return cidrMatch[0];
+  const ipv4CidrMatch = domain.match(/^((\d{1,3}\.){3}\d{1,3})\/(\d{1,2})$/);
+  if (ipv4CidrMatch) {
+    return ipv4CidrMatch[0];
+  }
+
+  const ipv6CidrMatch = domain.match(
+    /^(([0-9a-fA-F]{0,4}:){1,7}[0-9a-fA-F]{0,4})\/(\d{1,3})$/,
+  );
+  if (ipv6CidrMatch) {
+    return ipv6CidrMatch[0];
   }
 
   const hostname = extractDomain(domain);

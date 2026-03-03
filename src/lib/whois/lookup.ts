@@ -95,9 +95,10 @@ interface WhoisRawResult {
 }
 
 function isIPAddress(query: string): boolean {
+  const bare = query.replace(/\/\d{1,3}$/, "");
   return (
-    /^(\d{1,3}\.){3}\d{1,3}$/.test(query) ||
-    /^([0-9a-fA-F]{0,4}:){1,7}[0-9a-fA-F]{0,4}$/.test(query)
+    /^(\d{1,3}\.){3}\d{1,3}$/.test(bare) ||
+    /^([0-9a-fA-F]{0,4}:){1,7}[0-9a-fA-F]{0,4}$/.test(bare)
   );
 }
 
@@ -107,7 +108,8 @@ function isASNumber(query: string): boolean {
 
 async function getLookupWhois(domain: string): Promise<WhoisRawResult> {
   if (isIPAddress(domain)) {
-    const data = await whoisIp(domain, { timeout: LOOKUP_TIMEOUT });
+    const ip = domain.replace(/\/\d{1,3}$/, "");
+    const data = await whoisIp(ip, { timeout: LOOKUP_TIMEOUT });
     return {
       raw: (data as any).__raw || "",
       structured: data as any,
@@ -243,8 +245,10 @@ export async function lookupWhois(domain: string): Promise<WhoisResult> {
     withTimeout(getLookupWhois(domain), LOOKUP_TIMEOUT),
   ]);
 
-  const rdapData =
+  const rdapResult =
     rdapSettled.status === "fulfilled" ? rdapSettled.value : null;
+  const rdapData =
+    rdapResult && !rdapResult.errorCode ? rdapResult : null;
   const whoisData =
     whoisSettled.status === "fulfilled" ? whoisSettled.value : null;
   const rdapRaw = rdapData ? JSON.stringify(rdapData, null, 2) : undefined;
@@ -336,12 +340,17 @@ export async function lookupWhois(domain: string): Promise<WhoisResult> {
   const whoisMsg = whoisError?.message || "";
   const rdapMsg = rdapError?.message || "";
   const isTldUnsupported = /not supported/i.test(whoisMsg);
+  const isInternalError =
+    /cannot read properties/i.test(whoisMsg) ||
+    /cannot read properties/i.test(rdapMsg);
   return {
     time: elapsed(),
     status: false,
     cached: false,
     error: isTldUnsupported
-      ? `WHOIS/RDAP not available for this TLD`
-      : whoisMsg || rdapMsg || "Unknown error occurred",
+      ? "WHOIS/RDAP not available for this TLD"
+      : isInternalError
+        ? "No WHOIS/RDAP data found for this query"
+        : whoisMsg || rdapMsg || "Unknown error occurred",
   };
 }

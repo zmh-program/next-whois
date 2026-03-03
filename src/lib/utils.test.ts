@@ -665,6 +665,19 @@ describe("cleanDomain", () => {
     expect(cleanDomain("1.2.3.4/32")).toBe("1.2.3.4/32");
   });
 
+  // --- IPv6 CIDR ---
+  it("IPv6 CIDR /12", () => {
+    expect(cleanDomain("2001:db8::1/12")).toBe("2001:db8::1/12");
+  });
+
+  it("IPv6 CIDR /48", () => {
+    expect(cleanDomain("2001:db8::/48")).toBe("2001:db8::/48");
+  });
+
+  it("IPv6 CIDR /128", () => {
+    expect(cleanDomain("::1/128")).toBe("::1/128");
+  });
+
   // --- ASN ---
   it("ASN uppercase", () => {
     expect(cleanDomain("AS13335")).toBe("AS13335");

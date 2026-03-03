@@ -55,9 +55,10 @@ export interface RdapResponse {
 }
 
 function isIPAddress(query: string): boolean {
+  const bare = query.replace(/\/\d{1,3}$/, "");
   const ipv4Regex = /^(\d{1,3}\.){3}\d{1,3}$/;
   const ipv6Regex = /^([0-9a-fA-F]{0,4}:){1,7}[0-9a-fA-F]{0,4}$/;
-  return ipv4Regex.test(query) || ipv6Regex.test(query);
+  return ipv4Regex.test(bare) || ipv6Regex.test(bare);
 }
 
 function isASNumber(query: string): boolean {

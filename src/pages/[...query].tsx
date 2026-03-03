@@ -625,14 +625,29 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const querySegments: string[] = (context.params?.query as string[]) ?? [];
   const origin = getOrigin(context.req);
   const target = cleanDomain(querySegments.join("/"));
-  const data = await lookupWhoisWithCache(target);
-  return {
-    props: {
-      data: JSON.parse(JSON.stringify(data)),
-      target,
-      origin,
-    },
-  };
+  try {
+    const data = await lookupWhoisWithCache(target);
+    return {
+      props: {
+        data: JSON.parse(JSON.stringify(data)),
+        target,
+        origin,
+      },
+    };
+  } catch (e: any) {
+    return {
+      props: {
+        data: {
+          time: 0,
+          status: false,
+          cached: false,
+          error: e?.message || "Lookup failed",
+        } as WhoisResult,
+        target,
+        origin,
+      },
+    };
+  }
 }
 
 export default function LookupPage({
@@ -1071,8 +1086,8 @@ export default function LookupPage({
                     save={save}
                   />
                 ) : (
-                  <div className="glass-panel border border-border rounded-xl p-6 text-center">
-                    <RiServerLine className="w-8 h-8 text-muted-foreground/30 mx-auto mb-3" />
+                  <div className="glass-panel border border-border rounded-xl p-6 text-center h-full flex flex-col items-center justify-center">
+                    <RiServerLine className="w-8 h-8 text-muted-foreground/30 mb-3" />
                     <p className="text-xs text-muted-foreground">
                       No raw response data available
                     </p>
