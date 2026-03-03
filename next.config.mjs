@@ -5,6 +5,10 @@ import setupPWA from 'next-pwa';
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ['whoiser'],
+  i18n: {
+    locales: ['en', 'zh', 'zh-tw', 'de', 'ru', 'ja', 'fr', 'ko'],
+    defaultLocale: 'en',
+  },
   ...(process.env.NEXT_BUILD_DIR ? { distDir: process.env.NEXT_BUILD_DIR } : {}),
 };
 

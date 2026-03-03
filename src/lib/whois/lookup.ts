@@ -108,13 +108,21 @@ function isASNumber(query: string): boolean {
 async function getLookupWhois(domain: string): Promise<WhoisRawResult> {
   if (isIPAddress(domain)) {
     const data = await whoisIp(domain, { timeout: LOOKUP_TIMEOUT });
-    return { raw: (data as any).__raw || "", structured: data as any, server: "ip-whois" };
+    return {
+      raw: (data as any).__raw || "",
+      structured: data as any,
+      server: "ip-whois",
+    };
   }
 
   if (isASNumber(domain)) {
     const asNum = parseInt(domain.replace(/^AS/i, ""));
     const data = await whoisAsn(asNum, { timeout: LOOKUP_TIMEOUT });
-    return { raw: (data as any).__raw || "", structured: data as any, server: "asn-whois" };
+    return {
+      raw: (data as any).__raw || "",
+      structured: data as any,
+      server: "asn-whois",
+    };
   }
 
   const domainToQuery = extractDomain(domain) || domain;

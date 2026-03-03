@@ -14,10 +14,6 @@ import Link from "next/link";
 import Head from "next/head";
 import { Button } from "@/components/ui/button";
 import {
-  RiDeleteBinLine,
-  RiHistoryLine,
-  RiGlobalLine,
-  RiKeyboardLine,
   RiCameraLine,
   RiFileCopyLine,
   RiExternalLinkLine,
@@ -35,14 +31,10 @@ import {
   RiDownloadLine,
   RiServerLine,
   RiEarthLine,
+  RiGlobalLine,
 } from "@remixicon/react";
-import React, { useEffect, useMemo, useCallback } from "react";
-import {
-  addHistory,
-  detectQueryType,
-  listHistory,
-  removeHistory,
-} from "@/lib/history";
+import React, { useEffect, useMemo } from "react";
+import { addHistory, detectQueryType } from "@/lib/history";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { WhoisAnalyzeResult, WhoisResult } from "@/lib/whois/types";
@@ -56,11 +48,6 @@ import { SearchBox } from "@/components/search_box";
 import { useTranslation } from "@/lib/i18n";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -83,9 +70,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { format } from "date-fns";
-
-const LOCALES = ["en", "zh", "zh-tw", "de", "ru", "ja", "fr", "ko"];
 
 const REGISTRAR_ICONS: Record<string, { slug: string | null; color: string }> =
   {
@@ -370,55 +354,6 @@ function buildOgUrl(
   return `/api/og?${params.toString()}`;
 }
 
-type HomeProps = { mode: "home"; origin: string };
-type LookupProps = {
-  mode: "lookup";
-  data: WhoisResult;
-  target: string;
-  origin: string;
-};
-type PageProps = HomeProps | LookupProps;
-
-export async function getServerSideProps(context: GetServerSidePropsContext) {
-  const querySegments: string[] = (context.params?.query as string[]) ?? [];
-  const origin = getOrigin(context.req);
-
-  if (querySegments.length === 0) {
-    return { props: { mode: "home", origin } };
-  }
-
-  if (querySegments.length === 1) {
-    if (LOCALES.includes(querySegments[0])) {
-      return { props: { mode: "home", origin } };
-    }
-    const target = cleanDomain(querySegments[0]);
-    const data = await lookupWhoisWithCache(target);
-    return {
-      props: {
-        mode: "lookup",
-        data: JSON.parse(JSON.stringify(data)),
-        target,
-        origin,
-      },
-    };
-  }
-
-  if (querySegments.length >= 2) {
-    const target = cleanDomain(querySegments.slice(1).join("/"));
-    const data = await lookupWhoisWithCache(target);
-    return {
-      props: {
-        mode: "lookup",
-        data: JSON.parse(JSON.stringify(data)),
-        target,
-        origin,
-      },
-    };
-  }
-
-  return { notFound: true };
-}
-
 function KeyboardShortcut({ k }: { k: string }) {
   return (
     <kbd className="inline-flex items-center justify-center min-w-[18px] h-4 px-1 text-[9px] font-sans font-medium text-muted-foreground bg-muted/50 border border-border/50 rounded-[3px] mx-0.5 select-none">
@@ -427,296 +362,280 @@ function KeyboardShortcut({ k }: { k: string }) {
   );
 }
 
-function ShortcutsList() {
+function WhoisHighlight({ content }: { content: string }) {
+  const urlRegex = /(https?:\/\/[^\s<>"{}|\\^`[\]]+)/;
+
   return (
-    <div className="grid gap-0.5 p-1">
-      {[
-        { label: "Search", keys: ["/"] },
-        { label: "Clear / Blur", keys: ["Esc"] },
-        { label: "Shortcuts", keys: ["?"] },
-      ].map((item, i) => (
-        <div
-          key={i}
-          className="flex items-center justify-between px-2 py-1 rounded hover:bg-muted/50 transition-colors"
-        >
-          <span className="text-[10px] text-muted-foreground/80 font-medium">
-            {item.label}
-          </span>
-          <div className="flex items-center">
-            {item.keys.map((k, idx) => (
-              <React.Fragment key={idx}>
-                {idx > 0 && (
-                  <span className="text-[9px] text-muted-foreground mx-0.5">
-                    +
-                  </span>
+    <>
+      {content.split("\n").map((line, i) => {
+        const trimmed = line.trim();
+        if (!trimmed) return <div key={i} className="h-3" />;
+        if (
+          trimmed.startsWith("%") ||
+          trimmed.startsWith("#") ||
+          trimmed.startsWith(">>>") ||
+          trimmed.startsWith("--")
+        ) {
+          return (
+            <div key={i} className="text-zinc-600 italic">
+              {line}
+            </div>
+          );
+        }
+        const colonIdx = line.indexOf(":");
+        if (colonIdx > 0 && colonIdx < 40) {
+          const key = line.slice(0, colonIdx + 1);
+          const value = line.slice(colonIdx + 1);
+          return (
+            <div key={i}>
+              <span className="text-sky-400 font-medium">{key}</span>
+              <span className="text-zinc-200">
+                {value.split(urlRegex).map((part, j) =>
+                  urlRegex.test(part) ? (
+                    <a
+                      key={j}
+                      href={part}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-400 hover:underline"
+                    >
+                      {part}
+                    </a>
+                  ) : (
+                    <span key={j}>{part}</span>
+                  ),
                 )}
-                <KeyboardShortcut k={k} />
-              </React.Fragment>
-            ))}
+              </span>
+            </div>
+          );
+        }
+        return (
+          <div key={i} className="text-zinc-300">
+            {line.split(urlRegex).map((part, j) =>
+              urlRegex.test(part) ? (
+                <a
+                  key={j}
+                  href={part}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-400 hover:underline"
+                >
+                  {part}
+                </a>
+              ) : (
+                <span key={j}>{part}</span>
+              ),
+            )}
           </div>
+        );
+      })}
+    </>
+  );
+}
+
+function RdapJsonHighlight({ content }: { content: string }) {
+  const tokenRegex =
+    /("(?:[^"\\]|\\.)*")\s*:|("(?:[^"\\]|\\.)*")|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)|(\btrue\b|\bfalse\b|\bnull\b)|([{}[\]])|([,:])|([\s]+)/g;
+
+  return (
+    <>
+      {content.split("\n").map((line, i) => {
+        const parts: React.ReactNode[] = [];
+        let lastIndex = 0;
+        let match;
+        const re = new RegExp(tokenRegex.source, "g");
+        while ((match = re.exec(line)) !== null) {
+          if (match.index > lastIndex) {
+            parts.push(
+              <span key={`t${lastIndex}`} className="text-zinc-300">
+                {line.slice(lastIndex, match.index)}
+              </span>,
+            );
+          }
+          if (match[1]) {
+            parts.push(
+              <span key={`k${match.index}`} className="text-sky-400">
+                {match[1]}
+              </span>,
+              <span key={`c${match.index}`} className="text-zinc-500">
+                :
+              </span>,
+            );
+          } else if (match[2]) {
+            const str = match[2];
+            if (/^"https?:\/\//.test(str)) {
+              const url = str.slice(1, -1);
+              parts.push(
+                <span key={`s${match.index}`} className="text-emerald-400">
+                  &quot;
+                  <a
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-emerald-400 hover:underline"
+                  >
+                    {url}
+                  </a>
+                  &quot;
+                </span>,
+              );
+            } else {
+              parts.push(
+                <span key={`s${match.index}`} className="text-emerald-400">
+                  {str}
+                </span>,
+              );
+            }
+          } else if (match[3]) {
+            parts.push(
+              <span key={`n${match.index}`} className="text-amber-400">
+                {match[3]}
+              </span>,
+            );
+          } else if (match[4]) {
+            parts.push(
+              <span key={`b${match.index}`} className="text-purple-400">
+                {match[4]}
+              </span>,
+            );
+          } else if (match[5]) {
+            parts.push(
+              <span key={`p${match.index}`} className="text-zinc-500">
+                {match[5]}
+              </span>,
+            );
+          } else if (match[6]) {
+            parts.push(
+              <span key={`d${match.index}`} className="text-zinc-500">
+                {match[6]}
+              </span>,
+            );
+          } else if (match[7]) {
+            parts.push(<span key={`w${match.index}`}>{match[7]}</span>);
+          }
+          lastIndex = re.lastIndex;
+        }
+        if (lastIndex < line.length) {
+          parts.push(
+            <span key={`e${lastIndex}`} className="text-zinc-300">
+              {line.slice(lastIndex)}
+            </span>,
+          );
+        }
+        return (
+          <div key={i} className="whitespace-pre">
+            {parts.length > 0 ? parts : " "}
+          </div>
+        );
+      })}
+    </>
+  );
+}
+
+function ResponsePanel({
+  whoisContent,
+  rdapContent,
+  target,
+  copy,
+  save,
+}: {
+  whoisContent: string;
+  rdapContent?: string;
+  target: string;
+  copy: (text: string) => void;
+  save: (filename: string, content: string) => void;
+}) {
+  const hasWhois = !!whoisContent;
+  const hasRdap = !!rdapContent;
+  const [activeTab, setActiveTab] = React.useState<"whois" | "rdap">(
+    hasWhois ? "whois" : "rdap",
+  );
+
+  const currentContent =
+    activeTab === "whois" ? whoisContent : rdapContent || "";
+  const currentFilename =
+    activeTab === "whois"
+      ? `${target.replace(/\./g, "-")}-whois.txt`
+      : `${target.replace(/\./g, "-")}-rdap.json`;
+
+  return (
+    <div className="bg-zinc-900 dark:bg-zinc-950 text-zinc-300 rounded-xl overflow-hidden border border-zinc-800 flex flex-col shadow-lg h-full">
+      <div className="bg-zinc-950 dark:bg-black border-b border-zinc-800 px-4 py-2.5 flex items-center justify-between">
+        <div className="flex items-center gap-1">
+          {hasWhois && (
+            <button
+              onClick={() => setActiveTab("whois")}
+              className={cn(
+                "px-2.5 py-1 rounded text-[11px] font-mono transition-colors",
+                activeTab === "whois"
+                  ? "bg-zinc-800 text-zinc-200"
+                  : "text-zinc-500 hover:text-zinc-300",
+              )}
+            >
+              Whois
+            </button>
+          )}
+          {hasRdap && (
+            <button
+              onClick={() => setActiveTab("rdap")}
+              className={cn(
+                "px-2.5 py-1 rounded text-[11px] font-mono transition-colors",
+                activeTab === "rdap"
+                  ? "bg-zinc-800 text-zinc-200"
+                  : "text-zinc-500 hover:text-zinc-300",
+              )}
+            >
+              RDAP
+            </button>
+          )}
         </div>
-      ))}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => copy(currentContent)}
+            className="text-[10px] text-zinc-500 hover:text-white transition-colors uppercase font-medium tracking-wide flex items-center gap-1"
+          >
+            <RiFileCopyLine className="w-3 h-3" />
+            Copy
+          </button>
+          <button
+            onClick={() => save(currentFilename, currentContent)}
+            className="text-[10px] text-zinc-500 hover:text-white transition-colors uppercase font-medium tracking-wide flex items-center gap-1"
+          >
+            <RiDownloadLine className="w-3 h-3" />
+            Save
+          </button>
+        </div>
+      </div>
+      <ScrollArea className="flex-1">
+        <div className="p-4 font-mono text-[11px] leading-relaxed">
+          {activeTab === "whois" && whoisContent && (
+            <WhoisHighlight content={whoisContent} />
+          )}
+          {activeTab === "rdap" && rdapContent && (
+            <RdapJsonHighlight content={rdapContent} />
+          )}
+        </div>
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
     </div>
   );
 }
 
-function QueryTypeIcon({
-  type,
-  className,
-}: {
-  type: string;
-  className?: string;
-}) {
-  const config = {
-    domain: {
-      label: "",
-      icon: RiGlobalLine,
-      color: "text-blue-500",
-      bg: "bg-blue-500/10",
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const querySegments: string[] = (context.params?.query as string[]) ?? [];
+  const origin = getOrigin(context.req);
+  const target = cleanDomain(querySegments.join("/"));
+  const data = await lookupWhoisWithCache(target);
+  return {
+    props: {
+      data: JSON.parse(JSON.stringify(data)),
+      target,
+      origin,
     },
-    ipv4: {
-      label: "4",
-      icon: null,
-      color: "text-emerald-600",
-      bg: "bg-emerald-500/10",
-    },
-    ipv6: {
-      label: "6",
-      icon: null,
-      color: "text-purple-500",
-      bg: "bg-purple-500/10",
-    },
-    asn: {
-      label: "AS",
-      icon: null,
-      color: "text-orange-500",
-      bg: "bg-orange-500/10",
-    },
-    cidr: {
-      label: "/",
-      icon: null,
-      color: "text-pink-500",
-      bg: "bg-pink-500/10",
-    },
-  }[type] || {
-    label: "?",
-    icon: null,
-    color: "text-gray-500",
-    bg: "bg-gray-500/10",
   };
-
-  if (config.icon) {
-    const Icon = config.icon;
-    return <Icon className={cn("w-3.5 h-3.5", config.color, className)} />;
-  }
-  return (
-    <span className={cn("text-[9px] font-bold", config.color, className)}>
-      {config.label}
-    </span>
-  );
 }
 
-function getDateGroupLabel(timestamp: number): string {
-  const date = new Date(timestamp);
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const yesterday = new Date(today.getTime() - 86400000);
-  const itemDate = new Date(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate(),
-  );
-
-  if (itemDate.getTime() === today.getTime()) return "Today";
-  if (itemDate.getTime() === yesterday.getTime()) return "Yesterday";
-  if (date.getFullYear() === now.getFullYear()) return format(date, "MMM dd");
-  return format(date, "MMM dd, yyyy");
-}
-
-function HomePage() {
-  const { t } = useTranslation();
-  const [loading, setLoading] = React.useState(false);
-  const [mounted, setMounted] = React.useState(false);
-  const [refreshTrigger, setRefreshTrigger] = React.useState(0);
-  const [showShortcuts, setShowShortcuts] = React.useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.defaultPrevented) return;
-      const active = document.activeElement;
-      const isInput =
-        active &&
-        (active.tagName === "INPUT" ||
-          active.tagName === "TEXTAREA" ||
-          active.hasAttribute("contenteditable"));
-
-      if (e.key === "/" && !isInput && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        e.preventDefault();
-        document.getElementById("main-search-input")?.focus();
-        return;
-      }
-      if (e.key === "?" && !isInput) {
-        e.preventDefault();
-        setShowShortcuts((prev) => !prev);
-        return;
-      }
-      if (e.key === "Escape") {
-        if (showShortcuts) {
-          setShowShortcuts(false);
-          return;
-        }
-        const mainInput = document.getElementById("main-search-input");
-        if (active === mainInput) mainInput?.blur();
-        else if (active instanceof HTMLElement) active.blur();
-        return;
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [showShortcuts]);
-
-  const handleSearch = useCallback((query: string) => {
-    setLoading(true);
-    window.location.href = toSearchURI(query);
-  }, []);
-
-  const allHistory = useMemo(() => {
-    if (!mounted) return [];
-    return listHistory().sort((a, b) => b.timestamp - a.timestamp);
-  }, [mounted, refreshTrigger]);
-
-  const groupedHistory = useMemo(() => {
-    const groups: { label: string; items: typeof allHistory }[] = [];
-    if (allHistory.length === 0) return groups;
-    let currentLabel = "";
-    let currentGroup: typeof allHistory = [];
-    for (const item of allHistory) {
-      const label = getDateGroupLabel(item.timestamp);
-      if (label !== currentLabel) {
-        if (currentGroup.length > 0)
-          groups.push({ label: currentLabel, items: currentGroup });
-        currentLabel = label;
-        currentGroup = [item];
-      } else {
-        currentGroup.push(item);
-      }
-    }
-    if (currentGroup.length > 0)
-      groups.push({ label: currentLabel, items: currentGroup });
-    return groups;
-  }, [allHistory]);
-
-  const handleRemoveHistory = useCallback(
-    (query: string) => {
-      if (!mounted) return;
-      removeHistory(query);
-      setRefreshTrigger((prev) => prev + 1);
-    },
-    [mounted],
-  );
-
-  return (
-    <ScrollArea className="w-full h-[calc(100vh-4rem)]">
-      <main className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-6 min-h-[calc(100vh-4rem)]">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="flex-1 relative group">
-            <SearchBox onSearch={handleSearch} loading={loading} autoFocus />
-            <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-none opacity-50 group-hover:opacity-100 transition-opacity">
-              <KeyboardShortcut k="/" />
-            </div>
-          </div>
-          <Popover open={showShortcuts} onOpenChange={setShowShortcuts}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                className="shrink-0 text-muted-foreground"
-                title="Keyboard Shortcuts (?)"
-              >
-                <RiKeyboardLine className="w-4 h-4" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent align="end" className="w-44 p-0" sideOffset={5}>
-              <ShortcutsList />
-            </PopoverContent>
-          </Popover>
-        </div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.1 }}
-        >
-          {allHistory.length > 0 ? (
-            <div className="space-y-1">
-              {groupedHistory.map((group) => (
-                <div key={group.label}>
-                  <div className="flex items-center gap-3 py-2 px-1">
-                    <div className="h-px flex-1 bg-border" />
-                    <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
-                      {group.label}
-                    </span>
-                    <div className="h-px flex-1 bg-border" />
-                  </div>
-                  {group.items.map((item) => (
-                    <Link
-                      key={`${item.query}-${item.timestamp}`}
-                      href={toSearchURI(item.query)}
-                      onClick={() => handleSearch(item.query)}
-                      className="group flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="w-7 h-7 rounded-md grid place-items-center border border-border bg-muted/20 group-hover:border-primary/30 shrink-0">
-                        <QueryTypeIcon type={item.queryType} />
-                      </div>
-                      <span className="text-sm font-medium truncate flex-1 min-w-0">
-                        {item.query}
-                      </span>
-                      <Badge
-                        variant="outline"
-                        className="text-[8px] px-1.5 py-0 uppercase tracking-wider shrink-0"
-                      >
-                        {item.queryType}
-                      </Badge>
-                      <span className="text-[11px] text-muted-foreground tabular-nums shrink-0">
-                        {format(item.timestamp, "h:mm a")}
-                      </span>
-                      <button
-                        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-destructive/10 shrink-0"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleRemoveHistory(item.query);
-                        }}
-                      >
-                        <RiDeleteBinLine className="w-3.5 h-3.5 text-muted-foreground hover:text-destructive" />
-                      </button>
-                    </Link>
-                  ))}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <RiHistoryLine className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
-              <h3 className="text-sm font-medium text-muted-foreground mb-1">
-                {t("no_history_title")}
-              </h3>
-              <p className="text-xs text-muted-foreground/70">
-                {t("no_history_description")}
-              </p>
-            </div>
-          )}
-        </motion.div>
-      </main>
-    </ScrollArea>
-  );
-}
-
-function LookupPage({
+export default function LookupPage({
   data,
   target,
   origin,
@@ -1851,274 +1770,5 @@ function LookupPage({
         </DialogContent>
       </Dialog>
     </>
-  );
-}
-
-function WhoisHighlight({ content }: { content: string }) {
-  const urlRegex = /(https?:\/\/[^\s<>"{}|\\^`[\]]+)/;
-
-  return (
-    <>
-      {content.split("\n").map((line, i) => {
-        const trimmed = line.trim();
-        if (!trimmed) return <div key={i} className="h-3" />;
-        if (
-          trimmed.startsWith("%") ||
-          trimmed.startsWith("#") ||
-          trimmed.startsWith(">>>") ||
-          trimmed.startsWith("--")
-        ) {
-          return (
-            <div key={i} className="text-zinc-600 italic">
-              {line}
-            </div>
-          );
-        }
-        const colonIdx = line.indexOf(":");
-        if (colonIdx > 0 && colonIdx < 40) {
-          const key = line.slice(0, colonIdx + 1);
-          const value = line.slice(colonIdx + 1);
-          return (
-            <div key={i}>
-              <span className="text-sky-400 font-medium">{key}</span>
-              <span className="text-zinc-200">
-                {value.split(urlRegex).map((part, j) =>
-                  urlRegex.test(part) ? (
-                    <a
-                      key={j}
-                      href={part}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-400 hover:underline"
-                    >
-                      {part}
-                    </a>
-                  ) : (
-                    <span key={j}>{part}</span>
-                  ),
-                )}
-              </span>
-            </div>
-          );
-        }
-        return (
-          <div key={i} className="text-zinc-300">
-            {line.split(urlRegex).map((part, j) =>
-              urlRegex.test(part) ? (
-                <a
-                  key={j}
-                  href={part}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-400 hover:underline"
-                >
-                  {part}
-                </a>
-              ) : (
-                <span key={j}>{part}</span>
-              ),
-            )}
-          </div>
-        );
-      })}
-    </>
-  );
-}
-
-function RdapJsonHighlight({ content }: { content: string }) {
-  const tokenRegex =
-    /("(?:[^"\\]|\\.)*")\s*:|("(?:[^"\\]|\\.)*")|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)|(\btrue\b|\bfalse\b|\bnull\b)|([{}[\]])|([,:])|([\s]+)/g;
-
-  return (
-    <>
-      {content.split("\n").map((line, i) => {
-        const parts: React.ReactNode[] = [];
-        let lastIndex = 0;
-        let match;
-        const re = new RegExp(tokenRegex.source, "g");
-        while ((match = re.exec(line)) !== null) {
-          if (match.index > lastIndex) {
-            parts.push(
-              <span key={`t${lastIndex}`} className="text-zinc-300">
-                {line.slice(lastIndex, match.index)}
-              </span>,
-            );
-          }
-          if (match[1]) {
-            parts.push(
-              <span key={`k${match.index}`} className="text-sky-400">
-                {match[1]}
-              </span>,
-              <span key={`c${match.index}`} className="text-zinc-500">
-                :
-              </span>,
-            );
-          } else if (match[2]) {
-            const str = match[2];
-            if (/^"https?:\/\//.test(str)) {
-              const url = str.slice(1, -1);
-              parts.push(
-                <span key={`s${match.index}`} className="text-emerald-400">
-                  &quot;
-                  <a
-                    href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-emerald-400 hover:underline"
-                  >
-                    {url}
-                  </a>
-                  &quot;
-                </span>,
-              );
-            } else {
-              parts.push(
-                <span key={`s${match.index}`} className="text-emerald-400">
-                  {str}
-                </span>,
-              );
-            }
-          } else if (match[3]) {
-            parts.push(
-              <span key={`n${match.index}`} className="text-amber-400">
-                {match[3]}
-              </span>,
-            );
-          } else if (match[4]) {
-            parts.push(
-              <span key={`b${match.index}`} className="text-purple-400">
-                {match[4]}
-              </span>,
-            );
-          } else if (match[5]) {
-            parts.push(
-              <span key={`p${match.index}`} className="text-zinc-500">
-                {match[5]}
-              </span>,
-            );
-          } else if (match[6]) {
-            parts.push(
-              <span key={`d${match.index}`} className="text-zinc-500">
-                {match[6]}
-              </span>,
-            );
-          } else if (match[7]) {
-            parts.push(<span key={`w${match.index}`}>{match[7]}</span>);
-          }
-          lastIndex = re.lastIndex;
-        }
-        if (lastIndex < line.length) {
-          parts.push(
-            <span key={`e${lastIndex}`} className="text-zinc-300">
-              {line.slice(lastIndex)}
-            </span>,
-          );
-        }
-        return (
-          <div key={i} className="whitespace-pre">
-            {parts.length > 0 ? parts : " "}
-          </div>
-        );
-      })}
-    </>
-  );
-}
-
-function ResponsePanel({
-  whoisContent,
-  rdapContent,
-  target,
-  copy,
-  save,
-}: {
-  whoisContent: string;
-  rdapContent?: string;
-  target: string;
-  copy: (text: string) => void;
-  save: (filename: string, content: string) => void;
-}) {
-  const hasWhois = !!whoisContent;
-  const hasRdap = !!rdapContent;
-  const [activeTab, setActiveTab] = React.useState<"whois" | "rdap">(
-    hasWhois ? "whois" : "rdap",
-  );
-
-  const currentContent =
-    activeTab === "whois" ? whoisContent : rdapContent || "";
-  const currentFilename =
-    activeTab === "whois"
-      ? `${target.replace(/\./g, "-")}-whois.txt`
-      : `${target.replace(/\./g, "-")}-rdap.json`;
-
-  return (
-    <div className="bg-zinc-900 dark:bg-zinc-950 text-zinc-300 rounded-xl overflow-hidden border border-zinc-800 flex flex-col shadow-lg h-full">
-      <div className="bg-zinc-950 dark:bg-black border-b border-zinc-800 px-4 py-2.5 flex items-center justify-between">
-        <div className="flex items-center gap-1">
-          {/* <span className="text-xs font-mono text-zinc-500 mr-2 hidden sm:inline">
-            RESPONSE
-          </span> */}
-          {hasWhois && (
-            <button
-              onClick={() => setActiveTab("whois")}
-              className={cn(
-                "px-2.5 py-1 rounded text-[11px] font-mono transition-colors",
-                activeTab === "whois"
-                  ? "bg-zinc-800 text-zinc-200"
-                  : "text-zinc-500 hover:text-zinc-300",
-              )}
-            >
-              Whois
-            </button>
-          )}
-          {hasRdap && (
-            <button
-              onClick={() => setActiveTab("rdap")}
-              className={cn(
-                "px-2.5 py-1 rounded text-[11px] font-mono transition-colors",
-                activeTab === "rdap"
-                  ? "bg-zinc-800 text-zinc-200"
-                  : "text-zinc-500 hover:text-zinc-300",
-              )}
-            >
-              RDAP
-            </button>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => copy(currentContent)}
-            className="text-[10px] text-zinc-500 hover:text-white transition-colors uppercase font-medium tracking-wide flex items-center gap-1"
-          >
-            <RiFileCopyLine className="w-3 h-3" />
-            Copy
-          </button>
-          <button
-            onClick={() => save(currentFilename, currentContent)}
-            className="text-[10px] text-zinc-500 hover:text-white transition-colors uppercase font-medium tracking-wide flex items-center gap-1"
-          >
-            <RiDownloadLine className="w-3 h-3" />
-            Save
-          </button>
-        </div>
-      </div>
-      <ScrollArea className="flex-1">
-        <div className="p-4 font-mono text-[11px] leading-relaxed">
-          {activeTab === "whois" && whoisContent && (
-            <WhoisHighlight content={whoisContent} />
-          )}
-          {activeTab === "rdap" && rdapContent && (
-            <RdapJsonHighlight content={rdapContent} />
-          )}
-        </div>
-        <ScrollBar orientation="horizontal" />
-      </ScrollArea>
-    </div>
-  );
-}
-
-export default function Page(props: PageProps) {
-  if (props.mode === "home") return <HomePage />;
-  return (
-    <LookupPage data={props.data} target={props.target} origin={props.origin} />
   );
 }

@@ -196,8 +196,9 @@ export async function convertRdapToWhoisResult(
     url: "https://icann.org/epp",
   }));
 
-  const nameServers = (rdapData.nameservers || [])
-    .map((ns: any) => (ns.ldhName || ns.unicodeName || "Unknown").split(/\s+/)[0]);
+  const nameServers = (rdapData.nameservers || []).map(
+    (ns: any) => (ns.ldhName || ns.unicodeName || "Unknown").split(/\s+/)[0],
+  );
 
   const result = {
     domain: rdapData.ldhName || rdapData.unicodeName || originalQuery,

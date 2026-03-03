@@ -29,7 +29,9 @@ function JsonHighlight({ content }: { content: string }) {
             continue;
           }
 
-          const keyMatch = remaining.match(/^(\s*)"((?:[^"\\]|\\.)+)"(\s*:\s*)/);
+          const keyMatch = remaining.match(
+            /^(\s*)"((?:[^"\\]|\\.)+)"(\s*:\s*)/,
+          );
           if (keyMatch) {
             parts.push(<span key={`ws-${keyIdx}`}>{keyMatch[1]}</span>);
             parts.push(
@@ -210,10 +212,26 @@ export default function DocsPage({ origin }: { origin: string }) {
     <>
       <Head>
         <title>API Documentation - Next Whois</title>
-        <meta key="og:title" property="og:title" content="API Documentation - Next Whois" />
-        <meta key="og:image" property="og:image" content={`${origin}/banner.png`} />
-        <meta key="twitter:title" name="twitter:title" content="API Documentation - Next Whois" />
-        <meta key="twitter:image" name="twitter:image" content={`${origin}/banner.png`} />
+        <meta
+          key="og:title"
+          property="og:title"
+          content="API Documentation - Next Whois"
+        />
+        <meta
+          key="og:image"
+          property="og:image"
+          content={`${origin}/banner.png`}
+        />
+        <meta
+          key="twitter:title"
+          name="twitter:title"
+          content="API Documentation - Next Whois"
+        />
+        <meta
+          key="twitter:image"
+          name="twitter:image"
+          content={`${origin}/banner.png`}
+        />
       </Head>
       <ScrollArea className="w-full h-[calc(100vh-4rem)]">
         <main className="w-full max-w-4xl mx-auto px-4 sm:px-6 py-6 min-h-[calc(100vh-4rem)]">

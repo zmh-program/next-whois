@@ -19,14 +19,34 @@ export default function App({ Component, pageProps }: AppProps) {
         <meta name="keywords" content={siteKeywords} />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta key="og:title" property="og:title" content={siteTitle} />
-        <meta key="og:description" property="og:description" content={siteDescription} />
-        <meta key="og:image" property="og:image" content={`${origin}/banner.png`} />
+        <meta
+          key="og:description"
+          property="og:description"
+          content={siteDescription}
+        />
+        <meta
+          key="og:image"
+          property="og:image"
+          content={`${origin}/banner.png`}
+        />
         <meta key="og:url" property="og:url" content={origin} />
         <meta key="og:type" property="og:type" content="website" />
-        <meta key="twitter:card" name="twitter:card" content="summary_large_image" />
+        <meta
+          key="twitter:card"
+          name="twitter:card"
+          content="summary_large_image"
+        />
         <meta key="twitter:title" name="twitter:title" content={siteTitle} />
-        <meta key="twitter:description" name="twitter:description" content={siteDescription} />
-        <meta key="twitter:image" name="twitter:image" content={`${origin}/banner.png`} />
+        <meta
+          key="twitter:description"
+          name="twitter:description"
+          content={siteDescription}
+        />
+        <meta
+          key="twitter:image"
+          name="twitter:image"
+          content={`${origin}/banner.png`}
+        />
       </Head>
       <Toaster />
       <ThemeProvider
