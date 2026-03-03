@@ -30,7 +30,12 @@ Ein schnelles, modernes WHOIS/RDAP-Lookup-Tool, gebaut mit Next.js.
 - **Internationalisierung** - Englisch, Chinesisch (vereinfacht/traditionell), Deutsch, Russisch, Japanisch, Franzoesisch, Koreanisch
 - **API-Dokumentation** - Integrierte `/docs`-Seite mit interaktiven Beispielen
 
-[Beitragen](https://github.com/zmh-program/next-whois-ui/pulls)
+## Community-Forks
+
+Großartige Arbeiten von brillanten Entwicklern, die dieses Projekt erweitern:
+
+- [w.is](https://w.is) (by [HiFrey](https://x.com/@HiFrey))
+- [14.cx](https://14.cx) ([yisi.yun](https://yisi.yun), by [人皇](https://www.dalao.net/user-4842.htm))
 
 ## Bereitstellung
 

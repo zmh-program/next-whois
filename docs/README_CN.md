@@ -30,7 +30,12 @@
 - **国际化** - 支持英语、简体中文、繁体中文、德语、俄语、日语、法语、韩语
 - **API 文档** - 内置 `/docs` 页面，提供交互式示例
 
-[贡献代码](https://github.com/zmh-program/next-whois-ui/pulls)
+## 社区二开
+
+这些优秀开发者基于本项目做出了很棒的二次开发：
+
+- [w.is](https://w.is) (by [HiFrey](https://x.com/@HiFrey))
+- [yisi.yun](https://yisi.yun) ([14.cx](https://14.cx), by [人皇](https://www.dalao.net/user-4842.htm))
 
 ## 部署
 

@@ -30,7 +30,12 @@ Next.js で構築された、高速でモダンな WHOIS/RDAP ルックアップ
 - **国際化** - 英語、中国語（簡体字/繁体字）、ドイツ語、ロシア語、日本語、フランス語、韓国語
 - **API ドキュメント** - インタラクティブな例を含む組み込みの `/docs` ページ
 
-[コントリビュート](https://github.com/zmh-program/next-whois-ui/pulls)
+## コミュニティフォーク
+
+このプロジェクトを拡張する優秀な開発者たちの素晴らしい作品をご覧ください：
+
+- [w.is](https://w.is) (by [HiFrey](https://x.com/@HiFrey))
+- [14.cx](https://14.cx) ([yisi.yun](https://yisi.yun), by [人皇](https://www.dalao.net/user-4842.htm))
 
 ## デプロイ
 

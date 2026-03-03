@@ -30,7 +30,12 @@ Next.js로 구축된 빠르고 현대적인 WHOIS/RDAP 조회 도구.
 - **국제화** - 영어, 중국어(간체/번체), 독일어, 러시아어, 일본어, 프랑스어, 한국어
 - **API 문서** - 대화형 예제가 포함된 내장 `/docs` 페이지
 
-[기여하기](https://github.com/zmh-program/next-whois-ui/pulls)
+## 커뮤니티 포크
+
+이 프로젝트를 확장하는 뛰어난 개발자들의 훌륭한 작업을 확인하세요:
+
+- [w.is](https://w.is) (by [HiFrey](https://x.com/@HiFrey))
+- [14.cx](https://14.cx) ([yisi.yun](https://yisi.yun), by [人皇](https://www.dalao.net/user-4842.htm))
 
 ## 배포
 
