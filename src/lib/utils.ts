@@ -6,10 +6,18 @@ import { getDomain } from "tldts";
 import { getSpecialDomain } from "@/lib/whois/lib";
 import { useTranslation } from "@/lib/i18n";
 
+/**
+ * Merge class names with tailwind-merge
+ */
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/**
+ * Check if Enter key was pressed (compatible with MacOS)
+ * @param e - Keyboard event
+ * @returns true if Enter key was pressed
+ */
 export function isEnter(e: React.KeyboardEvent) {
   // compatible with MacOS
   return e.key === "Enter" && e.keyCode !== 229;
