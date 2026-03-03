@@ -1,6 +1,9 @@
 // the whois parser is based on regexp
 // thanks to https://github.com/benfiratkaya/whois-parsed-v2/blob/main/parse-raw-data.js
 
+/**
+ * Regular expression patterns for parsing WHOIS data
+ */
 export type DomainRegex = {
   domainName: string;
   registrar?: string;
