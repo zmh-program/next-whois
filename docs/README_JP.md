@@ -72,7 +72,7 @@ pnpm dev
 
 ## API
 
-組み込みの [API ドキュメント](https://gtb.zmh.me/docs) ページをご覧ください。または：
+組み込みの [API ドキュメント](https://who.zmh.me/docs) ページをご覧ください。または：
 
 **`GET /api/lookup?query=google.com`** — WHOIS/RDAP ルックアップ
 
