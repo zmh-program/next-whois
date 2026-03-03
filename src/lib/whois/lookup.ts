@@ -62,7 +62,22 @@ function isEmptyResult(result: {
   creationDate: string;
   expirationDate: string;
   nameServers: string[];
+  cidr: string;
+  netRange: string;
+  netName: string;
+  originAS: string;
+  inetNum: string;
+  inet6Num: string;
 }): boolean {
+  const hasIpData =
+    (result.cidr && result.cidr !== "Unknown") ||
+    (result.netRange && result.netRange !== "Unknown") ||
+    (result.netName && result.netName !== "Unknown") ||
+    (result.originAS && result.originAS !== "Unknown") ||
+    (result.inetNum && result.inetNum !== "Unknown") ||
+    (result.inet6Num && result.inet6Num !== "Unknown");
+  if (hasIpData) return false;
+
   return (
     (!result.domain || result.domain === "") &&
     result.registrar === "Unknown" &&
