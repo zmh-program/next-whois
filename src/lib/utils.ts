@@ -2,7 +2,7 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import React from "react";
 import { toast } from "sonner";
-import { getDomain } from "tldjs";
+import { getDomain } from "tldts";
 import { getSpecialDomain } from "@/lib/whois/lib";
 import { useTranslation } from "@/lib/i18n";
 
