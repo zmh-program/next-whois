@@ -1,6 +1,27 @@
 import { DomainPricing } from "../pricing/client";
 
+/**
+ * Result of a WHOIS/RDAP lookup
+ */
 export type WhoisResult = {
+  /** Whether the lookup was successful */
+  status: boolean;
+  /** Time taken for lookup in milliseconds */
+  time: number;
+  /** Whether the result was served from cache */
+  cached?: boolean;
+  /** Source of the data: rdap or whois */
+  source?: "rdap" | "whois";
+  /** Parsed result data */
+  result?: WhoisAnalyzeResult;
+  /** Error message if lookup failed */
+  error?: string;
+};
+
+/**
+ * Detailed analysis result of a domain lookup
+ */
+export type WhoisAnalyzeResult = {
   status: boolean;
   time: number;
   cached?: boolean;
