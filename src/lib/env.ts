@@ -1,7 +1,15 @@
 export const VERSION = "1.5";
 
+/**
+ * Maximum number of history items to keep in local storage
+ */
 export const HISTORY_LIMIT: number = intEnv("NEXT_PUBLIC_HISTORY_LIMIT", -1);
 
+/**
+ * Maximum number of detailed WHOIS results to follow
+ * Set 0 to avoid following and improve efficiency
+ * Setting to 0 can solve connection refused issues
+ */
 export const MAX_WHOIS_FOLLOW = intEnv("NEXT_PUBLIC_MAX_WHOIS_FOLLOW", 0);
 
 // Moz API Configuration
@@ -14,6 +22,9 @@ export const MOZ_SECRET_KEY = strEnv("MOZ_SECRET_KEY");
 // Set 0: Where possible don't follow the detailed results to improve efficiency
 // And follow 0 can solve the problem of `whois.dnspod.com connection refused`
 
+/**
+ * Parse integer environment variable
+ */
 function intEnv(name: string, defaultValue: number): number {
   const value = process.env[name];
   if (!value) return defaultValue;
