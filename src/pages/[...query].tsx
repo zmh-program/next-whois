@@ -45,7 +45,7 @@ import {
   getEppStatusLink,
 } from "@/lib/whois/epp-status";
 import { SearchBox } from "@/components/search_box";
-import { useTranslation } from "@/lib/i18n";
+import { useTranslation, TranslationKey } from "@/lib/i18n";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import {
@@ -303,7 +303,10 @@ function getRegistrarFallbackColor(registrar: string): string {
   return `hsl(${hue}, 65%, 50%)`;
 }
 
-function getRelativeTime(dateStr: string): string {
+function getRelativeTime(
+  dateStr: string,
+  t: (key: TranslationKey, values?: Record<string, string | number>) => string,
+): string {
   if (!dateStr || dateStr === "Unknown") return "";
   try {
     const date = new Date(dateStr);
@@ -313,14 +316,14 @@ function getRelativeTime(dateStr: string): string {
     );
     if (diffDays < 0) {
       const abs = Math.abs(diffDays);
-      if (abs < 30) return `in ${abs}d`;
-      if (abs < 365) return `in ${Math.floor(abs / 30)}mo`;
-      return `in ${Math.floor(abs / 365)}y`;
+      if (abs < 30) return t("relative_time.in_days", { days: abs });
+      if (abs < 365) return t("relative_time.in_months", { months: Math.floor(abs / 30) });
+      return t("relative_time.in_years", { years: Math.floor(abs / 365) });
     }
-    if (diffDays < 1) return "today";
-    if (diffDays < 30) return `${diffDays}d ago`;
-    if (diffDays < 365) return `${Math.floor(diffDays / 30)}mo ago`;
-    return `${Math.floor(diffDays / 365)}y ago`;
+    if (diffDays < 1) return t("relative_time.today");
+    if (diffDays < 30) return t("relative_time.days_ago", { days: diffDays });
+    if (diffDays < 365) return t("relative_time.months_ago", { months: Math.floor(diffDays / 30) });
+    return t("relative_time.years_ago", { years: Math.floor(diffDays / 365) });
   } catch {
     return "";
   }
@@ -1181,7 +1184,7 @@ export default function LookupPage({
                                 {formatDate(result.creationDate)}
                               </p>
                               <p className="text-[10px] text-muted-foreground mt-0.5">
-                                {getRelativeTime(result.creationDate)}
+                                {getRelativeTime(result.creationDate, t)}
                               </p>
                             </div>
                           )}
@@ -1207,7 +1210,7 @@ export default function LookupPage({
                                   ? result.remainingDays > 0
                                     ? t("d_remaining", { days: result.remainingDays })
                                     : t("expired")
-                                  : getRelativeTime(result.expirationDate)}
+                                  : getRelativeTime(result.expirationDate, t)}
                               </p>
                             </div>
                           )}
@@ -1221,7 +1224,7 @@ export default function LookupPage({
                                 {formatDate(result.updatedDate)}
                               </p>
                               <p className="text-[10px] text-muted-foreground mt-0.5">
-                                {getRelativeTime(result.updatedDate)}
+                                {getRelativeTime(result.updatedDate, t)}
                               </p>
                             </div>
                           )}

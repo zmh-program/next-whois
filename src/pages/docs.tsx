@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { RiArrowLeftSLine, RiFileCopyLine } from "@remixicon/react";
 import { VERSION } from "@/lib/env";
 import { useClipboard } from "@/lib/utils";
+import { useTranslation, TranslationKey } from "@/lib/i18n";
 
 function JsonHighlight({ content }: { content: string }) {
   const lines = content.split("\n");
@@ -144,6 +145,7 @@ function CodeBlock({
 
 function ParamsTable({
   params,
+  t,
 }: {
   params: {
     name: string;
@@ -152,6 +154,7 @@ function ParamsTable({
     description: string;
     default?: string;
   }[];
+  t: (key: TranslationKey) => string;
 }) {
   return (
     <div className="overflow-x-auto">
@@ -159,19 +162,19 @@ function ParamsTable({
         <thead>
           <tr className="border-b border-border">
             <th className="text-left py-2 pr-4 font-medium text-muted-foreground">
-              Parameter
+              {t("docs.parameter")}
             </th>
             <th className="text-left py-2 pr-4 font-medium text-muted-foreground">
-              Type
+              {t("type")}
             </th>
             <th className="text-left py-2 pr-4 font-medium text-muted-foreground">
-              Required
+              {t("docs.required")}
             </th>
             <th className="text-left py-2 pr-4 font-medium text-muted-foreground">
-              Default
+              {t("docs.default")}
             </th>
             <th className="text-left py-2 font-medium text-muted-foreground">
-              Description
+              {t("docs.description_col")}
             </th>
           </tr>
         </thead>
@@ -183,11 +186,11 @@ function ParamsTable({
               <td className="py-2 pr-4">
                 {p.required ? (
                   <Badge className="text-[9px] bg-red-500/10 text-red-500 hover:bg-red-500/20 border-0">
-                    Required
+                    {t("docs.required")}
                   </Badge>
                 ) : (
                   <Badge variant="outline" className="text-[9px]">
-                    Optional
+                    {t("docs.optional")}
                   </Badge>
                 )}
               </td>
@@ -208,14 +211,15 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 }
 
 export default function DocsPage({ origin }: { origin: string }) {
+  const { t } = useTranslation();
   return (
     <>
       <Head>
-        <title>API Documentation - Next Whois</title>
+        <title>{t("docs.title")} - Next Whois</title>
         <meta
           key="og:title"
           property="og:title"
-          content="API Documentation - Next Whois"
+          content={`${t("docs.title")} - Next Whois`}
         />
         <meta
           key="og:image"
@@ -225,7 +229,7 @@ export default function DocsPage({ origin }: { origin: string }) {
         <meta
           key="twitter:title"
           name="twitter:title"
-          content="API Documentation - Next Whois"
+          content={`${t("docs.title")} - Next Whois`}
         />
         <meta
           key="twitter:image"
@@ -243,7 +247,7 @@ export default function DocsPage({ origin }: { origin: string }) {
             </Link>
             <div>
               <h1 className="text-2xl font-bold tracking-tight">
-                API Documentation
+                {t("docs.title")}
               </h1>
               <p className="text-xs text-muted-foreground font-mono mt-0.5">
                 v{VERSION}
@@ -253,9 +257,7 @@ export default function DocsPage({ origin }: { origin: string }) {
 
           <div className="space-y-8">
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Next Whois provides a simple REST API for programmatic WHOIS/RDAP
-              lookups and dynamic OG image generation. All endpoints are
-              publicly accessible and require no authentication.
+              {t("docs.description")}
             </p>
 
             <Card>
@@ -267,25 +269,22 @@ export default function DocsPage({ origin }: { origin: string }) {
                   <code className="font-mono text-sm">/api/lookup</code>
                 </CardTitle>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Query WHOIS/RDAP information for a domain, IP address, ASN, or
-                  CIDR range. RDAP and WHOIS are queried in parallel; structured
-                  fields prefer RDAP data, falling back to WHOIS. Both raw
-                  responses are included.
+                  {t("docs.lookup_description")}
                 </p>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
                   <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
-                    Parameters
+                    {t("docs.parameters")}
                   </h3>
                   <ParamsTable
+                    t={t}
                     params={[
                       {
                         name: "query",
                         type: "string",
                         required: true,
-                        description:
-                          "Domain name, IPv4/IPv6 address, ASN (e.g. AS13335), or CIDR range. Alias: q",
+                        description: t("docs.lookup_query_desc"),
                       },
                     ]}
                   />
@@ -293,14 +292,14 @@ export default function DocsPage({ origin }: { origin: string }) {
 
                 <div>
                   <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
-                    Example Request
+                    {t("docs.example_request")}
                   </h3>
                   <CodeBlock>{`curl "https://your-domain.com/api/lookup?query=google.com"`}</CodeBlock>
                 </div>
 
                 <div>
                   <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
-                    Success Response
+                    {t("docs.success_response")}
                   </h3>
                   <CodeBlock>{`{
   "status": true,
@@ -332,12 +331,12 @@ export default function DocsPage({ origin }: { origin: string }) {
 
                 <div>
                   <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
-                    Error Response
+                    {t("docs.error_response")}
                   </h3>
                   <CodeBlock>{`{
   "status": false,
   "time": 0.45,
-  "error": "No match for domain \"EXAMPLE.INVALID\""
+  "error": "No match for domain \\"EXAMPLE.INVALID\\""
 }`}</CodeBlock>
                 </div>
               </CardContent>
@@ -352,45 +351,43 @@ export default function DocsPage({ origin }: { origin: string }) {
                   <code className="font-mono text-sm">/api/og</code>
                 </CardTitle>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Generate a dynamic Open Graph image with WHOIS details.
-                  Internally queries /api/lookup and renders a card-style
-                  summary. Returns a PNG image.
+                  {t("docs.og_description")}
                 </p>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
                   <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
-                    Parameters
+                    {t("docs.parameters")}
                   </h3>
                   <ParamsTable
+                    t={t}
                     params={[
                       {
                         name: "query",
                         type: "string",
                         required: false,
-                        description:
-                          "Domain name, IP, ASN, or CIDR to look up and display. Alias: q",
+                        description: t("docs.og_query_desc"),
                         default: "—",
                       },
                       {
                         name: "w",
                         type: "number",
                         required: false,
-                        description: "Image width in pixels (200-4096)",
+                        description: t("docs.og_width_desc"),
                         default: "1200",
                       },
                       {
                         name: "h",
                         type: "number",
                         required: false,
-                        description: "Image height in pixels (200-4096)",
+                        description: t("docs.og_height_desc"),
                         default: "630",
                       },
                       {
                         name: "theme",
                         type: "string",
                         required: false,
-                        description: 'Color theme: "light" or "dark"',
+                        description: t("docs.og_theme_desc"),
                         default: "light",
                       },
                     ]}
@@ -399,14 +396,14 @@ export default function DocsPage({ origin }: { origin: string }) {
 
                 <div>
                   <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
-                    Example Request
+                    {t("docs.example_request")}
                   </h3>
                   <CodeBlock>{`curl "https://your-domain.com/api/og?query=google.com&theme=dark" -o og.png`}</CodeBlock>
                 </div>
 
                 <div>
                   <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
-                    Preview
+                    {t("docs.preview")}
                   </h3>
                   <div className="rounded-lg border overflow-hidden bg-muted/30">
                     <img
@@ -425,22 +422,21 @@ export default function DocsPage({ origin }: { origin: string }) {
             <Card>
               <CardHeader className="pb-4">
                 <CardTitle className="text-base">
-                  Rate Limiting & Caching
+                  {t("docs.rate_limiting")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-sm text-muted-foreground">
                 <p>
-                  Successful WHOIS lookup responses are cached server-side
-                  (Redis) and served with{" "}
+                  {t("docs.rate_limiting_desc1")}{" "}
                   <code className="font-mono text-xs bg-muted px-1 py-0.5 rounded">
                     Cache-Control: s-maxage=3600, stale-while-revalidate=86400
                   </code>{" "}
-                  headers.
+                  {t("docs.rate_limiting_desc2")}
                 </p>
                 <p>
-                  Cached responses include{" "}
+                  {t("docs.rate_limiting_cached")}{" "}
                   <code className="font-mono text-xs bg-muted px-1 py-0.5 rounded">{`"cached": true`}</code>{" "}
-                  in the JSON body and report{" "}
+                  {t("docs.rate_limiting_time")}{" "}
                   <code className="font-mono text-xs bg-muted px-1 py-0.5 rounded">{`"time": 0`}</code>
                   .
                 </p>
