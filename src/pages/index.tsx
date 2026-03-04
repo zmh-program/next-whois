@@ -1,10 +1,6 @@
 import { cn, toSearchURI } from "@/lib/utils";
 import Link from "next/link";
-import {
-  RiDeleteBinLine,
-  RiHistoryLine,
-  RiGlobalLine,
-} from "@remixicon/react";
+import { RiDeleteBinLine, RiHistoryLine, RiGlobalLine } from "@remixicon/react";
 import React, { useEffect, useMemo, useCallback } from "react";
 import { detectQueryType, listHistory, removeHistory } from "@/lib/history";
 import { Badge } from "@/components/ui/badge";

@@ -24,14 +24,13 @@ export function SearchHotkeysText({ className }: { className?: string }) {
         { label: t("shortcut_search"), keys: ["/"] },
         { label: t("shortcut_clear"), keys: ["Esc"] },
       ].map((item, i) => (
-        <div
-          key={i}
-          className="inline-flex items-center gap-1.5"
-        >
+        <div key={i} className="inline-flex items-center gap-1.5">
           <span>{item.label}</span>
           {item.keys.map((k, idx) => (
             <React.Fragment key={idx}>
-              {idx > 0 && <span className="text-[9px] text-muted-foreground">+</span>}
+              {idx > 0 && (
+                <span className="text-[9px] text-muted-foreground">+</span>
+              )}
               <KeyboardShortcut k={k} />
             </React.Fragment>
           ))}

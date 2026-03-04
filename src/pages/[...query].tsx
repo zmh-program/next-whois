@@ -98,8 +98,8 @@ const REGISTRAR_ICONS: Record<string, { slug: string | null; color: string }> =
     aliyun: { slug: "alibabacloud", color: "#FF6A00" },
     hichina: { slug: "alibabacloud", color: "#FF6A00" },
     wanwang: { slug: "alibabacloud", color: "#FF6A00" },
-    tencent: { slug: null, color: "#EB1923" },
-    dnspod: { slug: null, color: "#EB1923" },
+    tencent: { slug: "/registrar-icons/tencent.png", color: "#EB1923" },
+    dnspod: { slug: "/registrar-icons/dnspod.png", color: "#EB1923" },
     digitalocean: { slug: "digitalocean", color: "#0080FF" },
     squarespace: { slug: "squarespace", color: "#000000" },
     wix: { slug: "wix", color: "#0C6EFC" },
@@ -107,26 +107,50 @@ const REGISTRAR_ICONS: Record<string, { slug: string | null; color: string }> =
     automattic: { slug: "wordpress", color: "#21759B" },
     netlify: { slug: "netlify", color: "#00C7B7" },
     vercel: { slug: "vercel", color: "#000000" },
-    namedotcom: { slug: null, color: "#236BFF" },
-    "name.com": { slug: null, color: "#236BFF" },
+    namedotcom: { slug: "/registrar-icons/namecom.png", color: "#236BFF" },
+    "name.com": { slug: "/registrar-icons/namecom.png", color: "#236BFF" },
     namesilo: { slug: "namesilo", color: "#031B4E" },
-    dynadot: { slug: null, color: "#4E2998" },
-    enom: { slug: null, color: "#F09B1B" },
-    tucows: { slug: null, color: "#F09B1B" },
-    networksolutions: { slug: null, color: "#2E8B57" },
-    markmonitor: { slug: null, color: "#2B5797" },
-    amazon: { slug: null, color: "#FF9900" },
-    aws: { slug: null, color: "#FF9900" },
-    hover: { slug: null, color: "#3B7DDD" },
-    rebel: { slug: null, color: "#3B7DDD" },
-    epik: { slug: null, color: "#4A90D9" },
-    dreamhost: { slug: null, color: "#0073EC" },
-    bluehost: { slug: null, color: "#003580" },
-    hostgator: { slug: null, color: "#F8A41B" },
-    siteground: { slug: null, color: "#7B3FA0" },
-    fastdomain: { slug: null, color: "#003580" },
+    dynadot: { slug: "/registrar-icons/dynadot.png", color: "#4E2998" },
+    enom: { slug: "/registrar-icons/enom.png", color: "#F09B1B" },
+    tucows: { slug: "/registrar-icons/tucows.png", color: "#F09B1B" },
+    networksolutions: {
+      slug: "/registrar-icons/networksolutions.png",
+      color: "#2E8B57",
+    },
+    markmonitor: { slug: "/registrar-icons/markmonitor.png", color: "#2B5797" },
+    amazon: { slug: "/registrar-icons/amazon.png", color: "#FF9900" },
+    aws: { slug: "/registrar-icons/amazon.png", color: "#FF9900" },
+    hover: { slug: "/registrar-icons/hover.png", color: "#3B7DDD" },
+    rebel: { slug: "/registrar-icons/hover.png", color: "#3B7DDD" },
+    epik: { slug: "/registrar-icons/epik.png", color: "#4A90D9" },
+    dreamhost: { slug: "/registrar-icons/dreamhost.png", color: "#0073EC" },
+    bluehost: { slug: "/registrar-icons/bluehost.png", color: "#003580" },
+    hostgator: { slug: "/registrar-icons/hostgator.png", color: "#F8A41B" },
+    siteground: { slug: "/registrar-icons/siteground.png", color: "#7B3FA0" },
+    fastdomain: { slug: "/registrar-icons/fastdomain.png", color: "#003580" },
     huawei: { slug: "huawei", color: "#FF0000" },
     baidu: { slug: "baidu", color: "#2932E1" },
+    ename: { slug: "/registrar-icons/ename.png", color: "#2C7BE5" },
+    "ename technology": {
+      slug: "/registrar-icons/ename.png",
+      color: "#2C7BE5",
+    },
+    xinnet: { slug: "/registrar-icons/xinnet.png", color: "#E60012" },
+    "identity digital": {
+      slug: "/registrar-icons/identitydigital.png",
+      color: "#1A1A2E",
+    },
+    donuts: { slug: "/registrar-icons/identitydigital.png", color: "#1A1A2E" },
+    "registry operator": {
+      slug: "/registrar-icons/identitydigital.png",
+      color: "#1A1A2E",
+    },
+    "360": { slug: "/registrar-icons/360.png", color: "#2FC332" },
+    qihoo: { slug: "/registrar-icons/360.png", color: "#2FC332" },
+    westcn: { slug: null, color: "#2B7DE9" },
+    "west.cn": { slug: null, color: "#2B7DE9" },
+    vultr: { slug: "/registrar-icons/vultr.png", color: "#007BFC" },
+    scaleway: { slug: "/registrar-icons/scaleway.png", color: "#4F0599" },
   };
 
 const NS_BRAND_MAP: Record<
@@ -195,7 +219,11 @@ const NS_BRAND_MAP: Record<
     color: "#673DE6",
   },
   "netlify.com": { brand: "Netlify", slug: "netlify", color: "#00C7B7" },
-  "nsone.net": { brand: "NS1", slug: null, color: "#760DDE" },
+  "nsone.net": {
+    brand: "NS1",
+    slug: "/registrar-icons/ns1.png",
+    color: "#760DDE",
+  },
   "vercel-dns.com": { brand: "Vercel", slug: "vercel", color: "#000000" },
   "wixdns.net": { brand: "Wix", slug: "wix", color: "#0C6EFC" },
   "squarespace-dns.com": {
@@ -209,25 +237,85 @@ const NS_BRAND_MAP: Record<
     color: "#000000",
   },
   "wordpress.com": { brand: "WordPress", slug: "wordpress", color: "#21759B" },
-  awsdns: { brand: "AWS Route 53", slug: null, color: "#232F3E" },
-  "azure-dns.com": { brand: "Azure DNS", slug: null, color: "#0078D4" },
-  "azure-dns.net": { brand: "Azure DNS", slug: null, color: "#0078D4" },
-  "azure-dns.org": { brand: "Azure DNS", slug: null, color: "#0078D4" },
-  "azure-dns.info": { brand: "Azure DNS", slug: null, color: "#0078D4" },
+  awsdns: {
+    brand: "AWS Route 53",
+    slug: "/registrar-icons/amazon.png",
+    color: "#232F3E",
+  },
+  "azure-dns.com": {
+    brand: "Azure DNS",
+    slug: "/registrar-icons/azure.png",
+    color: "#0078D4",
+  },
+  "azure-dns.net": {
+    brand: "Azure DNS",
+    slug: "/registrar-icons/azure.png",
+    color: "#0078D4",
+  },
+  "azure-dns.org": {
+    brand: "Azure DNS",
+    slug: "/registrar-icons/azure.png",
+    color: "#0078D4",
+  },
+  "azure-dns.info": {
+    brand: "Azure DNS",
+    slug: "/registrar-icons/azure.png",
+    color: "#0078D4",
+  },
   "googledomains.com": { brand: "Google", slug: "google", color: "#000000" },
   "google.com": { brand: "Google", slug: "google", color: "#000000" },
   "linode.com": { brand: "Akamai", slug: "akamai", color: "#0096D6" },
-  "dns.he.net": { brand: "Hurricane Electric", slug: null, color: "#E40000" },
-  "dnspod.net": { brand: "DNSPod", slug: null, color: "#4478E6" },
-  "dnsimple.com": { brand: "DNSimple", slug: null, color: "#205EBB" },
-  "dnsimple-edge.net": { brand: "DNSimple", slug: null, color: "#205EBB" },
-  "cloudns.net": { brand: "ClouDNS", slug: null, color: "#4FA3D7" },
+  "dns.he.net": {
+    brand: "Hurricane Electric",
+    slug: "/registrar-icons/he.png",
+    color: "#E40000",
+  },
+  "dnspod.net": {
+    brand: "DNSPod",
+    slug: "/registrar-icons/dnspod.png",
+    color: "#4478E6",
+  },
+  "dnsimple.com": {
+    brand: "DNSimple",
+    slug: "/registrar-icons/dnsimple.png",
+    color: "#205EBB",
+  },
+  "dnsimple-edge.net": {
+    brand: "DNSimple",
+    slug: "/registrar-icons/dnsimple.png",
+    color: "#205EBB",
+  },
+  "cloudns.net": {
+    brand: "ClouDNS",
+    slug: "/registrar-icons/cloudns.png",
+    color: "#4FA3D7",
+  },
   "afraid.org": { brand: "FreeDNS", slug: null, color: "#27AE60" },
-  "name.com": { brand: "Name.com", slug: null, color: "#236BFF" },
-  "hover.com": { brand: "Hover", slug: null, color: "#3B7DDD" },
-  "dynadot.com": { brand: "Dynadot", slug: null, color: "#4E2998" },
-  "name-services.com": { brand: "Enom", slug: null, color: "#F09B1B" },
-  "worldnic.com": { brand: "Network Solutions", slug: null, color: "#2E8B57" },
+  "name.com": {
+    brand: "Name.com",
+    slug: "/registrar-icons/namecom.png",
+    color: "#236BFF",
+  },
+  "hover.com": {
+    brand: "Hover",
+    slug: "/registrar-icons/hover.png",
+    color: "#3B7DDD",
+  },
+  "dynadot.com": {
+    brand: "Dynadot",
+    slug: "/registrar-icons/dynadot.png",
+    color: "#4E2998",
+  },
+  "name-services.com": {
+    brand: "Enom",
+    slug: "/registrar-icons/enom.png",
+    color: "#F09B1B",
+  },
+  "worldnic.com": {
+    brand: "Network Solutions",
+    slug: "/registrar-icons/networksolutions.png",
+    color: "#2E8B57",
+  },
   "dnsowl.com": { brand: "NameSilo", slug: "namesilo", color: "#031B4E" },
   "namesilo.com": { brand: "NameSilo", slug: "namesilo", color: "#031B4E" },
   "hichina.com": {
@@ -267,6 +355,210 @@ const NS_BRAND_MAP: Record<
     slug: "huawei",
     color: "#FF0000",
   },
+  "tucows.com": {
+    brand: "Tucows",
+    slug: "/registrar-icons/tucows.png",
+    color: "#F09B1B",
+  },
+  "qq.com": {
+    brand: "DNSPod",
+    slug: "/registrar-icons/dnspod.png",
+    color: "#4478E6",
+  },
+  "dnsv2.com": {
+    brand: "DNSPod",
+    slug: "/registrar-icons/dnspod.png",
+    color: "#4478E6",
+  },
+  "dnsv3.com": {
+    brand: "DNSPod",
+    slug: "/registrar-icons/dnspod.png",
+    color: "#4478E6",
+  },
+  "dnsv4.com": {
+    brand: "DNSPod",
+    slug: "/registrar-icons/dnspod.png",
+    color: "#4478E6",
+  },
+  "dnsv5.com": {
+    brand: "DNSPod",
+    slug: "/registrar-icons/dnspod.png",
+    color: "#4478E6",
+  },
+  "iidns.com": {
+    brand: "DNSPod",
+    slug: "/registrar-icons/dnspod.png",
+    color: "#4478E6",
+  },
+  "tencentcloudcns.com": {
+    brand: "Tencent Cloud",
+    slug: "/registrar-icons/tencent.png",
+    color: "#EB1923",
+  },
+  "360safe.com": {
+    brand: "360",
+    slug: "/registrar-icons/360.png",
+    color: "#2FC332",
+  },
+  "ename.net": {
+    brand: "eName",
+    slug: "/registrar-icons/ename.png",
+    color: "#2C7BE5",
+  },
+  "ename.com": {
+    brand: "eName",
+    slug: "/registrar-icons/ename.png",
+    color: "#2C7BE5",
+  },
+  "xinnet.com": {
+    brand: "Xinnet",
+    slug: "/registrar-icons/xinnet.png",
+    color: "#E60012",
+  },
+  "xincache.com": {
+    brand: "Xinnet",
+    slug: "/registrar-icons/xinnet.png",
+    color: "#E60012",
+  },
+  "myhostadmin.net": { brand: "West.cn", slug: null, color: "#2B7DE9" },
+  "west-dns.com": { brand: "West.cn", slug: null, color: "#2B7DE9" },
+  "jdgslb.com": {
+    brand: "JD Cloud",
+    slug: "/registrar-icons/jdcloud.png",
+    color: "#C9151E",
+  },
+  "jdcache.com": {
+    brand: "JD Cloud",
+    slug: "/registrar-icons/jdcloud.png",
+    color: "#C9151E",
+  },
+  "volcengine.com": {
+    brand: "Volcengine",
+    slug: "/registrar-icons/volcengine.png",
+    color: "#3370FF",
+  },
+  "volcdns.com": {
+    brand: "Volcengine",
+    slug: "/registrar-icons/volcengine.png",
+    color: "#3370FF",
+  },
+  "akam.net": { brand: "Akamai", slug: "akamai", color: "#0096D6" },
+  "akamaiedge.net": { brand: "Akamai", slug: "akamai", color: "#0096D6" },
+  "fastly.net": {
+    brand: "Fastly",
+    slug: "/registrar-icons/fastly.png",
+    color: "#FF282D",
+  },
+  "ultradns.com": {
+    brand: "UltraDNS",
+    slug: "/registrar-icons/ultradns.png",
+    color: "#5B2D8E",
+  },
+  "ultradns.net": {
+    brand: "UltraDNS",
+    slug: "/registrar-icons/ultradns.png",
+    color: "#5B2D8E",
+  },
+  "ultradns.org": {
+    brand: "UltraDNS",
+    slug: "/registrar-icons/ultradns.png",
+    color: "#5B2D8E",
+  },
+  "constellix.com": {
+    brand: "Constellix",
+    slug: "/registrar-icons/constellix.png",
+    color: "#4B9CD3",
+  },
+  "constellix.net": {
+    brand: "Constellix",
+    slug: "/registrar-icons/constellix.png",
+    color: "#4B9CD3",
+  },
+  "easydns.com": {
+    brand: "easyDNS",
+    slug: "/registrar-icons/easydns.png",
+    color: "#29A8E0",
+  },
+  "easydns.net": {
+    brand: "easyDNS",
+    slug: "/registrar-icons/easydns.png",
+    color: "#29A8E0",
+  },
+  "easydns.org": {
+    brand: "easyDNS",
+    slug: "/registrar-icons/easydns.png",
+    color: "#29A8E0",
+  },
+  "vultr.com": {
+    brand: "Vultr",
+    slug: "/registrar-icons/vultr.png",
+    color: "#007BFC",
+  },
+  "scaleway.com": {
+    brand: "Scaleway",
+    slug: "/registrar-icons/scaleway.png",
+    color: "#4F0599",
+  },
+  "transip.net": {
+    brand: "TransIP",
+    slug: "/registrar-icons/transip.png",
+    color: "#74B63B",
+  },
+  "transip.nl": {
+    brand: "TransIP",
+    slug: "/registrar-icons/transip.png",
+    color: "#74B63B",
+  },
+  "siteground.net": {
+    brand: "SiteGround",
+    slug: "/registrar-icons/siteground.png",
+    color: "#7B3FA0",
+  },
+  "sgvps.net": {
+    brand: "SiteGround",
+    slug: "/registrar-icons/siteground.png",
+    color: "#7B3FA0",
+  },
+  "bluehost.com": {
+    brand: "Bluehost",
+    slug: "/registrar-icons/bluehost.png",
+    color: "#003580",
+  },
+  "dreamhost.com": {
+    brand: "DreamHost",
+    slug: "/registrar-icons/dreamhost.png",
+    color: "#0073EC",
+  },
+  "hostgator.com": {
+    brand: "HostGator",
+    slug: "/registrar-icons/hostgator.png",
+    color: "#F8A41B",
+  },
+  "epik.com": {
+    brand: "Epik",
+    slug: "/registrar-icons/epik.png",
+    color: "#4A90D9",
+  },
+  "markmonitor.com": {
+    brand: "MarkMonitor",
+    slug: "/registrar-icons/markmonitor.png",
+    color: "#2B5797",
+  },
+  "net.cn": {
+    brand: "Alibaba Cloud",
+    slug: "alibabacloud",
+    color: "#FF6A00",
+  },
+  "donuts.co": {
+    brand: "Identity Digital",
+    slug: "/registrar-icons/identitydigital.png",
+    color: "#1A1A2E",
+  },
+  "identity.digital": {
+    brand: "Identity Digital",
+    slug: "/registrar-icons/identitydigital.png",
+    color: "#1A1A2E",
+  },
 };
 
 function getNsBrand(
@@ -297,6 +589,12 @@ function getDarkModeIconColor(color: string): string {
   const b = parseInt(hex.substring(4, 6), 16);
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
   return luminance < 0.4 ? "white" : hex;
+}
+
+function resolveIconUrl(slug: string, color: string, dark: boolean): string {
+  if (slug.startsWith("/")) return slug;
+  const c = dark ? getDarkModeIconColor(color) : color.replace("#", "");
+  return `https://cdn.simpleicons.org/${slug}/${c}`;
 }
 
 function getRegistrarFallbackColor(registrar: string): string {
@@ -1393,18 +1691,36 @@ export default function LookupPage({
                               >
                                 {nsBrand ? (
                                   nsBrand.slug ? (
-                                    <div className="w-4 h-4 shrink-0 flex items-center justify-center">
-                                      <img
-                                        src={`https://cdn.simpleicons.org/${nsBrand.slug}/${nsBrand.color.replace("#", "")}`}
-                                        alt=""
-                                        className="w-3.5 h-3.5 object-contain dark:hidden"
-                                      />
-                                      <img
-                                        src={`https://cdn.simpleicons.org/${nsBrand.slug}/${getDarkModeIconColor(nsBrand.color)}`}
-                                        alt=""
-                                        className="w-3.5 h-3.5 object-contain hidden dark:block"
-                                      />
-                                    </div>
+                                    nsBrand.slug.startsWith("/") ? (
+                                      <div className="w-4 h-4 shrink-0 flex items-center justify-center">
+                                        <img
+                                          src={nsBrand.slug}
+                                          alt=""
+                                          className="w-3.5 h-3.5 object-contain rounded-sm"
+                                        />
+                                      </div>
+                                    ) : (
+                                      <div className="w-4 h-4 shrink-0 flex items-center justify-center">
+                                        <img
+                                          src={resolveIconUrl(
+                                            nsBrand.slug,
+                                            nsBrand.color,
+                                            false,
+                                          )}
+                                          alt=""
+                                          className="w-3.5 h-3.5 object-contain dark:hidden"
+                                        />
+                                        <img
+                                          src={resolveIconUrl(
+                                            nsBrand.slug,
+                                            nsBrand.color,
+                                            true,
+                                          )}
+                                          alt=""
+                                          className="w-3.5 h-3.5 object-contain hidden dark:block"
+                                        />
+                                      </div>
+                                    )
                                   ) : (
                                     <div
                                       className="w-4 h-4 rounded-full shrink-0 flex items-center justify-center text-white text-[8px] font-bold"
@@ -1594,18 +1910,36 @@ export default function LookupPage({
                         </div>
                         <div className="flex items-center gap-3 mb-6">
                           {registrarIcon && registrarIcon.slug ? (
-                            <div className="w-10 h-10 bg-white dark:bg-zinc-800 rounded-lg flex items-center justify-center p-1.5 border shrink-0">
-                              <img
-                                src={`https://cdn.simpleicons.org/${registrarIcon.slug}/${registrarIcon.color.replace("#", "")}`}
-                                alt=""
-                                className="w-full h-full object-contain dark:hidden"
-                              />
-                              <img
-                                src={`https://cdn.simpleicons.org/${registrarIcon.slug}/${getDarkModeIconColor(registrarIcon.color)}`}
-                                alt=""
-                                className="w-full h-full object-contain hidden dark:block"
-                              />
-                            </div>
+                            registrarIcon.slug.startsWith("/") ? (
+                              <div className="w-10 h-10 bg-white dark:bg-zinc-800 rounded-lg flex items-center justify-center p-1.5 border shrink-0">
+                                <img
+                                  src={registrarIcon.slug}
+                                  alt=""
+                                  className="w-full h-full object-contain rounded-md"
+                                />
+                              </div>
+                            ) : (
+                              <div className="w-10 h-10 bg-white dark:bg-zinc-800 rounded-lg flex items-center justify-center p-1.5 border shrink-0">
+                                <img
+                                  src={resolveIconUrl(
+                                    registrarIcon.slug,
+                                    registrarIcon.color,
+                                    false,
+                                  )}
+                                  alt=""
+                                  className="w-full h-full object-contain dark:hidden"
+                                />
+                                <img
+                                  src={resolveIconUrl(
+                                    registrarIcon.slug,
+                                    registrarIcon.color,
+                                    true,
+                                  )}
+                                  alt=""
+                                  className="w-full h-full object-contain hidden dark:block"
+                                />
+                              </div>
+                            )
                           ) : (
                             <div
                               className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-lg shrink-0"
