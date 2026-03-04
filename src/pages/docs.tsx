@@ -5,7 +5,7 @@ import { GetServerSidePropsContext } from "next";
 import { getOrigin } from "@/lib/seo";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { RiArrowLeftSLine, RiFileCopyLine } from "@remixicon/react";
 import { VERSION } from "@/lib/env";
@@ -130,15 +130,43 @@ function CodeBlock({
   const isJson = language === "json" || children.trimStart().startsWith("{");
   return (
     <div className="relative group">
-      <pre className="bg-zinc-950 text-zinc-200 rounded-lg p-4 text-xs font-mono overflow-x-auto leading-relaxed">
-        <code>{isJson ? <JsonHighlight content={children} /> : children}</code>
-      </pre>
+      <ScrollArea className="w-full rounded-lg border border-zinc-800/70 bg-zinc-950">
+        <pre className="w-max min-w-full text-zinc-200 p-3 sm:p-4 text-[10px] sm:text-xs font-mono leading-relaxed">
+          <code className="block">
+            {isJson ? <JsonHighlight content={children} /> : children}
+          </code>
+        </pre>
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
       <button
         onClick={() => copy(children)}
         className="absolute top-2 right-2 p-1.5 rounded-md bg-zinc-800 text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity hover:text-zinc-200"
       >
         <RiFileCopyLine className="w-3.5 h-3.5" />
       </button>
+    </div>
+  );
+}
+
+function InlineCodeScroll({
+  children,
+  codeClassName,
+}: {
+  children: string;
+  codeClassName?: string;
+}) {
+  return (
+    <div className="inline-block max-w-full align-middle">
+      <ScrollArea className="max-w-full rounded-md">
+        <code
+          className={`block whitespace-nowrap ${
+            codeClassName || "font-mono text-xs bg-muted px-1 py-0.5 rounded"
+          }`}
+        >
+          {children}
+        </code>
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
     </div>
   );
 }
@@ -157,11 +185,11 @@ function ParamsTable({
   t: (key: TranslationKey) => string;
 }) {
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-xs">
+    <ScrollArea className="w-full rounded-md border border-border/60">
+      <table className="min-w-[680px] w-full text-xs">
         <thead>
           <tr className="border-b border-border">
-            <th className="text-left py-2 pr-4 font-medium text-muted-foreground">
+            <th className="text-left py-2 pr-4 pl-3 font-medium text-muted-foreground">
               {t("docs.parameter")}
             </th>
             <th className="text-left py-2 pr-4 font-medium text-muted-foreground">
@@ -181,7 +209,9 @@ function ParamsTable({
         <tbody>
           {params.map((p) => (
             <tr key={p.name} className="border-b border-border/50">
-              <td className="py-2 pr-4 font-mono text-foreground">{p.name}</td>
+              <td className="py-2 pr-4 pl-3 font-mono text-foreground">
+                {p.name}
+              </td>
               <td className="py-2 pr-4 text-muted-foreground">{p.type}</td>
               <td className="py-2 pr-4">
                 {p.required ? (
@@ -202,7 +232,8 @@ function ParamsTable({
           ))}
         </tbody>
       </table>
-    </div>
+      <ScrollBar orientation="horizontal" />
+    </ScrollArea>
   );
 }
 
@@ -237,7 +268,7 @@ export default function DocsPage({ origin }: { origin: string }) {
           content={`${origin}/banner.png`}
         />
       </Head>
-      <ScrollArea className="w-full h-[calc(100vh-4rem)]">
+      <div className="w-full h-[calc(100vh-4rem)] overflow-y-auto overflow-x-hidden">
         <main className="w-full max-w-4xl mx-auto px-4 sm:px-6 py-6 min-h-[calc(100vh-4rem)]">
           <div className="flex items-center gap-3 mb-8">
             <Link href="/">
@@ -262,11 +293,13 @@ export default function DocsPage({ origin }: { origin: string }) {
 
             <Card>
               <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-2 text-base">
+                <CardTitle className="flex items-center gap-2 text-base flex-wrap">
                   <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 border-0 text-xs font-bold">
                     GET
                   </Badge>
-                  <code className="font-mono text-sm">/api/lookup</code>
+                  <InlineCodeScroll codeClassName="font-mono text-sm">
+                    /api/lookup
+                  </InlineCodeScroll>
                 </CardTitle>
                 <p className="text-sm text-muted-foreground mt-1">
                   {t("docs.lookup_description")}
@@ -344,11 +377,13 @@ export default function DocsPage({ origin }: { origin: string }) {
 
             <Card>
               <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-2 text-base">
+                <CardTitle className="flex items-center gap-2 text-base flex-wrap">
                   <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 border-0 text-xs font-bold">
                     GET
                   </Badge>
-                  <code className="font-mono text-sm">/api/og</code>
+                  <InlineCodeScroll codeClassName="font-mono text-sm">
+                    /api/og
+                  </InlineCodeScroll>
                 </CardTitle>
                 <p className="text-sm text-muted-foreground mt-1">
                   {t("docs.og_description")}
@@ -426,20 +461,20 @@ export default function DocsPage({ origin }: { origin: string }) {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-sm text-muted-foreground">
-                <p>
-                  {t("docs.rate_limiting_desc1")}{" "}
-                  <code className="font-mono text-xs bg-muted px-1 py-0.5 rounded">
+                <div className="flex flex-wrap items-center gap-x-1 gap-y-1">
+                  <span>{t("docs.rate_limiting_desc1")}</span>
+                  <InlineCodeScroll>
                     Cache-Control: s-maxage=3600, stale-while-revalidate=86400
-                  </code>{" "}
-                  {t("docs.rate_limiting_desc2")}
-                </p>
-                <p>
-                  {t("docs.rate_limiting_cached")}{" "}
-                  <code className="font-mono text-xs bg-muted px-1 py-0.5 rounded">{`"cached": true`}</code>{" "}
-                  {t("docs.rate_limiting_time")}{" "}
-                  <code className="font-mono text-xs bg-muted px-1 py-0.5 rounded">{`"time": 0`}</code>
-                  .
-                </p>
+                  </InlineCodeScroll>
+                  <span>{t("docs.rate_limiting_desc2")}</span>
+                </div>
+                <div className="flex flex-wrap items-center gap-x-1 gap-y-1">
+                  <span>{t("docs.rate_limiting_cached")}</span>
+                  <InlineCodeScroll>{`"cached": true`}</InlineCodeScroll>
+                  <span>{t("docs.rate_limiting_time")}</span>
+                  <InlineCodeScroll>{`"time": 0`}</InlineCodeScroll>
+                  <span>.</span>
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -458,7 +493,7 @@ export default function DocsPage({ origin }: { origin: string }) {
             </p>
           </div>
         </main>
-      </ScrollArea>
+      </div>
     </>
   );
 }
