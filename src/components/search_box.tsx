@@ -14,20 +14,106 @@ import { Badge } from "@/components/ui/badge";
 import { useTranslation } from "@/lib/i18n";
 
 const commonDomains = [
-  ".com", ".net", ".org", ".info", ".biz", ".mobi", ".pro", ".tel",
-  ".io", ".dev", ".app", ".tech", ".ai", ".cloud", ".code", ".sh",
-  ".so", ".run", ".api", ".bot",
-  ".cn", ".us", ".uk", ".jp", ".de", ".fr", ".ru", ".kr", ".in",
-  ".au", ".ca", ".br", ".it", ".es", ".nl", ".se", ".no", ".fi",
-  ".pl", ".cz", ".at", ".ch", ".be", ".dk", ".pt", ".ie", ".nz",
-  ".sg", ".hk", ".tw", ".th", ".my", ".id", ".ph", ".vn", ".tr",
-  ".za", ".mx", ".ar", ".cl", ".co.uk", ".co.jp", ".com.au",
-  ".com.br", ".com.cn", ".co.kr", ".co.in",
-  ".me", ".name", ".blog", ".live", ".life", ".world", ".today",
-  ".co", ".inc", ".ltd", ".company", ".group", ".agency", ".studio",
-  ".xyz", ".online", ".site", ".top", ".vip", ".cc", ".tv", ".gg",
-  ".fun", ".space", ".link", ".click", ".one", ".moe",
-  ".edu", ".gov", ".mil", ".museum", ".int",
+  ".com",
+  ".net",
+  ".org",
+  ".info",
+  ".biz",
+  ".mobi",
+  ".pro",
+  ".tel",
+  ".io",
+  ".dev",
+  ".app",
+  ".tech",
+  ".ai",
+  ".cloud",
+  ".code",
+  ".sh",
+  ".so",
+  ".run",
+  ".api",
+  ".bot",
+  ".cn",
+  ".us",
+  ".uk",
+  ".jp",
+  ".de",
+  ".fr",
+  ".ru",
+  ".kr",
+  ".in",
+  ".au",
+  ".ca",
+  ".br",
+  ".it",
+  ".es",
+  ".nl",
+  ".se",
+  ".no",
+  ".fi",
+  ".pl",
+  ".cz",
+  ".at",
+  ".ch",
+  ".be",
+  ".dk",
+  ".pt",
+  ".ie",
+  ".nz",
+  ".sg",
+  ".hk",
+  ".tw",
+  ".th",
+  ".my",
+  ".id",
+  ".ph",
+  ".vn",
+  ".tr",
+  ".za",
+  ".mx",
+  ".ar",
+  ".cl",
+  ".co.uk",
+  ".co.jp",
+  ".com.au",
+  ".com.br",
+  ".com.cn",
+  ".co.kr",
+  ".co.in",
+  ".me",
+  ".name",
+  ".blog",
+  ".live",
+  ".life",
+  ".world",
+  ".today",
+  ".co",
+  ".inc",
+  ".ltd",
+  ".company",
+  ".group",
+  ".agency",
+  ".studio",
+  ".xyz",
+  ".online",
+  ".site",
+  ".top",
+  ".vip",
+  ".cc",
+  ".tv",
+  ".gg",
+  ".fun",
+  ".space",
+  ".link",
+  ".click",
+  ".one",
+  ".moe",
+  ".edu",
+  ".gov",
+  ".mil",
+  ".museum",
+  ".int",
 ];
 
 const queryPatterns = {
@@ -36,7 +122,8 @@ const queryPatterns = {
   asn: /^AS\d*$/i,
   ipv4Cidr: /^(?:[0-9]{1,3}\.){1,3}[0-9]{0,3}\/\d{0,2}$/,
   ipv6Cidr: /^(?:[A-F0-9]{0,4}:){1,7}[A-F0-9]{0,4}\/\d{0,3}$/i,
-  domain: /^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9]{1,})*$/,
+  domain:
+    /^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9]{1,})*$/,
 };
 
 interface SearchBoxProps {
@@ -168,7 +255,16 @@ export function SearchBox({
     const parts = value.split(".");
 
     if (parts.length === 1 || (parts.length === 2 && parts[1] === "")) {
-      const topTlds = [".com", ".net", ".org", ".io", ".dev", ".ai", ".co", ".xyz"];
+      const topTlds = [
+        ".com",
+        ".net",
+        ".org",
+        ".io",
+        ".dev",
+        ".ai",
+        ".co",
+        ".xyz",
+      ];
       topTlds.forEach((tld) => {
         suggestions.push(parts[0] + tld);
       });
@@ -180,7 +276,11 @@ export function SearchBox({
         });
     } else if (parts.length === 3 && parts[2]) {
       commonDomains
-        .filter((tld) => tld.startsWith(`.${parts[1]}.`) && tld.substring(1).startsWith(`${parts[1]}.${parts[2]}`))
+        .filter(
+          (tld) =>
+            tld.startsWith(`.${parts[1]}.`) &&
+            tld.substring(1).startsWith(`${parts[1]}.${parts[2]}`),
+        )
         .forEach((tld) => {
           suggestions.push(`${parts[0]}${tld}`);
         });
@@ -266,9 +366,7 @@ export function SearchBox({
           "AS9318", // SK Broadband
         ];
         const prefix = value.toUpperCase();
-        typeSuggestions = wellKnownASNs.filter((asn) =>
-          asn.startsWith(prefix),
-        );
+        typeSuggestions = wellKnownASNs.filter((asn) => asn.startsWith(prefix));
         if (typeSuggestions.length === 0 && /^AS\d+$/i.test(value)) {
           typeSuggestions = [value.toUpperCase()];
         }

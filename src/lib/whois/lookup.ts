@@ -262,8 +262,7 @@ export async function lookupWhois(domain: string): Promise<WhoisResult> {
 
   const rdapResult =
     rdapSettled.status === "fulfilled" ? rdapSettled.value : null;
-  const rdapData =
-    rdapResult && !rdapResult.errorCode ? rdapResult : null;
+  const rdapData = rdapResult && !rdapResult.errorCode ? rdapResult : null;
   const whoisData =
     whoisSettled.status === "fulfilled" ? whoisSettled.value : null;
   const rdapRaw = rdapData ? JSON.stringify(rdapData, null, 2) : undefined;

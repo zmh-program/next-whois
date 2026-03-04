@@ -317,12 +317,16 @@ function getRelativeTime(
     if (diffDays < 0) {
       const abs = Math.abs(diffDays);
       if (abs < 30) return t("relative_time.in_days", { days: abs });
-      if (abs < 365) return t("relative_time.in_months", { months: Math.floor(abs / 30) });
+      if (abs < 365)
+        return t("relative_time.in_months", { months: Math.floor(abs / 30) });
       return t("relative_time.in_years", { years: Math.floor(abs / 365) });
     }
     if (diffDays < 1) return t("relative_time.today");
     if (diffDays < 30) return t("relative_time.days_ago", { days: diffDays });
-    if (diffDays < 365) return t("relative_time.months_ago", { months: Math.floor(diffDays / 30) });
+    if (diffDays < 365)
+      return t("relative_time.months_ago", {
+        months: Math.floor(diffDays / 30),
+      });
     return t("relative_time.years_ago", { years: Math.floor(diffDays / 365) });
   } catch {
     return "";
@@ -380,7 +384,7 @@ function WhoisHighlight({ content }: { content: string }) {
           trimmed.startsWith("--")
         ) {
           return (
-            <div key={i} className="text-zinc-600 italic">
+            <div key={i} className="text-zinc-400 dark:text-zinc-600 italic">
               {line}
             </div>
           );
@@ -391,8 +395,10 @@ function WhoisHighlight({ content }: { content: string }) {
           const value = line.slice(colonIdx + 1);
           return (
             <div key={i}>
-              <span className="text-sky-400 font-medium">{key}</span>
-              <span className="text-zinc-200">
+              <span className="text-sky-600 dark:text-sky-400 font-medium">
+                {key}
+              </span>
+              <span className="text-zinc-700 dark:text-zinc-200">
                 {value.split(urlRegex).map((part, j) =>
                   urlRegex.test(part) ? (
                     <a
@@ -400,7 +406,7 @@ function WhoisHighlight({ content }: { content: string }) {
                       href={part}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-400 hover:underline"
+                      className="text-blue-600 dark:text-blue-400 hover:underline"
                     >
                       {part}
                     </a>
@@ -413,7 +419,7 @@ function WhoisHighlight({ content }: { content: string }) {
           );
         }
         return (
-          <div key={i} className="text-zinc-300">
+          <div key={i} className="text-zinc-600 dark:text-zinc-300">
             {line.split(urlRegex).map((part, j) =>
               urlRegex.test(part) ? (
                 <a
@@ -421,7 +427,7 @@ function WhoisHighlight({ content }: { content: string }) {
                   href={part}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-400 hover:underline"
+                  className="text-blue-600 dark:text-blue-400 hover:underline"
                 >
                   {part}
                 </a>
@@ -450,17 +456,26 @@ function RdapJsonHighlight({ content }: { content: string }) {
         while ((match = re.exec(line)) !== null) {
           if (match.index > lastIndex) {
             parts.push(
-              <span key={`t${lastIndex}`} className="text-zinc-300">
+              <span
+                key={`t${lastIndex}`}
+                className="text-zinc-600 dark:text-zinc-300"
+              >
                 {line.slice(lastIndex, match.index)}
               </span>,
             );
           }
           if (match[1]) {
             parts.push(
-              <span key={`k${match.index}`} className="text-sky-400">
+              <span
+                key={`k${match.index}`}
+                className="text-sky-600 dark:text-sky-400"
+              >
                 {match[1]}
               </span>,
-              <span key={`c${match.index}`} className="text-zinc-500">
+              <span
+                key={`c${match.index}`}
+                className="text-zinc-400 dark:text-zinc-500"
+              >
                 :
               </span>,
             );
@@ -469,13 +484,16 @@ function RdapJsonHighlight({ content }: { content: string }) {
             if (/^"https?:\/\//.test(str)) {
               const url = str.slice(1, -1);
               parts.push(
-                <span key={`s${match.index}`} className="text-emerald-400">
+                <span
+                  key={`s${match.index}`}
+                  className="text-emerald-600 dark:text-emerald-400"
+                >
                   &quot;
                   <a
                     href={url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-emerald-400 hover:underline"
+                    className="text-emerald-600 dark:text-emerald-400 hover:underline"
                   >
                     {url}
                   </a>
@@ -484,32 +502,47 @@ function RdapJsonHighlight({ content }: { content: string }) {
               );
             } else {
               parts.push(
-                <span key={`s${match.index}`} className="text-emerald-400">
+                <span
+                  key={`s${match.index}`}
+                  className="text-emerald-600 dark:text-emerald-400"
+                >
                   {str}
                 </span>,
               );
             }
           } else if (match[3]) {
             parts.push(
-              <span key={`n${match.index}`} className="text-amber-400">
+              <span
+                key={`n${match.index}`}
+                className="text-amber-600 dark:text-amber-400"
+              >
                 {match[3]}
               </span>,
             );
           } else if (match[4]) {
             parts.push(
-              <span key={`b${match.index}`} className="text-purple-400">
+              <span
+                key={`b${match.index}`}
+                className="text-purple-600 dark:text-purple-400"
+              >
                 {match[4]}
               </span>,
             );
           } else if (match[5]) {
             parts.push(
-              <span key={`p${match.index}`} className="text-zinc-500">
+              <span
+                key={`p${match.index}`}
+                className="text-zinc-400 dark:text-zinc-500"
+              >
                 {match[5]}
               </span>,
             );
           } else if (match[6]) {
             parts.push(
-              <span key={`d${match.index}`} className="text-zinc-500">
+              <span
+                key={`d${match.index}`}
+                className="text-zinc-400 dark:text-zinc-500"
+              >
                 {match[6]}
               </span>,
             );
@@ -520,7 +553,10 @@ function RdapJsonHighlight({ content }: { content: string }) {
         }
         if (lastIndex < line.length) {
           parts.push(
-            <span key={`e${lastIndex}`} className="text-zinc-300">
+            <span
+              key={`e${lastIndex}`}
+              className="text-zinc-600 dark:text-zinc-300"
+            >
               {line.slice(lastIndex)}
             </span>,
           );
@@ -563,8 +599,8 @@ function ResponsePanel({
       : `${target.replace(/\./g, "-")}-rdap.json`;
 
   return (
-    <div className="bg-zinc-900 dark:bg-zinc-950 text-zinc-300 rounded-xl overflow-hidden border border-zinc-800 flex flex-col shadow-lg h-full">
-      <div className="bg-zinc-950 dark:bg-black border-b border-zinc-800 px-4 py-2.5 flex items-center justify-between">
+    <div className="bg-white dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 rounded-xl overflow-hidden border border-border flex flex-col shadow-lg h-full">
+      <div className="bg-muted/50 dark:bg-black border-b border-border px-4 py-2.5 flex items-center justify-between">
         <div className="flex items-center gap-1">
           {hasWhois && (
             <button
@@ -572,8 +608,8 @@ function ResponsePanel({
               className={cn(
                 "px-2.5 py-1 rounded text-[11px] font-mono transition-colors",
                 activeTab === "whois"
-                  ? "bg-zinc-800 text-zinc-200"
-                  : "text-zinc-500 hover:text-zinc-300",
+                  ? "bg-background dark:bg-zinc-800 text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground",
               )}
             >
               Whois
@@ -585,8 +621,8 @@ function ResponsePanel({
               className={cn(
                 "px-2.5 py-1 rounded text-[11px] font-mono transition-colors",
                 activeTab === "rdap"
-                  ? "bg-zinc-800 text-zinc-200"
-                  : "text-zinc-500 hover:text-zinc-300",
+                  ? "bg-background dark:bg-zinc-800 text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground",
               )}
             >
               RDAP
@@ -596,14 +632,14 @@ function ResponsePanel({
         <div className="flex items-center gap-2">
           <button
             onClick={() => copy(currentContent)}
-            className="text-[10px] text-zinc-500 hover:text-white transition-colors uppercase font-medium tracking-wide flex items-center gap-1"
+            className="text-[10px] text-muted-foreground hover:text-foreground transition-colors uppercase font-medium tracking-wide flex items-center gap-1"
           >
             <RiFileCopyLine className="w-3 h-3" />
             {t("copy")}
           </button>
           <button
             onClick={() => save(currentFilename, currentContent)}
-            className="text-[10px] text-zinc-500 hover:text-white transition-colors uppercase font-medium tracking-wide flex items-center gap-1"
+            className="text-[10px] text-muted-foreground hover:text-foreground transition-colors uppercase font-medium tracking-wide flex items-center gap-1"
           >
             <RiDownloadLine className="w-3 h-3" />
             {t("save")}
@@ -773,9 +809,9 @@ export default function LookupPage({
               className="flex items-center flex-wrap gap-2 mb-6"
             >
               {result.domainAge !== null && (
-                <div className="px-2 py-0.5 rounded-md border bg-background flex items-center space-x-1">
-                  <RiTimeLine className="w-3 h-3 text-muted-foreground shrink-0" />
-                  <span className="text-[11px] sm:text-xs font-normal text-muted-foreground">
+                <div className="px-2 py-0.5 rounded-md border border-primary/30 bg-primary/5 flex items-center space-x-1">
+                  <RiTimeLine className="w-3 h-3 text-primary shrink-0" />
+                  <span className="text-[11px] sm:text-xs font-normal text-primary">
                     {result.domainAge === 0 ? "<1" : result.domainAge}{" "}
                     {result.domainAge === 1 ? t("year") : t("years")}
                   </span>
@@ -828,7 +864,8 @@ export default function LookupPage({
                   >
                     <RiExchangeDollarFill className="w-3 h-3 text-muted-foreground shrink-0" />
                     <span className="text-[11px] sm:text-xs font-normal text-muted-foreground">
-                      {t("transfer_price")}{result.transferPrice.transfer}{" "}
+                      {t("transfer_price")}
+                      {result.transferPrice.transfer}{" "}
                       {result.transferPrice.currency.toUpperCase()}
                     </span>
                   </Link>
@@ -979,7 +1016,9 @@ export default function LookupPage({
                       <path d="m14 8-6 6" />
                     </svg>
                   </div>
-                  <h2 className="text-2xl font-bold mb-2">{t("lookup_failed")}</h2>
+                  <h2 className="text-2xl font-bold mb-2">
+                    {t("lookup_failed")}
+                  </h2>
                   <p className="text-muted-foreground max-w-md mx-auto text-sm leading-relaxed mb-8">
                     {t("lookup_failed_description")}{" "}
                     <span className="font-mono font-medium text-foreground">
@@ -1208,7 +1247,9 @@ export default function LookupPage({
                               >
                                 {result.remainingDays !== null
                                   ? result.remainingDays > 0
-                                    ? t("d_remaining", { days: result.remainingDays })
+                                    ? t("d_remaining", {
+                                        days: result.remainingDays,
+                                      })
                                     : t("expired")
                                   : getRelativeTime(result.expirationDate, t)}
                               </p>
@@ -1328,7 +1369,9 @@ export default function LookupPage({
                           >
                             {expandStatus
                               ? t("show_less")
-                              : t("more_count", { count: result.status.length - 5 })}
+                              : t("more_count", {
+                                  count: result.status.length - 5,
+                                })}
                           </button>
                         )}
                       </div>
