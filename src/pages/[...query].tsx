@@ -1737,7 +1737,10 @@ export default function LookupPage({
                                   result.remainingDays !== null &&
                                     result.remainingDays > 60
                                     ? "text-emerald-600 dark:text-emerald-400"
-                                    : "text-muted-foreground",
+                                    : result.remainingDays !== null &&
+                                        result.remainingDays <= 30
+                                      ? "text-red-600 dark:text-red-400"
+                                      : "text-amber-600 dark:text-amber-400",
                                 )}
                               >
                                 {result.remainingDays !== null
@@ -1777,6 +1780,7 @@ export default function LookupPage({
                           {
                             label: t("whois_fields.registrant_country"),
                             value: result.registrantCountry,
+                            country: true,
                           },
                           {
                             label: t("whois_fields.registrant_province"),
@@ -1797,7 +1801,17 @@ export default function LookupPage({
                               <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1">
                                 {f.label}
                               </p>
-                              <p className="text-xs font-mono whitespace-pre-wrap break-all">
+                              <p className="text-xs font-mono whitespace-pre-wrap break-all flex items-center gap-1.5">
+                                {"country" in f &&
+                                  f.country &&
+                                  f.value &&
+                                  /^[A-Z]{2}$/i.test(f.value.trim()) && (
+                                    <img
+                                      src={`https://flagcdn.com/w40/${f.value.trim().toLowerCase()}.png`}
+                                      alt=""
+                                      className="w-4 h-3 object-cover rounded-[2px]"
+                                    />
+                                  )}
                                 {f.value}
                               </p>
                             </div>
