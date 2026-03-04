@@ -43,8 +43,12 @@ import {
   getEppStatusColor,
   getEppStatusDisplayName,
   getEppStatusLink,
-} from "@/lib/whois/epp-status";
+} from "@/lib/whois/epp_status";
 import { SearchBox } from "@/components/search_box";
+import {
+  KeyboardShortcut,
+  SearchHotkeysText,
+} from "@/components/search_shortcuts";
 import { useTranslation, TranslationKey } from "@/lib/i18n";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -70,6 +74,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { useSearchHotkeys } from "@/hooks/useSearchHotkeys";
 
 const REGISTRAR_ICONS: Record<string, { slug: string | null; color: string }> =
   {
@@ -359,14 +364,6 @@ function buildOgUrl(
       : "light");
   if (themeVal === "dark") params.set("theme", "dark");
   return `/api/og?${params.toString()}`;
-}
-
-function KeyboardShortcut({ k }: { k: string }) {
-  return (
-    <kbd className="inline-flex items-center justify-center min-w-[18px] h-4 px-1 text-[9px] font-sans font-medium text-muted-foreground bg-muted/50 border border-border/50 rounded-[3px] mx-0.5 select-none">
-      {k}
-    </kbd>
-  );
 }
 
 function WhoisHighlight({ content }: { content: string }) {
@@ -708,6 +705,7 @@ export default function LookupPage({
   const [imgTheme, setImgTheme] = React.useState<"light" | "dark">("light");
   const copy = useClipboard();
   const save = useSaver();
+  useSearchHotkeys({});
 
   useEffect(() => {
     setImgTheme(
@@ -788,8 +786,8 @@ export default function LookupPage({
       </Head>
       <ScrollArea className="w-full h-[calc(100vh-4rem)]">
         <main className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-6 min-h-[calc(100vh-4rem)]">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="flex-1 relative group">
+          <div className="mb-6">
+            <div className="relative group">
               <SearchBox
                 initialValue={target}
                 onSearch={handleSearch}
@@ -799,6 +797,7 @@ export default function LookupPage({
                 <KeyboardShortcut k="/" />
               </div>
             </div>
+            <SearchHotkeysText className="mt-2 px-1 justify-end" />
           </div>
 
           {result && (

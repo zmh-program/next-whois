@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
-import { getEppStatusDisplayName } from "@/lib/whois/epp-status";
+import { getEppStatusDisplayName } from "@/lib/whois/epp_status";
 
 export const config = { runtime: "edge" };
 

@@ -1,67 +1,23 @@
 import { cn, toSearchURI } from "@/lib/utils";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import {
   RiDeleteBinLine,
   RiHistoryLine,
   RiGlobalLine,
-  RiKeyboardLine,
 } from "@remixicon/react";
 import React, { useEffect, useMemo, useCallback } from "react";
 import { detectQueryType, listHistory, removeHistory } from "@/lib/history";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SearchBox } from "@/components/search_box";
+import {
+  KeyboardShortcut,
+  SearchHotkeysText,
+} from "@/components/search_shortcuts";
 import { useTranslation, TranslationKey } from "@/lib/i18n";
 import { motion } from "framer-motion";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { useSearchHotkeys } from "@/hooks/useSearchHotkeys";
 import { format } from "date-fns";
-
-function KeyboardShortcut({ k }: { k: string }) {
-  return (
-    <kbd className="inline-flex items-center justify-center min-w-[18px] h-4 px-1 text-[9px] font-sans font-medium text-muted-foreground bg-muted/50 border border-border/50 rounded-[3px] mx-0.5 select-none">
-      {k}
-    </kbd>
-  );
-}
-
-function ShortcutsList() {
-  const { t } = useTranslation();
-  return (
-    <div className="grid gap-0.5 p-1">
-      {[
-        { label: t("shortcut_search"), keys: ["/"] },
-        { label: t("shortcut_clear"), keys: ["Esc"] },
-        { label: t("shortcut_shortcuts"), keys: ["?"] },
-      ].map((item, i) => (
-        <div
-          key={i}
-          className="flex items-center justify-between px-2 py-1 rounded hover:bg-muted/50 transition-colors"
-        >
-          <span className="text-[10px] text-muted-foreground/80 font-medium">
-            {item.label}
-          </span>
-          <div className="flex items-center">
-            {item.keys.map((k, idx) => (
-              <React.Fragment key={idx}>
-                {idx > 0 && (
-                  <span className="text-[9px] text-muted-foreground mx-0.5">
-                    +
-                  </span>
-                )}
-                <KeyboardShortcut k={k} />
-              </React.Fragment>
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
 
 function QueryTypeIcon({
   type,
@@ -144,46 +100,11 @@ export default function HomePage() {
   const [loading, setLoading] = React.useState(false);
   const [mounted, setMounted] = React.useState(false);
   const [refreshTrigger, setRefreshTrigger] = React.useState(0);
-  const [showShortcuts, setShowShortcuts] = React.useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.defaultPrevented) return;
-      const active = document.activeElement;
-      const isInput =
-        active &&
-        (active.tagName === "INPUT" ||
-          active.tagName === "TEXTAREA" ||
-          active.hasAttribute("contenteditable"));
-
-      if (e.key === "/" && !isInput && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        e.preventDefault();
-        document.getElementById("main-search-input")?.focus();
-        return;
-      }
-      if (e.key === "?" && !isInput) {
-        e.preventDefault();
-        setShowShortcuts((prev) => !prev);
-        return;
-      }
-      if (e.key === "Escape") {
-        if (showShortcuts) {
-          setShowShortcuts(false);
-          return;
-        }
-        const mainInput = document.getElementById("main-search-input");
-        if (active === mainInput) mainInput?.blur();
-        else if (active instanceof HTMLElement) active.blur();
-        return;
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [showShortcuts]);
+  useSearchHotkeys({});
 
   const handleSearch = useCallback((query: string) => {
     setLoading(true);
@@ -228,28 +149,14 @@ export default function HomePage() {
   return (
     <ScrollArea className="w-full h-[calc(100vh-4rem)]">
       <main className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-6 min-h-[calc(100vh-4rem)]">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="flex-1 relative group">
+        <div className="mb-6">
+          <div className="relative group">
             <SearchBox onSearch={handleSearch} loading={loading} autoFocus />
             <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-none opacity-50 group-hover:opacity-100 transition-opacity">
               <KeyboardShortcut k="/" />
             </div>
           </div>
-          <Popover open={showShortcuts} onOpenChange={setShowShortcuts}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                className="shrink-0 text-muted-foreground"
-                title="Keyboard Shortcuts (?)"
-              >
-                <RiKeyboardLine className="w-4 h-4" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent align="end" className="w-44 p-0" sideOffset={5}>
-              <ShortcutsList />
-            </PopoverContent>
-          </Popover>
+          <SearchHotkeysText className="mt-2 px-1 justify-end" />
         </div>
 
         <motion.div
