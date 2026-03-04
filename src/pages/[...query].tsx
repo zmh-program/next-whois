@@ -147,437 +147,633 @@ const REGISTRAR_ICONS: Record<string, { slug: string | null; color: string }> =
     },
     "360": { slug: "/registrar-icons/360.png", color: "#2FC332" },
     qihoo: { slug: "/registrar-icons/360.png", color: "#2FC332" },
-    westcn: { slug: null, color: "#2B7DE9" },
-    "west.cn": { slug: null, color: "#2B7DE9" },
+    westcn: { slug: "/registrar-icons/westcn.png", color: "#2B7DE9" },
+    "west.cn": { slug: "/registrar-icons/westcn.png", color: "#2B7DE9" },
     vultr: { slug: "/registrar-icons/vultr.png", color: "#007BFC" },
     scaleway: { slug: "/registrar-icons/scaleway.png", color: "#4F0599" },
+    csc: { slug: "/registrar-icons/csc.png", color: "#00529B" },
+    cscglobal: { slug: "/registrar-icons/csc.png", color: "#00529B" },
+    webcom: { slug: null, color: "#1166BB" },
+    "web.com": { slug: null, color: "#1166BB" },
+    registercom: { slug: "/registrar-icons/registercom.png", color: "#00A651" },
+    "register.com": {
+      slug: "/registrar-icons/registercom.png",
+      color: "#00A651",
+    },
+    domaincom: { slug: "/registrar-icons/domaincom.png", color: "#2B74B4" },
+    "domain.com": { slug: "/registrar-icons/domaincom.png", color: "#2B74B4" },
+    gname: { slug: "/registrar-icons/gname.png", color: "#1E90FF" },
+    shopify: { slug: "/registrar-icons/shopify.png", color: "#7AB55C" },
+    oracle: { slug: "oracle", color: "#F80000" },
+    gmo: { slug: "/registrar-icons/gmo.png", color: "#FF6600" },
+    onamae: { slug: "/registrar-icons/gmo.png", color: "#FF6600" },
+    gabia: { slug: "/registrar-icons/gabia.png", color: "#EE2737" },
+    regru: { slug: "/registrar-icons/regru.png", color: "#FF6B00" },
+    "reg.ru": { slug: "/registrar-icons/regru.png", color: "#FF6B00" },
+    rucenter: { slug: "/registrar-icons/rucenter.png", color: "#005BAC" },
+    "ru-center": { slug: "/registrar-icons/rucenter.png", color: "#005BAC" },
+    strato: { slug: "/registrar-icons/strato.png", color: "#2DB928" },
+    spaceship: { slug: "/registrar-icons/spaceship.png", color: "#6366F1" },
+    centralnic: { slug: "/registrar-icons/centralnic.png", color: "#1D6AE5" },
+    keysystems: { slug: "/registrar-icons/centralnic.png", color: "#1D6AE5" },
+    rrpproxy: { slug: "/registrar-icons/centralnic.png", color: "#1D6AE5" },
+    bigrock: { slug: "/registrar-icons/bigrock.png", color: "#FF6C2C" },
+    resellerclub: {
+      slug: "/registrar-icons/resellerclub.png",
+      color: "#F99D1C",
+    },
+    publicdomainregistry: { slug: null, color: "#0066FF" },
+    pdr: { slug: null, color: "#0066FF" },
+    internetbs: { slug: null, color: "#2196F3" },
+    "internet.bs": { slug: null, color: "#2196F3" },
   };
 
-const NS_BRAND_MAP: Record<
-  string,
-  { brand: string; slug: string | null; color: string }
-> = {
-  "domaincontrol.com": { brand: "GoDaddy", slug: "godaddy", color: "#1BDBDB" },
-  "cloudflare.com": {
+const NS_BRANDS: {
+  brand: string;
+  domains: string[];
+  slug: string | null;
+  color: string;
+}[] = [
+  {
+    brand: "GoDaddy",
+    domains: ["domaincontrol.com"],
+    slug: "godaddy",
+    color: "#1BDBDB",
+  },
+  {
     brand: "Cloudflare",
+    domains: [
+      "cloudflare.com",
+      "foundationdns.com",
+      "foundationdns.net",
+      "foundationdns.org",
+    ],
     slug: "cloudflare",
     color: "#F38020",
   },
-  "foundationdns.com": {
-    brand: "Cloudflare",
-    slug: "cloudflare",
-    color: "#F38020",
-  },
-  "foundationdns.net": {
-    brand: "Cloudflare",
-    slug: "cloudflare",
-    color: "#F38020",
-  },
-  "foundationdns.org": {
-    brand: "Cloudflare",
-    slug: "cloudflare",
-    color: "#F38020",
-  },
-  "registrar-servers.com": {
+  {
     brand: "Namecheap",
+    domains: ["registrar-servers.com", "namecheaphosting.com"],
     slug: "namecheap",
     color: "#DE3723",
   },
-  "namecheaphosting.com": {
-    brand: "Namecheap",
-    slug: "namecheap",
-    color: "#DE3723",
+  {
+    brand: "Porkbun",
+    domains: ["porkbun.com"],
+    slug: "porkbun",
+    color: "#EF7878",
   },
-  "porkbun.com": { brand: "Porkbun", slug: "porkbun", color: "#EF7878" },
-  "hetzner.com": { brand: "Hetzner", slug: "hetzner", color: "#D50C2D" },
-  "hetzner.de": { brand: "Hetzner", slug: "hetzner", color: "#D50C2D" },
-  "first-ns.de": { brand: "Hetzner", slug: "hetzner", color: "#D50C2D" },
-  "second-ns.de": { brand: "Hetzner", slug: "hetzner", color: "#D50C2D" },
-  "second-ns.com": { brand: "Hetzner", slug: "hetzner", color: "#D50C2D" },
-  "your-server.de": { brand: "Hetzner", slug: "hetzner", color: "#D50C2D" },
-  "ovh.net": { brand: "OVHcloud", slug: "ovh", color: "#123F6D" },
-  "ovh.ca": { brand: "OVHcloud", slug: "ovh", color: "#123F6D" },
-  "anycast.me": { brand: "OVHcloud", slug: "ovh", color: "#123F6D" },
-  "ui-dns.com": { brand: "IONOS", slug: "ionos", color: "#003D8F" },
-  "ui-dns.org": { brand: "IONOS", slug: "ionos", color: "#003D8F" },
-  "ui-dns.de": { brand: "IONOS", slug: "ionos", color: "#003D8F" },
-  "ui-dns.biz": { brand: "IONOS", slug: "ionos", color: "#003D8F" },
-  "gandi.net": { brand: "Gandi", slug: "gandi", color: "#6640FE" },
-  "digitalocean.com": {
+  {
+    brand: "Hetzner",
+    domains: [
+      "hetzner.com",
+      "hetzner.de",
+      "first-ns.de",
+      "second-ns.de",
+      "second-ns.com",
+      "your-server.de",
+    ],
+    slug: "hetzner",
+    color: "#D50C2D",
+  },
+  {
+    brand: "OVHcloud",
+    domains: ["ovh.net", "ovh.ca", "anycast.me"],
+    slug: "ovh",
+    color: "#123F6D",
+  },
+  {
+    brand: "IONOS",
+    domains: ["ui-dns.com", "ui-dns.org", "ui-dns.de", "ui-dns.biz"],
+    slug: "ionos",
+    color: "#003D8F",
+  },
+  { brand: "Gandi", domains: ["gandi.net"], slug: "gandi", color: "#6640FE" },
+  {
     brand: "DigitalOcean",
+    domains: ["digitalocean.com"],
     slug: "digitalocean",
     color: "#0080FF",
   },
-  "dns-parking.com": {
+  {
     brand: "Hostinger",
+    domains: ["dns-parking.com", "main-hosting.eu"],
     slug: "hostinger",
     color: "#673DE6",
   },
-  "main-hosting.eu": {
-    brand: "Hostinger",
-    slug: "hostinger",
-    color: "#673DE6",
+  {
+    brand: "Netlify",
+    domains: ["netlify.com"],
+    slug: "netlify",
+    color: "#00C7B7",
   },
-  "netlify.com": { brand: "Netlify", slug: "netlify", color: "#00C7B7" },
-  "nsone.net": {
+  {
     brand: "NS1",
+    domains: ["nsone.net"],
     slug: "/registrar-icons/ns1.png",
     color: "#760DDE",
   },
-  "vercel-dns.com": { brand: "Vercel", slug: "vercel", color: "#000000" },
-  "wixdns.net": { brand: "Wix", slug: "wix", color: "#0C6EFC" },
-  "squarespace-dns.com": {
+  {
+    brand: "Vercel",
+    domains: ["vercel-dns.com"],
+    slug: "vercel",
+    color: "#000000",
+  },
+  { brand: "Wix", domains: ["wixdns.net"], slug: "wix", color: "#0C6EFC" },
+  {
     brand: "Squarespace",
+    domains: ["squarespace-dns.com", "squarespace.com"],
     slug: "squarespace",
     color: "#000000",
   },
-  "squarespace.com": {
-    brand: "Squarespace",
-    slug: "squarespace",
-    color: "#000000",
+  {
+    brand: "WordPress",
+    domains: ["wordpress.com"],
+    slug: "wordpress",
+    color: "#21759B",
   },
-  "wordpress.com": { brand: "WordPress", slug: "wordpress", color: "#21759B" },
-  awsdns: {
+  {
     brand: "AWS Route 53",
+    domains: ["awsdns"],
     slug: "/registrar-icons/amazon.png",
     color: "#232F3E",
   },
-  "azure-dns.com": {
+  {
     brand: "Azure DNS",
+    domains: [
+      "azure-dns.com",
+      "azure-dns.net",
+      "azure-dns.org",
+      "azure-dns.info",
+    ],
     slug: "/registrar-icons/azure.png",
     color: "#0078D4",
   },
-  "azure-dns.net": {
-    brand: "Azure DNS",
-    slug: "/registrar-icons/azure.png",
-    color: "#0078D4",
+  {
+    brand: "Google",
+    domains: ["googledomains.com", "google.com"],
+    slug: "google",
+    color: "#000000",
   },
-  "azure-dns.org": {
-    brand: "Azure DNS",
-    slug: "/registrar-icons/azure.png",
-    color: "#0078D4",
+  {
+    brand: "Akamai",
+    domains: ["linode.com", "akam.net", "akamaiedge.net"],
+    slug: "akamai",
+    color: "#0096D6",
   },
-  "azure-dns.info": {
-    brand: "Azure DNS",
-    slug: "/registrar-icons/azure.png",
-    color: "#0078D4",
-  },
-  "googledomains.com": { brand: "Google", slug: "google", color: "#000000" },
-  "google.com": { brand: "Google", slug: "google", color: "#000000" },
-  "linode.com": { brand: "Akamai", slug: "akamai", color: "#0096D6" },
-  "dns.he.net": {
+  {
     brand: "Hurricane Electric",
+    domains: ["dns.he.net"],
     slug: "/registrar-icons/he.png",
     color: "#E40000",
   },
-  "dnspod.net": {
+  {
     brand: "DNSPod",
+    domains: [
+      "dnspod.net",
+      "qq.com",
+      "dnsv2.com",
+      "dnsv3.com",
+      "dnsv4.com",
+      "dnsv5.com",
+      "iidns.com",
+    ],
     slug: "/registrar-icons/dnspod.png",
     color: "#4478E6",
   },
-  "dnsimple.com": {
-    brand: "DNSimple",
-    slug: "/registrar-icons/dnsimple.png",
-    color: "#205EBB",
-  },
-  "dnsimple-edge.net": {
-    brand: "DNSimple",
-    slug: "/registrar-icons/dnsimple.png",
-    color: "#205EBB",
-  },
-  "cloudns.net": {
-    brand: "ClouDNS",
-    slug: "/registrar-icons/cloudns.png",
-    color: "#4FA3D7",
-  },
-  "afraid.org": { brand: "FreeDNS", slug: null, color: "#27AE60" },
-  "name.com": {
-    brand: "Name.com",
-    slug: "/registrar-icons/namecom.png",
-    color: "#236BFF",
-  },
-  "hover.com": {
-    brand: "Hover",
-    slug: "/registrar-icons/hover.png",
-    color: "#3B7DDD",
-  },
-  "dynadot.com": {
-    brand: "Dynadot",
-    slug: "/registrar-icons/dynadot.png",
-    color: "#4E2998",
-  },
-  "name-services.com": {
-    brand: "Enom",
-    slug: "/registrar-icons/enom.png",
-    color: "#F09B1B",
-  },
-  "worldnic.com": {
-    brand: "Network Solutions",
-    slug: "/registrar-icons/networksolutions.png",
-    color: "#2E8B57",
-  },
-  "dnsowl.com": { brand: "NameSilo", slug: "namesilo", color: "#031B4E" },
-  "namesilo.com": { brand: "NameSilo", slug: "namesilo", color: "#031B4E" },
-  "hichina.com": {
-    brand: "Alibaba Cloud",
-    slug: "alibabacloud",
-    color: "#FF6A00",
-  },
-  "alidns.com": {
-    brand: "Alibaba Cloud",
-    slug: "alibabacloud",
-    color: "#FF6A00",
-  },
-  "bdydns.cn": { brand: "Baidu Cloud", slug: "baidu", color: "#2932E1" },
-  "bdydns.com": { brand: "Baidu Cloud", slug: "baidu", color: "#2932E1" },
-  "huaweicloud-dns.com": {
-    brand: "Huawei Cloud",
-    slug: "huawei",
-    color: "#FF0000",
-  },
-  "huaweicloud-dns.cn": {
-    brand: "Huawei Cloud",
-    slug: "huawei",
-    color: "#FF0000",
-  },
-  "huaweicloud-dns.net": {
-    brand: "Huawei Cloud",
-    slug: "huawei",
-    color: "#FF0000",
-  },
-  "hwclouds-dns.com": {
-    brand: "Huawei Cloud",
-    slug: "huawei",
-    color: "#FF0000",
-  },
-  "hwclouds-dns.net": {
-    brand: "Huawei Cloud",
-    slug: "huawei",
-    color: "#FF0000",
-  },
-  "tucows.com": {
-    brand: "Tucows",
-    slug: "/registrar-icons/tucows.png",
-    color: "#F09B1B",
-  },
-  "qq.com": {
-    brand: "DNSPod",
-    slug: "/registrar-icons/dnspod.png",
-    color: "#4478E6",
-  },
-  "dnsv2.com": {
-    brand: "DNSPod",
-    slug: "/registrar-icons/dnspod.png",
-    color: "#4478E6",
-  },
-  "dnsv3.com": {
-    brand: "DNSPod",
-    slug: "/registrar-icons/dnspod.png",
-    color: "#4478E6",
-  },
-  "dnsv4.com": {
-    brand: "DNSPod",
-    slug: "/registrar-icons/dnspod.png",
-    color: "#4478E6",
-  },
-  "dnsv5.com": {
-    brand: "DNSPod",
-    slug: "/registrar-icons/dnspod.png",
-    color: "#4478E6",
-  },
-  "iidns.com": {
-    brand: "DNSPod",
-    slug: "/registrar-icons/dnspod.png",
-    color: "#4478E6",
-  },
-  "tencentcloudcns.com": {
+  {
     brand: "Tencent Cloud",
+    domains: ["tencentcloudcns.com"],
     slug: "/registrar-icons/tencent.png",
     color: "#EB1923",
   },
-  "360safe.com": {
-    brand: "360",
-    slug: "/registrar-icons/360.png",
-    color: "#2FC332",
+  {
+    brand: "DNSimple",
+    domains: ["dnsimple.com", "dnsimple-edge.net"],
+    slug: "/registrar-icons/dnsimple.png",
+    color: "#205EBB",
   },
-  "ename.net": {
-    brand: "eName",
-    slug: "/registrar-icons/ename.png",
-    color: "#2C7BE5",
+  {
+    brand: "ClouDNS",
+    domains: ["cloudns.net"],
+    slug: "/registrar-icons/cloudns.png",
+    color: "#4FA3D7",
   },
-  "ename.com": {
-    brand: "eName",
-    slug: "/registrar-icons/ename.png",
-    color: "#2C7BE5",
+  { brand: "FreeDNS", domains: ["afraid.org"], slug: null, color: "#27AE60" },
+  {
+    brand: "Name.com",
+    domains: ["name.com"],
+    slug: "/registrar-icons/namecom.png",
+    color: "#236BFF",
   },
-  "xinnet.com": {
-    brand: "Xinnet",
-    slug: "/registrar-icons/xinnet.png",
-    color: "#E60012",
+  {
+    brand: "Hover",
+    domains: ["hover.com"],
+    slug: "/registrar-icons/hover.png",
+    color: "#3B7DDD",
   },
-  "xincache.com": {
-    brand: "Xinnet",
-    slug: "/registrar-icons/xinnet.png",
-    color: "#E60012",
+  {
+    brand: "Dynadot",
+    domains: ["dynadot.com"],
+    slug: "/registrar-icons/dynadot.png",
+    color: "#4E2998",
   },
-  "myhostadmin.net": { brand: "West.cn", slug: null, color: "#2B7DE9" },
-  "west-dns.com": { brand: "West.cn", slug: null, color: "#2B7DE9" },
-  "jdgslb.com": {
-    brand: "JD Cloud",
-    slug: "/registrar-icons/jdcloud.png",
-    color: "#C9151E",
+  {
+    brand: "Enom",
+    domains: ["name-services.com"],
+    slug: "/registrar-icons/enom.png",
+    color: "#F09B1B",
   },
-  "jdcache.com": {
-    brand: "JD Cloud",
-    slug: "/registrar-icons/jdcloud.png",
-    color: "#C9151E",
+  {
+    brand: "Network Solutions",
+    domains: ["worldnic.com"],
+    slug: "/registrar-icons/networksolutions.png",
+    color: "#2E8B57",
   },
-  "volcengine.com": {
-    brand: "Volcengine",
-    slug: "/registrar-icons/volcengine.png",
-    color: "#3370FF",
+  {
+    brand: "NameSilo",
+    domains: ["dnsowl.com", "namesilo.com"],
+    slug: "namesilo",
+    color: "#031B4E",
   },
-  "volcdns.com": {
-    brand: "Volcengine",
-    slug: "/registrar-icons/volcengine.png",
-    color: "#3370FF",
-  },
-  "akam.net": { brand: "Akamai", slug: "akamai", color: "#0096D6" },
-  "akamaiedge.net": { brand: "Akamai", slug: "akamai", color: "#0096D6" },
-  "fastly.net": {
-    brand: "Fastly",
-    slug: "/registrar-icons/fastly.png",
-    color: "#FF282D",
-  },
-  "ultradns.com": {
-    brand: "UltraDNS",
-    slug: "/registrar-icons/ultradns.png",
-    color: "#5B2D8E",
-  },
-  "ultradns.net": {
-    brand: "UltraDNS",
-    slug: "/registrar-icons/ultradns.png",
-    color: "#5B2D8E",
-  },
-  "ultradns.org": {
-    brand: "UltraDNS",
-    slug: "/registrar-icons/ultradns.png",
-    color: "#5B2D8E",
-  },
-  "constellix.com": {
-    brand: "Constellix",
-    slug: "/registrar-icons/constellix.png",
-    color: "#4B9CD3",
-  },
-  "constellix.net": {
-    brand: "Constellix",
-    slug: "/registrar-icons/constellix.png",
-    color: "#4B9CD3",
-  },
-  "easydns.com": {
-    brand: "easyDNS",
-    slug: "/registrar-icons/easydns.png",
-    color: "#29A8E0",
-  },
-  "easydns.net": {
-    brand: "easyDNS",
-    slug: "/registrar-icons/easydns.png",
-    color: "#29A8E0",
-  },
-  "easydns.org": {
-    brand: "easyDNS",
-    slug: "/registrar-icons/easydns.png",
-    color: "#29A8E0",
-  },
-  "vultr.com": {
-    brand: "Vultr",
-    slug: "/registrar-icons/vultr.png",
-    color: "#007BFC",
-  },
-  "scaleway.com": {
-    brand: "Scaleway",
-    slug: "/registrar-icons/scaleway.png",
-    color: "#4F0599",
-  },
-  "transip.net": {
-    brand: "TransIP",
-    slug: "/registrar-icons/transip.png",
-    color: "#74B63B",
-  },
-  "transip.nl": {
-    brand: "TransIP",
-    slug: "/registrar-icons/transip.png",
-    color: "#74B63B",
-  },
-  "siteground.net": {
-    brand: "SiteGround",
-    slug: "/registrar-icons/siteground.png",
-    color: "#7B3FA0",
-  },
-  "sgvps.net": {
-    brand: "SiteGround",
-    slug: "/registrar-icons/siteground.png",
-    color: "#7B3FA0",
-  },
-  "bluehost.com": {
-    brand: "Bluehost",
-    slug: "/registrar-icons/bluehost.png",
-    color: "#003580",
-  },
-  "dreamhost.com": {
-    brand: "DreamHost",
-    slug: "/registrar-icons/dreamhost.png",
-    color: "#0073EC",
-  },
-  "hostgator.com": {
-    brand: "HostGator",
-    slug: "/registrar-icons/hostgator.png",
-    color: "#F8A41B",
-  },
-  "epik.com": {
-    brand: "Epik",
-    slug: "/registrar-icons/epik.png",
-    color: "#4A90D9",
-  },
-  "markmonitor.com": {
-    brand: "MarkMonitor",
-    slug: "/registrar-icons/markmonitor.png",
-    color: "#2B5797",
-  },
-  "net.cn": {
+  {
     brand: "Alibaba Cloud",
+    domains: ["hichina.com", "alidns.com", "net.cn", "aliyun.com"],
     slug: "alibabacloud",
     color: "#FF6A00",
   },
-  "donuts.co": {
+  {
+    brand: "Baidu Cloud",
+    domains: ["bdydns.cn", "bdydns.com"],
+    slug: "baidu",
+    color: "#2932E1",
+  },
+  {
+    brand: "Huawei Cloud",
+    domains: [
+      "huaweicloud-dns.com",
+      "huaweicloud-dns.cn",
+      "huaweicloud-dns.net",
+      "hwclouds-dns.com",
+      "hwclouds-dns.net",
+      "huawei.com",
+    ],
+    slug: "huawei",
+    color: "#FF0000",
+  },
+  {
+    brand: "Tucows",
+    domains: ["tucows.com"],
+    slug: "/registrar-icons/tucows.png",
+    color: "#F09B1B",
+  },
+  {
+    brand: "360",
+    domains: ["360safe.com"],
+    slug: "/registrar-icons/360.png",
+    color: "#2FC332",
+  },
+  {
+    brand: "eName",
+    domains: ["ename.net", "ename.com"],
+    slug: "/registrar-icons/ename.png",
+    color: "#2C7BE5",
+  },
+  {
+    brand: "Xinnet",
+    domains: ["xinnet.com", "xincache.com"],
+    slug: "/registrar-icons/xinnet.png",
+    color: "#E60012",
+  },
+  {
+    brand: "West.cn",
+    domains: ["myhostadmin.net", "west-dns.com", "est.cn"],
+    slug: "/registrar-icons/westcn.png",
+    color: "#2B7DE9",
+  },
+  {
+    brand: "JD Cloud",
+    domains: ["jdgslb.com", "jdcache.com"],
+    slug: "/registrar-icons/jdcloud.png",
+    color: "#C9151E",
+  },
+  {
+    brand: "Volcengine",
+    domains: ["volcengine.com", "volcdns.com"],
+    slug: "/registrar-icons/volcengine.png",
+    color: "#3370FF",
+  },
+  {
+    brand: "Fastly",
+    domains: ["fastly.net"],
+    slug: "/registrar-icons/fastly.png",
+    color: "#FF282D",
+  },
+  {
+    brand: "UltraDNS",
+    domains: ["ultradns.com", "ultradns.net", "ultradns.org"],
+    slug: "/registrar-icons/ultradns.png",
+    color: "#5B2D8E",
+  },
+  {
+    brand: "Constellix",
+    domains: ["constellix.com", "constellix.net"],
+    slug: "/registrar-icons/constellix.png",
+    color: "#4B9CD3",
+  },
+  {
+    brand: "easyDNS",
+    domains: ["easydns.com", "easydns.net", "easydns.org"],
+    slug: "/registrar-icons/easydns.png",
+    color: "#29A8E0",
+  },
+  {
+    brand: "Vultr",
+    domains: ["vultr.com"],
+    slug: "/registrar-icons/vultr.png",
+    color: "#007BFC",
+  },
+  {
+    brand: "Scaleway",
+    domains: ["scaleway.com"],
+    slug: "/registrar-icons/scaleway.png",
+    color: "#4F0599",
+  },
+  {
+    brand: "TransIP",
+    domains: ["transip.net", "transip.nl"],
+    slug: "/registrar-icons/transip.png",
+    color: "#74B63B",
+  },
+  {
+    brand: "SiteGround",
+    domains: ["siteground.net", "sgvps.net"],
+    slug: "/registrar-icons/siteground.png",
+    color: "#7B3FA0",
+  },
+  {
+    brand: "Bluehost",
+    domains: ["bluehost.com"],
+    slug: "/registrar-icons/bluehost.png",
+    color: "#003580",
+  },
+  {
+    brand: "DreamHost",
+    domains: ["dreamhost.com"],
+    slug: "/registrar-icons/dreamhost.png",
+    color: "#0073EC",
+  },
+  {
+    brand: "HostGator",
+    domains: ["hostgator.com"],
+    slug: "/registrar-icons/hostgator.png",
+    color: "#F8A41B",
+  },
+  {
+    brand: "Epik",
+    domains: ["epik.com"],
+    slug: "/registrar-icons/epik.png",
+    color: "#4A90D9",
+  },
+  {
+    brand: "MarkMonitor",
+    domains: ["markmonitor.com"],
+    slug: "/registrar-icons/markmonitor.png",
+    color: "#2B5797",
+  },
+  {
     brand: "Identity Digital",
+    domains: ["donuts.co", "identity.digital"],
     slug: "/registrar-icons/identitydigital.png",
     color: "#1A1A2E",
   },
-  "identity.digital": {
-    brand: "Identity Digital",
-    slug: "/registrar-icons/identitydigital.png",
-    color: "#1A1A2E",
+  {
+    brand: "CSC Global",
+    domains: ["cscglobal.com", "cscdns.net"],
+    slug: "/registrar-icons/csc.png",
+    color: "#00529B",
   },
-};
+  {
+    brand: "Shopify",
+    domains: ["shopify.com", "myshopify.com"],
+    slug: "/registrar-icons/shopify.png",
+    color: "#7AB55C",
+  },
+  {
+    brand: "Oracle/Dyn",
+    domains: ["dynect.net", "oraclecloud.net"],
+    slug: "oracle",
+    color: "#F80000",
+  },
+  {
+    brand: "Imperva",
+    domains: ["impervadns.net", "incapdns.net"],
+    slug: "/registrar-icons/imperva.png",
+    color: "#004680",
+  },
+  {
+    brand: "Sucuri",
+    domains: ["sucuridns.com", "sucuri.net"],
+    slug: "/registrar-icons/sucuri.png",
+    color: "#88C946",
+  },
+  {
+    brand: "Verisign",
+    domains: ["verisign-grs.com", "verisigndns.com", "nstld.com"],
+    slug: "/registrar-icons/verisign.png",
+    color: "#003399",
+  },
+  {
+    brand: "GMO/Onamae",
+    domains: ["onamae.com", "gmoint.com", "gmoserver.jp"],
+    slug: "/registrar-icons/gmo.png",
+    color: "#FF6600",
+  },
+  {
+    brand: "Gabia",
+    domains: ["gabia.net", "gabia.io"],
+    slug: "/registrar-icons/gabia.png",
+    color: "#EE2737",
+  },
+  {
+    brand: "Reg.ru",
+    domains: ["reg.ru"],
+    slug: "/registrar-icons/regru.png",
+    color: "#FF6B00",
+  },
+  {
+    brand: "RU-CENTER",
+    domains: ["nic.ru"],
+    slug: "/registrar-icons/rucenter.png",
+    color: "#005BAC",
+  },
+  {
+    brand: "Strato",
+    domains: ["strato.de", "stratoserver.net", "rzone.de"],
+    slug: "/registrar-icons/strato.png",
+    color: "#2DB928",
+  },
+  {
+    brand: "Bunny.net",
+    domains: ["bunny.net", "bunnyinfra.net"],
+    slug: "/registrar-icons/bunny.png",
+    color: "#F47621",
+  },
+  {
+    brand: "DNS Made Easy",
+    domains: ["dnsmadeeasy.com"],
+    slug: "/registrar-icons/dnsmadeeasy.png",
+    color: "#6BB839",
+  },
+  {
+    brand: "CentralNic",
+    domains: ["centralnic.net", "rrpproxy.net"],
+    slug: "/registrar-icons/centralnic.png",
+    color: "#1D6AE5",
+  },
+  {
+    brand: "Gname",
+    domains: ["gname-dns.com"],
+    slug: "/registrar-icons/gname.png",
+    color: "#1E90FF",
+  },
+  {
+    brand: "Register.com",
+    domains: ["register.com"],
+    slug: "/registrar-icons/registercom.png",
+    color: "#00A651",
+  },
+  {
+    brand: "Domain.com",
+    domains: ["domain.com"],
+    slug: "/registrar-icons/domaincom.png",
+    color: "#2B74B4",
+  },
+  {
+    brand: "Yandex",
+    domains: ["yandexcloud.net", "yandex.net"],
+    slug: "/registrar-icons/yandex.png",
+    color: "#5282FF",
+  },
+  {
+    brand: "DDoS-Guard",
+    domains: ["ddos-guard.net"],
+    slug: "/registrar-icons/ddosguard.png",
+    color: "#0A2856",
+  },
+  {
+    brand: "Sakura Internet",
+    domains: ["sakura.ne.jp", "dns.ne.jp"],
+    slug: "/registrar-icons/sakura.png",
+    color: "#FF6699",
+  },
+  {
+    brand: "Rackspace",
+    domains: ["rackspace.com", "stabletransit.com"],
+    slug: "rackspace",
+    color: "#C40022",
+  },
+  {
+    brand: "IBM Cloud",
+    domains: ["softlayer.com"],
+    slug: "ibm",
+    color: "#054ADA",
+  },
+  {
+    brand: "BigRock",
+    domains: ["bigrock.in"],
+    slug: "/registrar-icons/bigrock.png",
+    color: "#FF6C2C",
+  },
+  {
+    brand: "ResellerClub",
+    domains: ["resellerclub.com"],
+    slug: "/registrar-icons/resellerclub.png",
+    color: "#F99D1C",
+  },
+  {
+    brand: "Cafe24",
+    domains: ["cafe24.com"],
+    slug: "/registrar-icons/cafe24.png",
+    color: "#13AA52",
+  },
+  {
+    brand: "Gcore",
+    domains: ["gcore.com", "gcorelabs.net"],
+    slug: "/registrar-icons/gcore.png",
+    color: "#FF4C00",
+  },
+  {
+    brand: "Wangsu",
+    domains: ["wscdns.com", "wsglb0.com"],
+    slug: "/registrar-icons/wangsu.png",
+    color: "#004B97",
+  },
+  {
+    brand: "ZDNS",
+    domains: ["zdnscloud.com", "zdns.cn"],
+    slug: "/registrar-icons/zdns.png",
+    color: "#1E73BE",
+  },
+  {
+    brand: "No-IP",
+    domains: ["no-ip.com"],
+    slug: "/registrar-icons/noip.png",
+    color: "#2196F3",
+  },
+  {
+    brand: "Infomaniak",
+    domains: ["infomaniak.com", "infomaniak.ch"],
+    slug: "/registrar-icons/infomaniak.png",
+    color: "#0F7A3F",
+  },
+  {
+    brand: "Spaceship",
+    domains: ["spaceship.com"],
+    slug: "/registrar-icons/spaceship.png",
+    color: "#6366F1",
+  },
+  { brand: "22.cn", domains: ["22.cn"], slug: null, color: "#FF6600" },
+  { brand: "DNS.com", domains: ["dns.com"], slug: null, color: "#0099CC" },
+  {
+    brand: "Cndns",
+    domains: ["dns-diy.com", "cndns.com"],
+    slug: null,
+    color: "#FF8C00",
+  },
+  {
+    brand: "StackPath",
+    domains: ["stackpathdns.com"],
+    slug: null,
+    color: "#003BDE",
+  },
+  { brand: "Zoho", domains: ["zoho.com"], slug: "zoho", color: "#C8202B" },
+];
 
 function getNsBrand(
   ns: string,
 ): { brand: string; slug: string | null; color: string } | null {
   const lower = ns.toLowerCase();
-  for (const [pattern, info] of Object.entries(NS_BRAND_MAP)) {
-    if (lower.includes(pattern)) return info;
+  for (const info of NS_BRANDS) {
+    if (info.domains.some((d) => lower.includes(d))) return info;
   }
   return null;
 }
 
 function getRegistrarIcon(
   registrar: string,
+  registrarURL?: string,
 ): { slug: string | null; color: string } | null {
   if (!registrar || registrar === "Unknown") return null;
   const normalized = registrar.toLowerCase().replace(/[\s.,\-_()]+/g, "");
   for (const [key, info] of Object.entries(REGISTRAR_ICONS)) {
     if (normalized.includes(key)) return info;
+  }
+  if (registrarURL) {
+    const urlLower = registrarURL.toLowerCase();
+    for (const [key, info] of Object.entries(REGISTRAR_ICONS)) {
+      if (urlLower.includes(key)) return info;
+    }
   }
   return null;
 }
@@ -1024,7 +1220,9 @@ export default function LookupPage({
     if (status) addHistory(target);
   }, []);
 
-  const registrarIcon = result ? getRegistrarIcon(result.registrar) : null;
+  const registrarIcon = result
+    ? getRegistrarIcon(result.registrar, result.registrarURL)
+    : null;
   const registrarInitial = result
     ? result.registrar && result.registrar !== "Unknown"
       ? result.registrar.charAt(0).toUpperCase()
