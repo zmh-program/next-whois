@@ -327,7 +327,7 @@ export default function DocsPage({ origin }: { origin: string }) {
                   <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
                     {t("docs.example_request")}
                   </h3>
-                  <CodeBlock>{`curl "https://your-domain.com/api/lookup?query=google.com"`}</CodeBlock>
+                  <CodeBlock>{`curl "https://who.zmh.me/api/lookup?query=google.com"`}</CodeBlock>
                 </div>
 
                 <div>
@@ -433,7 +433,7 @@ export default function DocsPage({ origin }: { origin: string }) {
                   <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
                     {t("docs.example_request")}
                   </h3>
-                  <CodeBlock>{`curl "https://your-domain.com/api/og?query=google.com&theme=dark" -o og.png`}</CodeBlock>
+                  <CodeBlock>{`curl "https://who.zmh.me/api/og?query=google.com&theme=dark" -o og.png`}</CodeBlock>
                 </div>
 
                 <div>
