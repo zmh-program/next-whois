@@ -28,13 +28,13 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
-    "framer-motion": "^14.7.1",
-    "geist": "^1.8.2",
+    "framer-motion": "^14.10.1",
+    "geist": "^1.9.2",
     "ioredis": "^6.0.0",
-    "lucide-react": "^1.64.0",
+    "lucide-react": "^1.70.0",
     "moment": "^2.31.0",
     "negotiator": "^1.1.0",
-    "next": "^16.4.3",
+    "next": "^16.4.5",
     "next-pwa": "^5.6.0",
     "next-themes": "^0.4.6",
     "node-rdap": "^1.0.0",
@@ -47,15 +47,15 @@
     "whoiser": "2.0.0-beta.10"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.3.3",
+    "@tailwindcss/postcss": "^4.3.5",
     "@types/node": "^26.6.6",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "postcss": "^8.5.32",
     "prettier": "^3.9.10",
-    "tailwindcss": "^4.3.3",
+    "tailwindcss": "^4.3.5",
     "typescript": "^7.0.2",
-    "vitest": "^5.0.5"
+    "vitest": "^5.1.0"
   },
   "packageManager": "pnpm@12.16.1"
 }
