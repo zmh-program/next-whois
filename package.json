@@ -31,7 +31,7 @@
     "date-fns": "^4.1.0",
     "framer-motion": "^11.3.21",
     "geist": "^1.7.0",
-    "i18next": "^23.12.2",
+    "i18next": "^27.1.5",
     "ioredis": "^5.4.1",
     "lucide-react": "^0.513.0",
     "moment": "^2.30.1",
