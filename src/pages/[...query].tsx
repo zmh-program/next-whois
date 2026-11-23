@@ -1,3 +1,9 @@
+import { ChevronDown, Search } from "lucide-react";
+import {
+  LookupFailure,
+  ProtocolRows,
+  type LookupPageData,
+} from "@/components/lookup_failure";
 import { lookupWhoisWithCache } from "@/lib/whois/lookup";
 import {
   cleanDomain,
@@ -30,13 +36,12 @@ import {
   RiBillLine,
   RiDownloadLine,
   RiServerLine,
-  RiEarthLine,
   RiGlobalLine,
 } from "@remixicon/react";
 import React, { useEffect, useMemo } from "react";
 import { addHistory, detectQueryType } from "@/lib/history";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+
 import { WhoisAnalyzeResult, WhoisResult } from "@/lib/whois/types";
 import {
   getEppStatusInfo,
@@ -45,13 +50,9 @@ import {
   getEppStatusLink,
 } from "@/lib/whois/epp_status";
 import { SearchBox } from "@/components/search_box";
-import {
-  KeyboardShortcut,
-  SearchHotkeysText,
-} from "@/components/search_shortcuts";
+
 import { useTranslation, TranslationKey } from "@/lib/i18n";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -1063,12 +1064,14 @@ function RdapJsonHighlight({ content }: { content: string }) {
 }
 
 function ResponsePanel({
+  primary,
   whoisContent,
   rdapContent,
   target,
   copy,
   save,
 }: {
+  primary?: WhoisResult["source"];
   whoisContent: string;
   rdapContent?: string;
   target: string;
@@ -1076,10 +1079,11 @@ function ResponsePanel({
   save: (filename: string, content: string) => void;
 }) {
   const { t } = useTranslation();
+  const [open, setOpen] = React.useState(false);
   const hasWhois = !!whoisContent;
   const hasRdap = !!rdapContent;
   const [activeTab, setActiveTab] = React.useState<"whois" | "rdap">(
-    hasWhois ? "whois" : "rdap",
+    hasRdap && (primary === "rdap" || !hasWhois) ? "rdap" : "whois",
   );
 
   const currentContent =
@@ -1090,65 +1094,78 @@ function ResponsePanel({
       : `${target.replace(/\./g, "-")}-rdap.json`;
 
   return (
-    <div className="bg-white dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 rounded-xl overflow-hidden border border-border flex flex-col shadow-lg h-full">
-      <div className="bg-muted/50 dark:bg-black border-b border-border px-4 py-2.5 flex items-center justify-between">
-        <div className="flex items-center gap-1">
-          {hasWhois && (
-            <button
-              onClick={() => setActiveTab("whois")}
-              className={cn(
-                "px-2.5 py-1 rounded text-[11px] font-mono transition-colors",
-                activeTab === "whois"
-                  ? "bg-background dark:bg-zinc-800 text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground",
+    <details
+      onToggle={(e) => setOpen(e.currentTarget.open)}
+      className="group border-b"
+    >
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 py-4 text-sm font-medium [&::-webkit-details-marker]:hidden">
+        {t("raw_response")}
+        <ChevronDown
+          aria-hidden
+          className="size-4 text-muted-foreground group-open:rotate-180"
+        />
+      </summary>
+      {open && (
+        <div className="mb-4 overflow-hidden rounded-lg border">
+          <div className="bg-muted/50 dark:bg-black border-b border-border px-4 py-2.5 flex items-center justify-between">
+            <div className="flex items-center gap-1">
+              {hasWhois && (
+                <button
+                  onClick={() => setActiveTab("whois")}
+                  className={cn(
+                    "px-2.5 py-1 rounded text-[11px] font-mono transition-colors",
+                    activeTab === "whois"
+                      ? "bg-background dark:bg-zinc-800 text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  Whois
+                </button>
               )}
-            >
-              Whois
-            </button>
-          )}
-          {hasRdap && (
-            <button
-              onClick={() => setActiveTab("rdap")}
-              className={cn(
-                "px-2.5 py-1 rounded text-[11px] font-mono transition-colors",
-                activeTab === "rdap"
-                  ? "bg-background dark:bg-zinc-800 text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground",
+              {hasRdap && (
+                <button
+                  onClick={() => setActiveTab("rdap")}
+                  className={cn(
+                    "px-2.5 py-1 rounded text-[11px] font-mono transition-colors",
+                    activeTab === "rdap"
+                      ? "bg-background dark:bg-zinc-800 text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  RDAP
+                </button>
               )}
-            >
-              RDAP
-            </button>
-          )}
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => copy(currentContent)}
+                className="text-[10px] text-muted-foreground hover:text-foreground transition-colors uppercase font-medium tracking-wide flex items-center gap-1"
+              >
+                <RiFileCopyLine className="w-3 h-3" />
+                {t("copy")}
+              </button>
+              <button
+                onClick={() => save(currentFilename, currentContent)}
+                className="text-[10px] text-muted-foreground hover:text-foreground transition-colors uppercase font-medium tracking-wide flex items-center gap-1"
+              >
+                <RiDownloadLine className="w-3 h-3" />
+                {t("save")}
+              </button>
+            </div>
+          </div>
+          <div className="max-h-96 overflow-auto">
+            <div className="p-4 font-mono text-[11px] leading-relaxed">
+              {activeTab === "whois" && whoisContent && (
+                <WhoisHighlight content={whoisContent} />
+              )}
+              {activeTab === "rdap" && rdapContent && (
+                <RdapJsonHighlight content={rdapContent} />
+              )}
+            </div>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => copy(currentContent)}
-            className="text-[10px] text-muted-foreground hover:text-foreground transition-colors uppercase font-medium tracking-wide flex items-center gap-1"
-          >
-            <RiFileCopyLine className="w-3 h-3" />
-            {t("copy")}
-          </button>
-          <button
-            onClick={() => save(currentFilename, currentContent)}
-            className="text-[10px] text-muted-foreground hover:text-foreground transition-colors uppercase font-medium tracking-wide flex items-center gap-1"
-          >
-            <RiDownloadLine className="w-3 h-3" />
-            {t("save")}
-          </button>
-        </div>
-      </div>
-      <ScrollArea className="flex-1">
-        <div className="p-4 font-mono text-[11px] leading-relaxed">
-          {activeTab === "whois" && whoisContent && (
-            <WhoisHighlight content={whoisContent} />
-          )}
-          {activeTab === "rdap" && rdapContent && (
-            <RdapJsonHighlight content={rdapContent} />
-          )}
-        </div>
-        <ScrollBar orientation="horizontal" />
-      </ScrollArea>
-    </div>
+      )}
+    </details>
   );
 }
 
@@ -1186,7 +1203,7 @@ export default function LookupPage({
   target,
   origin,
 }: {
-  data: WhoisResult;
+  data: LookupPageData;
   target: string;
   origin: string;
 }) {
@@ -1209,7 +1226,7 @@ export default function LookupPage({
 
   const current = getWindowHref();
   const queryType = detectQueryType(target);
-  const { status, result, error, time } = data;
+  const { status, result, time } = data;
 
   const handleSearch = (query: string) => {
     setLoading(true);
@@ -1218,7 +1235,7 @@ export default function LookupPage({
 
   useEffect(() => {
     if (status) addHistory(target);
-  }, []);
+  }, [status, target]);
 
   const registrarIcon = result
     ? getRegistrarIcon(result.registrar, result.registrarURL)
@@ -1280,965 +1297,841 @@ export default function LookupPage({
           content={`${origin}/api/og?query=${encodeURIComponent(target)}&theme=dark`}
         />
       </Head>
-      <ScrollArea className="w-full h-[calc(100vh-4rem)]">
-        <main className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-6 min-h-[calc(100vh-4rem)]">
-          <div className="mb-6">
-            <div className="relative group">
-              <SearchBox
-                initialValue={target}
-                onSearch={handleSearch}
-                loading={loading}
-              />
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-none opacity-50 group-hover:opacity-100 transition-opacity">
-                <KeyboardShortcut k="/" />
-              </div>
-            </div>
-            <SearchHotkeysText className="mt-2 px-1 justify-end" />
+      <main className="mx-auto min-w-0 w-full max-w-6xl px-5 pb-12 pt-5 sm:px-8 lg:px-10 lg:pt-8 xl:px-14">
+        <div className="mb-8 flex items-center gap-3 border-b pb-5 sm:mb-10">
+          <div className="relative min-w-0 flex-1">
+            <SearchBox
+              initialValue={target}
+              onSearch={handleSearch}
+              loading={loading}
+              className="[&_input]:rounded-xl [&_input]:bg-muted/35 [&_input]:pl-10 [&_input]:shadow-none [&_button]:rounded-r-xl"
+            />
+            <Search
+              aria-hidden
+              className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+            />
           </div>
+          {status && result && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  aria-label={t("share")}
+                  className="h-10 gap-2 rounded-lg px-3"
+                  tapEnabled
+                >
+                  <RiShareLine aria-hidden className="size-4" />
+                  <span className="hidden sm:inline">{t("share")}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-[200px]">
+                <DropdownMenuLabel className="text-xs text-muted-foreground">
+                  {t("share")}
+                </DropdownMenuLabel>
+                <DropdownMenuItem asChild>
+                  <Link
+                    href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Whois Lookup: ${target}`)}&url=${encodeURIComponent(current)}`}
+                    target="_blank"
+                  >
+                    <RiTwitterXLine className="w-4 h-4 mr-2" />
+                    Twitter / X
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link
+                    href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(current)}`}
+                    target="_blank"
+                  >
+                    <RiFacebookFill className="w-4 h-4 mr-2" />
+                    Facebook
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link
+                    href={`https://reddit.com/submit?url=${encodeURIComponent(current)}`}
+                    target="_blank"
+                  >
+                    <RiRedditLine className="w-4 h-4 mr-2" />
+                    Reddit
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link
+                    href={`https://api.whatsapp.com/send?text=${encodeURIComponent(current)}`}
+                    target="_blank"
+                  >
+                    <RiWhatsappLine className="w-4 h-4 mr-2" />
+                    WhatsApp
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link
+                    href={`https://t.me/share/url?url=${encodeURIComponent(current)}`}
+                    target="_blank"
+                  >
+                    <RiTelegramLine className="w-4 h-4 mr-2" />
+                    Telegram
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => copy(current)}>
+                  <RiLinkM className="w-4 h-4 mr-2" />
+                  {t("copy_url")}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className="text-xs text-muted-foreground">
+                  {t("image")}
+                </DropdownMenuLabel>
+                <DropdownMenuItem
+                  onClick={async () => {
+                    const ogUrl = buildOgUrl(target, result);
+                    try {
+                      const res = await fetch(ogUrl);
+                      const blob = await res.blob();
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement("a");
+                      a.href = url;
+                      a.download = `whois-${target}.png`;
+                      a.click();
+                      URL.revokeObjectURL(url);
+                      toast.success(t("toast.downloaded"));
+                    } catch {
+                      toast.error(t("toast.download_failed"));
+                    }
+                  }}
+                >
+                  <RiDownloadLine className="w-4 h-4 mr-2" />
+                  {t("download_png")}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={async () => {
+                    const ogUrl = buildOgUrl(target, result);
+                    try {
+                      const res = await fetch(ogUrl);
+                      const blob = await res.blob();
+                      await navigator.clipboard.write([
+                        new ClipboardItem({ "image/png": blob }),
+                      ]);
+                      toast.success(t("toast.copied_to_clipboard"));
+                    } catch {
+                      toast.error(t("toast.copy_to_clipboard_failed"));
+                    }
+                  }}
+                >
+                  <RiFileCopyLine className="w-4 h-4 mr-2" />
+                  {t("copy_image")}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setShowImagePreview(true)}>
+                  <RiCameraLine className="w-4 h-4 mr-2" />
+                  {t("preview_customize")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
 
-          {result && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.1 }}
-              className="flex items-center flex-wrap gap-2 mb-6"
-            >
-              {result.domainAge !== null && (
-                <div className="px-2 py-0.5 rounded-md border border-primary/30 bg-primary/5 flex items-center space-x-1">
-                  <RiTimeLine className="w-3 h-3 text-primary shrink-0" />
-                  <span className="text-[11px] sm:text-xs font-normal text-primary">
-                    {result.domainAge === 0 ? "<1" : result.domainAge}{" "}
-                    {result.domainAge === 1 ? t("year") : t("years")}
+        {!status && (
+          <LookupFailure
+            key={target}
+            data={data}
+            target={target}
+            domain={queryType === "domain"}
+          >
+            {(data.rawWhoisContent ||
+              result?.rawWhoisContent ||
+              result?.rawRdapContent) && (
+              <ResponsePanel
+                whoisContent={
+                  data.rawWhoisContent || result?.rawWhoisContent || ""
+                }
+                rdapContent={result?.rawRdapContent}
+                primary={data.source}
+                target={target}
+                copy={copy}
+                save={save}
+              />
+            )}
+          </LookupFailure>
+        )}
+
+        {status && result && (
+          <>
+            <section className="min-w-0">
+              <div className="flex flex-wrap items-end justify-between gap-x-5 gap-y-3">
+                <div>
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                      {queryType}
+                    </span>
+                  </div>
+                  <h1 className="break-all text-3xl font-semibold tracking-tight sm:text-4xl">
+                    <button
+                      type="button"
+                      title={t("copy")}
+                      onClick={() => copy(result.domain || target)}
+                      className="rounded-sm text-left hover:text-muted-foreground"
+                    >
+                      {result.domain || target}
+                    </button>
+                  </h1>
+                  {result.registrar && result.registrar !== "Unknown" && (
+                    <p className="mt-1.5 text-muted-foreground text-sm">
+                      {t("whois_fields.registrar")}: {result.registrar}
+                    </p>
+                  )}
+                </div>
+                <div className="flex flex-col items-start sm:items-end gap-2">
+                  {result.remainingDays !== null ? (
+                    result.remainingDays <= 0 ? (
+                      <Badge className="bg-red-500 hover:bg-red-600 text-white border-0">
+                        <div className="w-2 h-2 rounded-full bg-white/80 mr-1.5" />
+                        {t("expired")}
+                      </Badge>
+                    ) : result.remainingDays <= 60 ? (
+                      <Badge className="bg-amber-500 hover:bg-amber-600 text-white border-0">
+                        <div className="w-2 h-2 rounded-full bg-white/80 mr-1.5" />
+                        {t("expiring_soon")}
+                      </Badge>
+                    ) : (
+                      <Badge className="gap-0.5 border-0 bg-emerald-50 text-emerald-800 hover:bg-emerald-50 dark:bg-emerald-950 dark:text-emerald-200">
+                        <div className="w-2 h-2 rounded-full bg-emerald-400 mr-1.5" />
+                        {t("active")}
+                      </Badge>
+                    )
+                  ) : (
+                    <Badge variant="outline" className="text-muted-foreground">
+                      <div className="w-2 h-2 rounded-full bg-muted-foreground/50 mr-1.5" />
+                      N/A
+                    </Badge>
+                  )}
+                  <span className="text-[10px] text-muted-foreground font-mono">
+                    {time.toFixed(2)}s{data.cached && ` · ${t("cached")}`}
+                    {data.source && ` · ${data.source}`}
                   </span>
                 </div>
-              )}
-              {result.registerPrice &&
-                result.registerPrice.new !== -1 &&
-                result.registerPrice.currency !== "Unknown" && (
-                  <Link
-                    target="_blank"
-                    href={result.registerPrice.externalLink}
-                    className="px-2 py-0.5 rounded-md border bg-background flex items-center space-x-1 cursor-pointer hover:border-muted-foreground/50 transition-colors"
-                  >
-                    <RiBillLine className="w-3 h-3 text-muted-foreground shrink-0" />
-                    <span
-                      className={cn(
-                        "text-[11px] sm:text-xs font-normal text-muted-foreground",
-                        result.registerPrice.isPremium && "text-red-500",
-                      )}
-                    >
-                      {t("register_price")}
-                      {result.registerPrice.new}{" "}
-                      {result.registerPrice.currency.toUpperCase()}
-                    </span>
-                  </Link>
-                )}
-              {result.renewPrice &&
-                result.renewPrice.renew !== -1 &&
-                result.renewPrice.currency !== "Unknown" && (
-                  <Link
-                    href={result.renewPrice.externalLink}
-                    target="_blank"
-                    className="px-2 py-0.5 rounded-md border bg-background flex items-center space-x-1 cursor-pointer hover:border-muted-foreground/50 transition-colors"
-                  >
-                    <RiExchangeDollarFill className="w-3 h-3 text-muted-foreground shrink-0" />
-                    <span className="text-[11px] sm:text-xs font-normal text-muted-foreground">
-                      {t("renew_price")}
-                      {result.renewPrice.renew}{" "}
-                      {result.renewPrice.currency.toUpperCase()}
-                    </span>
-                  </Link>
-                )}
-              {result.transferPrice &&
-                result.transferPrice.transfer !== -1 &&
-                result.transferPrice.currency !== "Unknown" && (
-                  <Link
-                    href={result.transferPrice.externalLink}
-                    target="_blank"
-                    className="px-2 py-0.5 rounded-md border bg-background flex items-center space-x-1 cursor-pointer hover:border-muted-foreground/50 transition-colors"
-                  >
-                    <RiExchangeDollarFill className="w-3 h-3 text-muted-foreground shrink-0" />
-                    <span className="text-[11px] sm:text-xs font-normal text-muted-foreground">
-                      {t("transfer_price")}
-                      {result.transferPrice.transfer}{" "}
-                      {result.transferPrice.currency.toUpperCase()}
-                    </span>
-                  </Link>
-                )}
-              <div className="flex-grow" />
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon-sm"
-                    className="transition hover:border-muted-foreground shadow-sm"
-                    tapEnabled
-                  >
-                    <RiShareLine className="w-4 h-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="min-w-[200px]">
-                  <DropdownMenuLabel className="text-xs text-muted-foreground">
-                    {t("share")}
-                  </DropdownMenuLabel>
-                  <DropdownMenuItem asChild>
-                    <Link
-                      href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Whois Lookup: ${target}`)}&url=${encodeURIComponent(current)}`}
-                      target="_blank"
-                    >
-                      <RiTwitterXLine className="w-4 h-4 mr-2" />
-                      Twitter / X
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link
-                      href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(current)}`}
-                      target="_blank"
-                    >
-                      <RiFacebookFill className="w-4 h-4 mr-2" />
-                      Facebook
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link
-                      href={`https://reddit.com/submit?url=${encodeURIComponent(current)}`}
-                      target="_blank"
-                    >
-                      <RiRedditLine className="w-4 h-4 mr-2" />
-                      Reddit
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link
-                      href={`https://api.whatsapp.com/send?text=${encodeURIComponent(current)}`}
-                      target="_blank"
-                    >
-                      <RiWhatsappLine className="w-4 h-4 mr-2" />
-                      WhatsApp
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link
-                      href={`https://t.me/share/url?url=${encodeURIComponent(current)}`}
-                      target="_blank"
-                    >
-                      <RiTelegramLine className="w-4 h-4 mr-2" />
-                      Telegram
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => copy(current)}>
-                    <RiLinkM className="w-4 h-4 mr-2" />
-                    {t("copy_url")}
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel className="text-xs text-muted-foreground">
-                    {t("image")}
-                  </DropdownMenuLabel>
-                  <DropdownMenuItem
-                    onClick={async () => {
-                      const ogUrl = buildOgUrl(target, result);
-                      try {
-                        const res = await fetch(ogUrl);
-                        const blob = await res.blob();
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement("a");
-                        a.href = url;
-                        a.download = `whois-${target}.png`;
-                        a.click();
-                        URL.revokeObjectURL(url);
-                        toast.success(t("toast.downloaded"));
-                      } catch {
-                        toast.error(t("toast.download_failed"));
-                      }
-                    }}
-                  >
-                    <RiDownloadLine className="w-4 h-4 mr-2" />
-                    {t("download_png")}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={async () => {
-                      const ogUrl = buildOgUrl(target, result);
-                      try {
-                        const res = await fetch(ogUrl);
-                        const blob = await res.blob();
-                        await navigator.clipboard.write([
-                          new ClipboardItem({ "image/png": blob }),
-                        ]);
-                        toast.success(t("toast.copied_to_clipboard"));
-                      } catch {
-                        toast.error(t("toast.copy_to_clipboard_failed"));
-                      }
-                    }}
-                  >
-                    <RiFileCopyLine className="w-4 h-4 mr-2" />
-                    {t("copy_image")}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setShowImagePreview(true)}>
-                    <RiCameraLine className="w-4 h-4 mr-2" />
-                    {t("preview_customize")}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </motion.div>
-          )}
-
-          {!status && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
-              className="grid grid-cols-1 lg:grid-cols-12 gap-6"
-            >
-              <div className="lg:col-span-8 space-y-6">
-                <div className="glass-panel border border-border rounded-xl p-8 sm:p-12 text-center">
-                  <div className="w-16 h-16 bg-red-50 dark:bg-red-950/30 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="32"
-                      height="32"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="text-red-500"
-                    >
-                      <path d="m21 21-4.3-4.3" />
-                      <circle cx="11" cy="11" r="8" />
-                      <path d="m8 8 6 6" />
-                      <path d="m14 8-6 6" />
-                    </svg>
-                  </div>
-                  <h2 className="text-2xl font-bold mb-2">
-                    {t("lookup_failed")}
-                  </h2>
-                  <p className="text-muted-foreground max-w-md mx-auto text-sm leading-relaxed mb-8">
-                    {t("lookup_failed_description")}{" "}
-                    <span className="font-mono font-medium text-foreground">
-                      {target}
-                    </span>
-                    {". "}
-                    {error || t("lookup_failed_fallback")}
-                  </p>
-                  <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                    <Button onClick={() => handleSearch(target)}>
-                      {t("try_again")}
-                    </Button>
-                    <Link href="/">
-                      <Button variant="outline">{t("new_search")}</Button>
-                    </Link>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div className="glass-panel border border-border rounded-xl p-6">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4 flex items-center gap-2">
-                      <svg
-                        className="w-4 h-4"
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <circle cx="12" cy="12" r="10" />
-                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-                        <line x1="12" y1="17" x2="12.01" y2="17" />
-                      </svg>
-                      {t("common_issues")}
-                    </h3>
-                    <ul className="space-y-3">
-                      {[
-                        {
-                          title: t("issue_invalid_tld"),
-                          desc: t("issue_invalid_tld_desc"),
-                        },
-                        {
-                          title: t("issue_not_registered"),
-                          desc: t("issue_not_registered_desc"),
-                        },
-                        {
-                          title: t("issue_rate_limited"),
-                          desc: t("issue_rate_limited_desc"),
-                        },
-                      ].map((item) => (
-                        <li key={item.title} className="flex items-start gap-2">
-                          <div className="mt-1.5 w-1 h-1 rounded-full bg-muted-foreground/30 shrink-0" />
-                          <p className="text-[11px] text-muted-foreground leading-normal">
-                            <strong className="text-foreground">
-                              {item.title}:
-                            </strong>{" "}
-                            {item.desc}
-                          </p>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div className="glass-panel border border-border rounded-xl p-6">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4 flex items-center gap-2">
-                      <RiTimeLine className="w-4 h-4" />
-                      {t("query_details")}
-                    </h3>
-                    <div className="space-y-3 text-xs">
-                      <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground font-mono uppercase">
-                          {t("target")}
-                        </span>
-                        <span className="font-mono font-medium">{target}</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground font-mono uppercase">
-                          {t("type")}
-                        </span>
-                        <Badge
-                          variant="outline"
-                          className="text-[10px] font-mono"
-                        >
-                          {queryType}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground font-mono uppercase">
-                          {t("time")}
-                        </span>
-                        <span className="font-mono">{time.toFixed(2)}s</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
               </div>
 
-              <div className="lg:col-span-4">
-                {result && (result.rawWhoisContent || result.rawRdapContent) ? (
-                  <ResponsePanel
-                    whoisContent={result.rawWhoisContent || ""}
-                    rdapContent={result.rawRdapContent}
-                    target={target}
-                    copy={copy}
-                    save={save}
-                  />
-                ) : (
-                  <div className="glass-panel border border-border rounded-xl p-6 text-center h-full flex flex-col items-center justify-center">
-                    <RiServerLine className="w-8 h-8 text-muted-foreground/30 mb-3" />
-                    <p className="text-xs text-muted-foreground">
-                      {t("no_raw_response")}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          )}
-
-          {status && result && (
-            <>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                className="grid grid-cols-1 lg:grid-cols-12 gap-6"
-              >
-                {" "}
-                <div className="lg:col-span-8 space-y-6">
-                  <div className="glass-panel border border-border rounded-xl p-6 sm:p-8 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-4 opacity-[0.03] pointer-events-none">
-                      <RiEarthLine className="w-28 h-28" />
+              {(result.creationDate !== "Unknown" ||
+                result.expirationDate !== "Unknown" ||
+                result.updatedDate !== "Unknown") && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-6 rounded-xl bg-muted/40 px-4 py-4 sm:px-6">
+                  {result.creationDate && result.creationDate !== "Unknown" && (
+                    <div>
+                      <p className="mb-1 text-xs font-medium text-muted-foreground">
+                        {t("whois_fields.creation_date")}
+                      </p>
+                      <p className="font-mono text-sm font-medium">
+                        {formatDate(result.creationDate)}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        {getRelativeTime(result.creationDate, t)}
+                      </p>
                     </div>
-                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 relative z-10">
+                  )}
+                  {result.expirationDate &&
+                    result.expirationDate !== "Unknown" && (
                       <div>
-                        <div className="flex items-center gap-3 mb-2">
-                          <Badge
-                            variant="outline"
-                            className="text-[10px] font-bold uppercase tracking-wider font-mono"
-                          >
-                            {queryType}
-                          </Badge>
-                        </div>
-                        <h2
-                          className="text-3xl sm:text-4xl font-bold tracking-tight mb-1 cursor-pointer hover:opacity-80 transition-opacity"
-                          onClick={() => copy(result.domain || target)}
+                        <p className="mb-1 text-xs font-medium text-muted-foreground">
+                          {t("whois_fields.expiration_date")}
+                        </p>
+                        <p className="font-mono text-sm font-medium">
+                          {formatDate(result.expirationDate)}
+                        </p>
+                        <p
+                          className={cn(
+                            "text-[10px] mt-0.5 font-medium",
+                            result.remainingDays !== null &&
+                              result.remainingDays > 60
+                              ? "text-emerald-600 dark:text-emerald-400"
+                              : result.remainingDays !== null &&
+                                  result.remainingDays <= 30
+                                ? "text-red-600 dark:text-red-400"
+                                : "text-amber-600 dark:text-amber-400",
+                          )}
                         >
-                          {result.domain || target.toUpperCase()}
-                        </h2>
-                        {result.registrar && result.registrar !== "Unknown" && (
-                          <p className="text-muted-foreground text-sm">
-                            {t("whois_fields.registrar")}: {result.registrar}
-                          </p>
-                        )}
-                      </div>
-                      <div className="flex flex-col items-start sm:items-end gap-2">
-                        {result.remainingDays !== null ? (
-                          result.remainingDays <= 0 ? (
-                            <Badge className="bg-red-500 hover:bg-red-600 text-white border-0">
-                              <div className="w-2 h-2 rounded-full bg-white/80 animate-pulse mr-1.5" />
-                              {t("expired")}
-                            </Badge>
-                          ) : result.remainingDays <= 60 ? (
-                            <Badge className="bg-amber-500 hover:bg-amber-600 text-white border-0">
-                              <div className="w-2 h-2 rounded-full bg-white/80 animate-pulse mr-1.5" />
-                              {t("expiring_soon")}
-                            </Badge>
-                          ) : (
-                            <Badge className="bg-primary hover:bg-primary/90 text-primary-foreground border-0">
-                              <div className="w-2 h-2 rounded-full bg-emerald-400 mr-1.5" />
-                              {t("active")}
-                            </Badge>
-                          )
-                        ) : (
-                          <Badge
-                            variant="outline"
-                            className="text-muted-foreground"
-                          >
-                            <div className="w-2 h-2 rounded-full bg-muted-foreground/50 mr-1.5" />
-                            N/A
-                          </Badge>
-                        )}
-                        <span className="text-[10px] text-muted-foreground font-mono">
-                          {time.toFixed(2)}s{data.cached && ` · ${t("cached")}`}
-                          {data.source && ` · ${data.source}`}
-                        </span>
-                      </div>
-                    </div>
-
-                    {(result.creationDate !== "Unknown" ||
-                      result.expirationDate !== "Unknown" ||
-                      result.updatedDate !== "Unknown") && (
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 mt-8 pt-8 border-t border-border/50">
-                        {result.creationDate &&
-                          result.creationDate !== "Unknown" && (
-                            <div>
-                              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1">
-                                {t("whois_fields.creation_date")}
-                              </p>
-                              <p className="font-mono text-sm font-medium">
-                                {formatDate(result.creationDate)}
-                              </p>
-                              <p className="text-[10px] text-muted-foreground mt-0.5">
-                                {getRelativeTime(result.creationDate, t)}
-                              </p>
-                            </div>
-                          )}
-                        {result.expirationDate &&
-                          result.expirationDate !== "Unknown" && (
-                            <div>
-                              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1">
-                                {t("whois_fields.expiration_date")}
-                              </p>
-                              <p className="font-mono text-sm font-medium">
-                                {formatDate(result.expirationDate)}
-                              </p>
-                              <p
-                                className={cn(
-                                  "text-[10px] mt-0.5 font-medium",
-                                  result.remainingDays !== null &&
-                                    result.remainingDays > 60
-                                    ? "text-emerald-600 dark:text-emerald-400"
-                                    : result.remainingDays !== null &&
-                                        result.remainingDays <= 30
-                                      ? "text-red-600 dark:text-red-400"
-                                      : "text-amber-600 dark:text-amber-400",
-                                )}
-                              >
-                                {result.remainingDays !== null
-                                  ? result.remainingDays > 0
-                                    ? t("d_remaining", {
-                                        days: result.remainingDays,
-                                      })
-                                    : t("expired")
-                                  : getRelativeTime(result.expirationDate, t)}
-                              </p>
-                            </div>
-                          )}
-                        {result.updatedDate &&
-                          result.updatedDate !== "Unknown" && (
-                            <div className="col-span-2 sm:col-span-1">
-                              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1">
-                                {t("whois_fields.updated_date")}
-                              </p>
-                              <p className="font-mono text-sm font-medium">
-                                {formatDate(result.updatedDate)}
-                              </p>
-                              <p className="text-[10px] text-muted-foreground mt-0.5">
-                                {getRelativeTime(result.updatedDate, t)}
-                              </p>
-                            </div>
-                          )}
+                          {result.remainingDays !== null
+                            ? result.remainingDays > 0
+                              ? t("d_remaining", {
+                                  days: result.remainingDays,
+                                })
+                              : t("expired")
+                            : getRelativeTime(result.expirationDate, t)}
+                        </p>
                       </div>
                     )}
+                  {result.updatedDate && result.updatedDate !== "Unknown" && (
+                    <div className="min-w-0">
+                      <p className="mb-1 text-xs font-medium text-muted-foreground">
+                        {t("whois_fields.updated_date")}
+                      </p>
+                      <p className="font-mono text-sm font-medium">
+                        {formatDate(result.updatedDate)}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        {getRelativeTime(result.updatedDate, t)}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
 
-                    {hasRegistrant && (
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-6 pt-6 border-t border-border/50">
+              {hasRegistrant && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-6 pt-6 border-t border-border/50">
+                  {[
+                    {
+                      label: t("whois_fields.registrant_organization"),
+                      value: result.registrantOrganization,
+                    },
+                    {
+                      label: t("whois_fields.registrant_country"),
+                      value: result.registrantCountry,
+                      country: true,
+                    },
+                    {
+                      label: t("whois_fields.registrant_province"),
+                      value: result.registrantProvince,
+                    },
+                    {
+                      label: t("whois_fields.registrant_email"),
+                      value: result.registrantEmail,
+                    },
+                    {
+                      label: t("whois_fields.registrant_phone"),
+                      value: result.registrantPhone,
+                    },
+                  ]
+                    .filter((f) => f.value && f.value !== "Unknown")
+                    .map((f, i) => (
+                      <div key={i} className="min-w-0">
+                        <p className="mb-1 text-xs font-medium text-muted-foreground">
+                          {f.label}
+                        </p>
+                        <p className="text-xs font-mono whitespace-pre-wrap break-all flex items-center gap-1.5">
+                          {"country" in f &&
+                            f.country &&
+                            f.value &&
+                            /^[A-Z]{2}$/i.test(f.value.trim()) && (
+                              <img
+                                src={`https://flagcdn.com/w40/${f.value.trim().toLowerCase()}.png`}
+                                alt=""
+                                className="w-4 h-3 object-cover rounded-[2px]"
+                              />
+                            )}
+                          {f.value}
+                        </p>
+                      </div>
+                    ))}
+                </div>
+              )}
+              <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 empty:hidden [&>a]:border-0 [&>a]:bg-transparent [&>a]:p-0 [&>div]:border-0 [&>div]:bg-transparent [&>div]:p-0">
+                {result.domainAge !== null && (
+                  <div className="px-2 py-0.5 rounded-md border border-primary/30 bg-primary/5 flex items-center space-x-1">
+                    <RiTimeLine className="w-3 h-3 text-primary shrink-0" />
+                    <span className="text-[11px] sm:text-xs font-normal text-primary">
+                      {result.domainAge === 0 ? "<1" : result.domainAge}{" "}
+                      {result.domainAge === 1 ? t("year") : t("years")}
+                    </span>
+                  </div>
+                )}
+                {result.registerPrice &&
+                  result.registerPrice.new !== -1 &&
+                  result.registerPrice.currency !== "Unknown" && (
+                    <Link
+                      target="_blank"
+                      href={result.registerPrice.externalLink}
+                      className="px-2 py-0.5 rounded-md border bg-background flex items-center space-x-1 cursor-pointer hover:border-muted-foreground/50 transition-colors"
+                    >
+                      <RiBillLine className="w-3 h-3 text-muted-foreground shrink-0" />
+                      <span
+                        className={cn(
+                          "text-[11px] sm:text-xs font-normal text-muted-foreground",
+                          result.registerPrice.isPremium && "text-red-500",
+                        )}
+                      >
+                        {t("register_price")}
+                        {result.registerPrice.new}{" "}
+                        {result.registerPrice.currency.toUpperCase()}
+                      </span>
+                    </Link>
+                  )}
+                {result.renewPrice &&
+                  result.renewPrice.renew !== -1 &&
+                  result.renewPrice.currency !== "Unknown" && (
+                    <Link
+                      href={result.renewPrice.externalLink}
+                      target="_blank"
+                      className="px-2 py-0.5 rounded-md border bg-background flex items-center space-x-1 cursor-pointer hover:border-muted-foreground/50 transition-colors"
+                    >
+                      <RiExchangeDollarFill className="w-3 h-3 text-muted-foreground shrink-0" />
+                      <span className="text-[11px] sm:text-xs font-normal text-muted-foreground">
+                        {t("renew_price")}
+                        {result.renewPrice.renew}{" "}
+                        {result.renewPrice.currency.toUpperCase()}
+                      </span>
+                    </Link>
+                  )}
+                {result.transferPrice &&
+                  result.transferPrice.transfer !== -1 &&
+                  result.transferPrice.currency !== "Unknown" && (
+                    <Link
+                      href={result.transferPrice.externalLink}
+                      target="_blank"
+                      className="px-2 py-0.5 rounded-md border bg-background flex items-center space-x-1 cursor-pointer hover:border-muted-foreground/50 transition-colors"
+                    >
+                      <RiExchangeDollarFill className="w-3 h-3 text-muted-foreground shrink-0" />
+                      <span className="text-[11px] sm:text-xs font-normal text-muted-foreground">
+                        {t("transfer_price")}
+                        {result.transferPrice.transfer}{" "}
+                        {result.transferPrice.currency.toUpperCase()}
+                      </span>
+                    </Link>
+                  )}
+              </div>
+            </section>
+            <div className="mt-7 grid min-w-0 grid-cols-1 gap-x-8 gap-y-6 border-t pt-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+              <div className="min-w-0 space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {result.status.length > 0 && (
+                    <div className="min-w-0">
+                      <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+                        <svg
+                          className="w-4 h-4 text-muted-foreground"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                          <path d="m9 12 2 2 4-4" />
+                        </svg>
+                        {t("whois_fields.status")}
+                      </h3>
+                      <div className="space-y-3">
+                        {displayStatuses.map((s, i) => {
+                          const info = getEppStatusInfo(s.status);
+                          const color = getEppStatusColor(s.status);
+                          const displayName = getEppStatusDisplayName(s.status);
+                          const link = getEppStatusLink(s.status);
+                          return (
+                            <div key={i} className="flex items-start gap-2.5">
+                              <span
+                                className="w-1.5 h-1.5 rounded-full shrink-0 mt-[0.65rem]"
+                                style={{ backgroundColor: color }}
+                              />
+                              <div className="min-w-0">
+                                <a
+                                  href={link}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xs font-mono font-medium leading-tight hover:underline"
+                                >
+                                  {displayName}
+                                </a>
+                                {info && (
+                                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                                    {info.description}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      {result.status.length > 5 && (
+                        <button
+                          onClick={() => setExpandStatus(!expandStatus)}
+                          className="text-xs text-muted-foreground hover:text-foreground transition-colors font-medium mt-3"
+                        >
+                          {expandStatus
+                            ? t("show_less")
+                            : t("more_count", {
+                                count: result.status.length - 5,
+                              })}
+                        </button>
+                      )}
+                    </div>
+                  )}
+
+                  {result.nameServers.length > 0 && (
+                    <div className="min-w-0 flex flex-col">
+                      <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+                        <RiServerLine className="w-4 h-4 text-muted-foreground" />
+                        {t("whois_fields.name_servers")}
+                      </h3>
+                      <div className="space-y-2">
+                        {result.nameServers.map((ns, i) => {
+                          const nsBrand = getNsBrand(ns);
+                          return (
+                            <div
+                              key={i}
+                              className="flex items-center gap-3 py-2 border-b border-border/60 cursor-pointer hover:bg-muted/50 transition-colors"
+                              onClick={() => copy(ns)}
+                            >
+                              {nsBrand ? (
+                                nsBrand.slug ? (
+                                  nsBrand.slug.startsWith("/") ? (
+                                    <div className="w-4 h-4 shrink-0 flex items-center justify-center">
+                                      <img
+                                        src={nsBrand.slug}
+                                        alt=""
+                                        className="w-3.5 h-3.5 object-contain rounded-sm"
+                                      />
+                                    </div>
+                                  ) : (
+                                    <div className="w-4 h-4 shrink-0 flex items-center justify-center">
+                                      <img
+                                        src={resolveIconUrl(
+                                          nsBrand.slug,
+                                          nsBrand.color,
+                                          false,
+                                        )}
+                                        alt=""
+                                        className="w-3.5 h-3.5 object-contain dark:hidden"
+                                      />
+                                      <img
+                                        src={resolveIconUrl(
+                                          nsBrand.slug,
+                                          nsBrand.color,
+                                          true,
+                                        )}
+                                        alt=""
+                                        className="w-3.5 h-3.5 object-contain hidden dark:block"
+                                      />
+                                    </div>
+                                  )
+                                ) : (
+                                  <div
+                                    className="w-4 h-4 rounded-full shrink-0 flex items-center justify-center text-white text-[8px] font-bold"
+                                    style={{ backgroundColor: nsBrand.color }}
+                                  >
+                                    {nsBrand.brand.charAt(0)}
+                                  </div>
+                                )
+                              ) : (
+                                <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 ml-1" />
+                              )}
+                              <span className="font-mono text-xs text-muted-foreground truncate flex-1">
+                                {ns}
+                              </span>
+                              {nsBrand && (
+                                <span className="text-[9px] text-muted-foreground/60 shrink-0">
+                                  {nsBrand.brand}
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                      {result.dnssec && (
+                        <div className="mt-auto pt-4 border-t border-border/50 flex justify-between items-center">
+                          <span className="text-[10px] text-muted-foreground font-medium uppercase">
+                            DNSSEC
+                          </span>
+                          <span className="text-xs font-mono text-muted-foreground">
+                            {/^(signedDelegation|signed|yes)$/i.test(
+                              result.dnssec,
+                            )
+                              ? t("whois_fields.signed")
+                              : /^(unsigned|no)$/i.test(result.dnssec)
+                                ? t("whois_fields.unsigned")
+                                : result.dnssec}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {hasIpFields && (
+                    <div className="min-w-0">
+                      <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+                        <RiGlobalLine className="w-4 h-4 text-muted-foreground" />
+                        {t("whois_fields.network_info")}
+                      </h3>
+                      <div className="space-y-3">
                         {[
                           {
-                            label: t("whois_fields.registrant_organization"),
-                            value: result.registrantOrganization,
+                            label: t("whois_fields.cidr"),
+                            value: result.cidr,
                           },
                           {
-                            label: t("whois_fields.registrant_country"),
-                            value: result.registrantCountry,
-                            country: true,
+                            label: t("whois_fields.net_range"),
+                            value: result.netRange,
                           },
                           {
-                            label: t("whois_fields.registrant_province"),
-                            value: result.registrantProvince,
+                            label: t("whois_fields.net_name"),
+                            value: result.netName,
                           },
                           {
-                            label: t("whois_fields.registrant_email"),
-                            value: result.registrantEmail,
+                            label: t("whois_fields.net_type"),
+                            value: result.netType,
                           },
                           {
-                            label: t("whois_fields.registrant_phone"),
-                            value: result.registrantPhone,
+                            label: t("whois_fields.origin_as"),
+                            value: result.originAS,
+                          },
+                          {
+                            label: t("whois_fields.inet_num"),
+                            value: result.inetNum,
+                          },
+                          {
+                            label: t("whois_fields.inet6_num"),
+                            value: result.inet6Num,
                           },
                         ]
                           .filter((f) => f.value && f.value !== "Unknown")
                           .map((f, i) => (
-                            <div key={i} className="min-w-0">
-                              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1">
+                            <div key={i}>
+                              <p className="mb-1 text-xs font-medium text-muted-foreground">
                                 {f.label}
                               </p>
-                              <p className="text-xs font-mono whitespace-pre-wrap break-all flex items-center gap-1.5">
-                                {"country" in f &&
-                                  f.country &&
-                                  f.value &&
-                                  /^[A-Z]{2}$/i.test(f.value.trim()) && (
-                                    <img
-                                      src={`https://flagcdn.com/w40/${f.value.trim().toLowerCase()}.png`}
-                                      alt=""
-                                      className="w-4 h-3 object-cover rounded-[2px]"
-                                    />
-                                  )}
-                                {f.value}
-                              </p>
+                              <p className="font-mono text-xs">{f.value}</p>
                             </div>
                           ))}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    {result.status.length > 0 && (
-                      <div className="glass-panel border border-border rounded-xl p-5">
-                        <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
-                          <svg
-                            className="w-4 h-4 text-muted-foreground"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                            <path d="m9 12 2 2 4-4" />
-                          </svg>
-                          {t("whois_fields.status")}
-                        </h3>
-                        <div className="space-y-2.5">
-                          {displayStatuses.map((s, i) => {
-                            const info = getEppStatusInfo(s.status);
-                            const color = getEppStatusColor(s.status);
-                            const displayName = getEppStatusDisplayName(
-                              s.status,
-                            );
-                            const link = getEppStatusLink(s.status);
-                            return (
-                              <div key={i} className="flex items-start gap-2.5">
-                                <span
-                                  className="w-1.5 h-1.5 rounded-full shrink-0 mt-[0.65rem]"
-                                  style={{ backgroundColor: color }}
-                                />
-                                <div className="min-w-0">
-                                  <a
-                                    href={link}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-xs font-mono font-medium leading-tight hover:underline"
-                                  >
-                                    {displayName}
-                                  </a>
-                                  {info && (
-                                    <p className="text-[10px] text-muted-foreground leading-snug mt-0.5">
-                                      {info.description}
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                        {result.status.length > 5 && (
-                          <button
-                            onClick={() => setExpandStatus(!expandStatus)}
-                            className="text-xs text-muted-foreground hover:text-foreground transition-colors font-medium mt-3"
-                          >
-                            {expandStatus
-                              ? t("show_less")
-                              : t("more_count", {
-                                  count: result.status.length - 5,
-                                })}
-                          </button>
-                        )}
-                      </div>
-                    )}
-
-                    {result.nameServers.length > 0 && (
-                      <div className="glass-panel border border-border rounded-xl p-5 flex flex-col">
-                        <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
-                          <RiServerLine className="w-4 h-4 text-muted-foreground" />
-                          {t("whois_fields.name_servers")}
-                        </h3>
-                        <div className="space-y-2">
-                          {result.nameServers.map((ns, i) => {
-                            const nsBrand = getNsBrand(ns);
-                            return (
-                              <div
-                                key={i}
-                                className="flex items-center gap-3 p-2 bg-muted/30 border border-border/50 rounded-md cursor-pointer hover:bg-muted/50 transition-colors"
-                                onClick={() => copy(ns)}
-                              >
-                                {nsBrand ? (
-                                  nsBrand.slug ? (
-                                    nsBrand.slug.startsWith("/") ? (
-                                      <div className="w-4 h-4 shrink-0 flex items-center justify-center">
-                                        <img
-                                          src={nsBrand.slug}
-                                          alt=""
-                                          className="w-3.5 h-3.5 object-contain rounded-sm"
-                                        />
-                                      </div>
-                                    ) : (
-                                      <div className="w-4 h-4 shrink-0 flex items-center justify-center">
-                                        <img
-                                          src={resolveIconUrl(
-                                            nsBrand.slug,
-                                            nsBrand.color,
-                                            false,
-                                          )}
-                                          alt=""
-                                          className="w-3.5 h-3.5 object-contain dark:hidden"
-                                        />
-                                        <img
-                                          src={resolveIconUrl(
-                                            nsBrand.slug,
-                                            nsBrand.color,
-                                            true,
-                                          )}
-                                          alt=""
-                                          className="w-3.5 h-3.5 object-contain hidden dark:block"
-                                        />
-                                      </div>
-                                    )
-                                  ) : (
-                                    <div
-                                      className="w-4 h-4 rounded-full shrink-0 flex items-center justify-center text-white text-[8px] font-bold"
-                                      style={{ backgroundColor: nsBrand.color }}
-                                    >
-                                      {nsBrand.brand.charAt(0)}
-                                    </div>
-                                  )
-                                ) : (
-                                  <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 ml-1" />
-                                )}
-                                <span className="font-mono text-xs text-muted-foreground truncate flex-1">
-                                  {ns}
-                                </span>
-                                {nsBrand && (
-                                  <span className="text-[9px] text-muted-foreground/60 shrink-0">
-                                    {nsBrand.brand}
-                                  </span>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                        {result.dnssec && (
-                          <div className="mt-auto pt-4 border-t border-border/50 flex justify-between items-center">
-                            <span className="text-[10px] text-muted-foreground font-medium uppercase">
-                              DNSSEC
-                            </span>
-                            <span className="text-xs font-mono text-muted-foreground">
-                              {result.dnssec}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {hasIpFields && (
-                      <div className="glass-panel border border-border rounded-xl p-5">
-                        <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
-                          <RiGlobalLine className="w-4 h-4 text-muted-foreground" />
-                          {t("whois_fields.network_info")}
-                        </h3>
-                        <div className="space-y-3">
-                          {[
-                            {
-                              label: t("whois_fields.cidr"),
-                              value: result.cidr,
-                            },
-                            {
-                              label: t("whois_fields.net_range"),
-                              value: result.netRange,
-                            },
-                            {
-                              label: t("whois_fields.net_name"),
-                              value: result.netName,
-                            },
-                            {
-                              label: t("whois_fields.net_type"),
-                              value: result.netType,
-                            },
-                            {
-                              label: t("whois_fields.origin_as"),
-                              value: result.originAS,
-                            },
-                            {
-                              label: t("whois_fields.inet_num"),
-                              value: result.inetNum,
-                            },
-                            {
-                              label: t("whois_fields.inet6_num"),
-                              value: result.inet6Num,
-                            },
-                          ]
-                            .filter((f) => f.value && f.value !== "Unknown")
-                            .map((f, i) => (
-                              <div key={i}>
-                                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1">
-                                  {f.label}
-                                </p>
-                                <p className="font-mono text-xs">{f.value}</p>
-                              </div>
-                            ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {result.mozDomainAuthority !== -1 && (
-                    <div className="glass-panel border border-border rounded-xl p-5">
-                      <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
-                        <RiBarChartBoxAiFill className="w-4 h-4 text-muted-foreground" />
-                        <span>{t("whois_fields.moz_stats")}</span>
-                        <Link
-                          href="https://moz.com/learn/seo/domain-authority"
-                          target="_blank"
-                          className="ml-auto text-muted-foreground hover:text-primary transition-colors"
-                        >
-                          <RiExternalLinkLine className="w-3.5 h-3.5" />
-                        </Link>
-                      </h3>
-                      <div className="grid grid-cols-3 gap-3">
-                        <div
-                          className={cn(
-                            "flex flex-col items-center rounded-lg p-3 border",
-                            result.mozDomainAuthority > 50
-                              ? "bg-green-50/50 dark:bg-green-950/20 border-green-200 dark:border-green-800"
-                              : "bg-muted/30",
-                          )}
-                        >
-                          <span className="text-xs text-muted-foreground mb-1">
-                            DA
-                          </span>
-                          <span
-                            className={cn(
-                              "text-lg font-semibold",
-                              result.mozDomainAuthority > 50 &&
-                                "text-green-600 dark:text-green-400",
-                            )}
-                          >
-                            {result.mozDomainAuthority}
-                          </span>
-                        </div>
-                        <div
-                          className={cn(
-                            "flex flex-col items-center rounded-lg p-3 border",
-                            result.mozPageAuthority > 50
-                              ? "bg-green-50/50 dark:bg-green-950/20 border-green-200 dark:border-green-800"
-                              : "bg-muted/30",
-                          )}
-                        >
-                          <span className="text-xs text-muted-foreground mb-1">
-                            PA
-                          </span>
-                          <span
-                            className={cn(
-                              "text-lg font-semibold",
-                              result.mozPageAuthority > 50 &&
-                                "text-green-600 dark:text-green-400",
-                            )}
-                          >
-                            {result.mozPageAuthority}
-                          </span>
-                        </div>
-                        <div
-                          className={cn(
-                            "flex flex-col items-center rounded-lg p-3 border",
-                            result.mozSpamScore > 5
-                              ? "bg-red-50/50 dark:bg-red-950/20 border-red-200 dark:border-red-800"
-                              : "bg-muted/30",
-                          )}
-                        >
-                          <span className="text-xs text-muted-foreground mb-1">
-                            Spam
-                          </span>
-                          <span
-                            className={cn(
-                              "text-lg font-semibold",
-                              result.mozSpamScore > 5
-                                ? "text-red-600 dark:text-red-400"
-                                : "text-green-600 dark:text-green-400",
-                            )}
-                          >
-                            {result.mozSpamScore}
-                          </span>
-                        </div>
                       </div>
                     </div>
                   )}
                 </div>
-                <div className="lg:col-span-4 relative overflow-hidden">
-                  <div className="flex flex-col gap-6 lg:absolute lg:inset-0 lg:overflow-y-auto">
-                    {result.registrar && result.registrar !== "Unknown" && (
-                      <div className="glass-panel border border-border rounded-xl p-5 shrink-0 overflow-hidden">
-                        <div className="flex items-center justify-between mb-4">
-                          <h3 className="text-sm font-semibold">
-                            {t("whois_fields.registrar")}
-                          </h3>
-                          {result.ianaId && result.ianaId !== "N/A" && (
-                            <Link
-                              href={`https://www.internic.net/registrars/registrar-${result.ianaId}.html`}
-                              target="_blank"
-                              className="text-[10px] bg-muted px-2 py-0.5 rounded text-muted-foreground font-mono hover:bg-muted/80 transition-colors"
-                            >
-                              IANA: {result.ianaId}
-                            </Link>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-3 mb-6">
-                          {registrarIcon && registrarIcon.slug ? (
-                            registrarIcon.slug.startsWith("/") ? (
-                              <div className="w-10 h-10 bg-white dark:bg-zinc-800 rounded-lg flex items-center justify-center p-1.5 border shrink-0">
-                                <img
-                                  src={registrarIcon.slug}
-                                  alt=""
-                                  className="w-full h-full object-contain rounded-md"
-                                />
-                              </div>
-                            ) : (
-                              <div className="w-10 h-10 bg-white dark:bg-zinc-800 rounded-lg flex items-center justify-center p-1.5 border shrink-0">
-                                <img
-                                  src={resolveIconUrl(
-                                    registrarIcon.slug,
-                                    registrarIcon.color,
-                                    false,
-                                  )}
-                                  alt=""
-                                  className="w-full h-full object-contain dark:hidden"
-                                />
-                                <img
-                                  src={resolveIconUrl(
-                                    registrarIcon.slug,
-                                    registrarIcon.color,
-                                    true,
-                                  )}
-                                  alt=""
-                                  className="w-full h-full object-contain hidden dark:block"
-                                />
-                              </div>
-                            )
-                          ) : (
-                            <div
-                              className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-lg shrink-0"
-                              style={{
-                                backgroundColor: registrarIcon
-                                  ? registrarIcon.color
-                                  : getRegistrarFallbackColor(result.registrar),
-                              }}
-                            >
-                              {registrarInitial}
-                            </div>
-                          )}
-                          <div className="min-w-0">
-                            <p className="font-medium text-sm truncate">
-                              {result.registrar}
-                            </p>
-                            {result.registrarURL &&
-                              result.registrarURL !== "Unknown" && (
-                                <a
-                                  href={
-                                    result.registrarURL.startsWith("http")
-                                      ? result.registrarURL
-                                      : `http://${result.registrarURL}`
-                                  }
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-xs text-blue-600 dark:text-blue-400 hover:underline break-all block"
-                                >
-                                  {result.registrarURL}
-                                </a>
-                              )}
-                          </div>
-                        </div>
-                        {result.whoisServer &&
-                          result.whoisServer !== "Unknown" && (
-                            <div className="mb-3">
-                              <p className="text-[10px] uppercase text-muted-foreground font-medium mb-1">
-                                {t("whois_fields.whois_server")}
-                              </p>
-                              <p className="text-xs font-mono text-muted-foreground whitespace-pre-wrap break-all">
-                                {result.whoisServer}
-                              </p>
-                            </div>
-                          )}
-                        {result.registrantEmail &&
-                          result.registrantEmail !== "Unknown" && (
-                            <div className="mb-3">
-                              <p className="text-[10px] uppercase text-muted-foreground font-medium mb-1">
-                                {t("whois_fields.contact_email")}
-                              </p>
-                              <p className="text-xs font-mono text-muted-foreground whitespace-pre-wrap break-all">
-                                {result.registrantEmail}
-                              </p>
-                            </div>
-                          )}
-                        {result.registrantPhone &&
-                          result.registrantPhone !== "Unknown" && (
-                            <div>
-                              <p className="text-[10px] uppercase text-muted-foreground font-medium mb-1">
-                                {t("whois_fields.contact_phone")}
-                              </p>
-                              <p className="text-xs font-mono text-muted-foreground">
-                                {result.registrantPhone}
-                              </p>
-                            </div>
-                          )}
-                      </div>
-                    )}
 
-                    {(result.rawWhoisContent || result.rawRdapContent) && (
-                      <div className="flex-1 min-h-[250px]">
-                        <ResponsePanel
-                          whoisContent={result.rawWhoisContent}
-                          rdapContent={result.rawRdapContent}
-                          target={target}
-                          copy={copy}
-                          save={save}
-                        />
+                {result.mozDomainAuthority !== -1 && (
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+                      <RiBarChartBoxAiFill className="w-4 h-4 text-muted-foreground" />
+                      <span>{t("whois_fields.moz_stats")}</span>
+                      <Link
+                        href="https://moz.com/learn/seo/domain-authority"
+                        target="_blank"
+                        className="ml-auto text-muted-foreground hover:text-primary transition-colors"
+                      >
+                        <RiExternalLinkLine className="w-3.5 h-3.5" />
+                      </Link>
+                    </h3>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div
+                        className={cn(
+                          "flex flex-col items-center rounded-lg p-3 border",
+                          result.mozDomainAuthority > 50
+                            ? "bg-green-50/50 dark:bg-green-950/20 border-green-200 dark:border-green-800"
+                            : "bg-muted/30",
+                        )}
+                      >
+                        <span className="text-xs text-muted-foreground mb-1">
+                          DA
+                        </span>
+                        <span
+                          className={cn(
+                            "text-lg font-semibold",
+                            result.mozDomainAuthority > 50 &&
+                              "text-green-600 dark:text-green-400",
+                          )}
+                        >
+                          {result.mozDomainAuthority}
+                        </span>
                       </div>
-                    )}
+                      <div
+                        className={cn(
+                          "flex flex-col items-center rounded-lg p-3 border",
+                          result.mozPageAuthority > 50
+                            ? "bg-green-50/50 dark:bg-green-950/20 border-green-200 dark:border-green-800"
+                            : "bg-muted/30",
+                        )}
+                      >
+                        <span className="text-xs text-muted-foreground mb-1">
+                          PA
+                        </span>
+                        <span
+                          className={cn(
+                            "text-lg font-semibold",
+                            result.mozPageAuthority > 50 &&
+                              "text-green-600 dark:text-green-400",
+                          )}
+                        >
+                          {result.mozPageAuthority}
+                        </span>
+                      </div>
+                      <div
+                        className={cn(
+                          "flex flex-col items-center rounded-lg p-3 border",
+                          result.mozSpamScore > 5
+                            ? "bg-red-50/50 dark:bg-red-950/20 border-red-200 dark:border-red-800"
+                            : "bg-muted/30",
+                        )}
+                      >
+                        <span className="text-xs text-muted-foreground mb-1">
+                          Spam
+                        </span>
+                        <span
+                          className={cn(
+                            "text-lg font-semibold",
+                            result.mozSpamScore > 5
+                              ? "text-red-600 dark:text-red-400"
+                              : "text-green-600 dark:text-green-400",
+                          )}
+                        >
+                          {result.mozSpamScore}
+                        </span>
+                      </div>
+                    </div>
                   </div>
+                )}
+              </div>
+              <div className="min-w-0 xl:border-l xl:pl-6">
+                <div className="flex min-w-0 flex-col gap-4">
+                  {result.registrar && result.registrar !== "Unknown" && (
+                    <div className="min-w-0 shrink-0 overflow-hidden">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-sm font-semibold">
+                          {t("whois_fields.registrar")}
+                        </h3>
+                        {result.ianaId && result.ianaId !== "N/A" && (
+                          <Link
+                            href={`https://www.internic.net/registrars/registrar-${result.ianaId}.html`}
+                            target="_blank"
+                            className="text-[10px] bg-muted px-2 py-0.5 rounded text-muted-foreground font-mono hover:bg-muted/80 transition-colors"
+                          >
+                            IANA: {result.ianaId}
+                          </Link>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-3 mb-6">
+                        {registrarIcon && registrarIcon.slug ? (
+                          registrarIcon.slug.startsWith("/") ? (
+                            <div className="w-10 h-10 bg-white dark:bg-zinc-800 rounded-lg flex items-center justify-center p-1.5 border shrink-0">
+                              <img
+                                src={registrarIcon.slug}
+                                alt=""
+                                className="w-full h-full object-contain rounded-md"
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-10 h-10 bg-white dark:bg-zinc-800 rounded-lg flex items-center justify-center p-1.5 border shrink-0">
+                              <img
+                                src={resolveIconUrl(
+                                  registrarIcon.slug,
+                                  registrarIcon.color,
+                                  false,
+                                )}
+                                alt=""
+                                className="w-full h-full object-contain dark:hidden"
+                              />
+                              <img
+                                src={resolveIconUrl(
+                                  registrarIcon.slug,
+                                  registrarIcon.color,
+                                  true,
+                                )}
+                                alt=""
+                                className="w-full h-full object-contain hidden dark:block"
+                              />
+                            </div>
+                          )
+                        ) : (
+                          <div
+                            className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-lg shrink-0"
+                            style={{
+                              backgroundColor: registrarIcon
+                                ? registrarIcon.color
+                                : getRegistrarFallbackColor(result.registrar),
+                            }}
+                          >
+                            {registrarInitial}
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="font-medium text-sm truncate">
+                            {result.registrar}
+                          </p>
+                          {result.registrarURL &&
+                            result.registrarURL !== "Unknown" && (
+                              <a
+                                href={
+                                  result.registrarURL.startsWith("http")
+                                    ? result.registrarURL
+                                    : `http://${result.registrarURL}`
+                                }
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-blue-600 dark:text-blue-400 hover:underline break-all block"
+                              >
+                                {result.registrarURL}
+                              </a>
+                            )}
+                        </div>
+                      </div>
+                      {result.whoisServer &&
+                        result.whoisServer !== "Unknown" && (
+                          <div className="mb-3">
+                            <p className="text-[10px] uppercase text-muted-foreground font-medium mb-1">
+                              {t("whois_fields.whois_server")}
+                            </p>
+                            <p className="text-xs font-mono text-muted-foreground whitespace-pre-wrap break-all">
+                              {result.whoisServer}
+                            </p>
+                          </div>
+                        )}
+                      {result.registrantEmail &&
+                        result.registrantEmail !== "Unknown" && (
+                          <div className="mb-3">
+                            <p className="text-[10px] uppercase text-muted-foreground font-medium mb-1">
+                              {t("whois_fields.contact_email")}
+                            </p>
+                            <p className="text-xs font-mono text-muted-foreground whitespace-pre-wrap break-all">
+                              {result.registrantEmail}
+                            </p>
+                          </div>
+                        )}
+                      {result.registrantPhone &&
+                        result.registrantPhone !== "Unknown" && (
+                          <div>
+                            <p className="text-[10px] uppercase text-muted-foreground font-medium mb-1">
+                              {t("whois_fields.contact_phone")}
+                            </p>
+                            <p className="text-xs font-mono text-muted-foreground">
+                              {result.registrantPhone}
+                            </p>
+                          </div>
+                        )}
+                    </div>
+                  )}
+
+                  {Object.values(data.protocolStatus ?? {}).some(
+                    (status) => status && status !== "ok",
+                  ) && (
+                    <details className="group border-y">
+                      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 py-4 text-sm font-medium [&::-webkit-details-marker]:hidden">
+                        {t("protocol_status.title")}
+                        <ChevronDown
+                          aria-hidden
+                          className="size-4 text-muted-foreground group-open:rotate-180"
+                        />
+                      </summary>
+                      <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-2 pb-4 text-xs">
+                        <ProtocolRows attempts={data.protocolStatus} />
+                      </dl>
+                    </details>
+                  )}
+                  {(result.rawWhoisContent || result.rawRdapContent) && (
+                    <div className="min-w-0">
+                      <ResponsePanel
+                        key={target}
+                        whoisContent={result.rawWhoisContent}
+                        rdapContent={result.rawRdapContent}
+                        primary={data.source}
+                        target={target}
+                        copy={copy}
+                        save={save}
+                      />
+                    </div>
+                  )}
                 </div>
-              </motion.div>
-            </>
-          )}
-        </main>
-      </ScrollArea>
+              </div>
+            </div>
+          </>
+        )}
+      </main>
+
       <Dialog open={showImagePreview} onOpenChange={setShowImagePreview}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>

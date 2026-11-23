@@ -463,6 +463,7 @@ export function SearchBox({
       <div className="relative flex flex-row items-center w-full">
         <Input
           ref={inputRef}
+          aria-label={t("search_placeholder")}
           id="main-search-input"
           className="w-full text-left pl-12 pr-12 transition-all duration-300 hover:shadow focus-visible:ring-primary/20 focus-visible:ring-offset-0"
           placeholder={t("search_placeholder")}
@@ -473,6 +474,7 @@ export function SearchBox({
         />
         <Button
           size="icon"
+          aria-label={t("shortcut_search")}
           variant="outline"
           className={cn(
             "absolute right-0 rounded-l-none border-l-0 transition-all duration-300",

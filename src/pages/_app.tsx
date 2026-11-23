@@ -5,9 +5,10 @@ import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { siteTitle, siteDescription, siteKeywords } from "@/lib/seo";
 import PWAInstaller from "@/components/pwa_installer";
+import { LookupWorkspace } from "@/components/lookup_workspace";
 import { Navbar } from "@/components/navbar";
 
-export default function App({ Component, pageProps }: AppProps) {
+export default function App({ Component, pageProps, router }: AppProps) {
   const origin: string = pageProps.origin || "";
 
   return (
@@ -60,16 +61,24 @@ export default function App({ Component, pageProps }: AppProps) {
           name="Next Whois"
           description="🧪 Your Next Generation Of Whois Lookup Tool With Modern UI. Support Domain/IPv4/IPv6/ASN/CIDR Whois Lookup And Powerful Features."
         />
-        <div className="fixed inset-0 -z-10">
-          <div className="absolute inset-0 bg-dot-pattern opacity-10" />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/20 to-background" />
-        </div>
-        <div className="relative w-full min-h-screen font-sans">
-          <Navbar />
-          <main className="pt-16">
+        {router.pathname === "/[...query]" ? (
+          <LookupWorkspace target={pageProps.target}>
             <Component {...pageProps} />
-          </main>
-        </div>
+          </LookupWorkspace>
+        ) : (
+          <>
+            <div className="fixed inset-0 -z-10">
+              <div className="absolute inset-0 bg-dot-pattern opacity-10" />
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/20 to-background" />
+            </div>
+            <div className="relative w-full min-h-screen font-sans">
+              <Navbar />
+              <main className="pt-16">
+                <Component {...pageProps} />
+              </main>
+            </div>
+          </>
+        )}
       </ThemeProvider>
     </>
   );
